@@ -18,10 +18,11 @@ for LAT in 0525E 0526E; do
     FILENAME=L15-${LAT}-${LON}.tif
     if [[ ! -f ${FILENAME} ]]; then
       echo "Downloading ${FILENAME}"
-      gsutil cp ${URL_ACA}/${FILENAME} tmp_${FILENAME}
+      gsutil cp ${URL_ACA}/${FILENAME} tmp_0_${FILENAME}
       echo "Reprojecting ${FILENAME}"
-      gdalwarp -s_srs EPSG:3857 -t_srs EPSG:4326 tmp_${FILENAME} ${FILENAME}
-      rm tmp_${FILENAME}
+      gdalwarp -s_srs EPSG:3857 -t_srs EPSG:4326 tmp_0_${FILENAME} tmp_1_${FILENAME}
+      gdal_translate -b 1 -b 2 -a_nodata -9999 tmp_1_${FILENAME} ${FILENAME}
+      rm tmp_0_${FILENAME} tmp_1_${FILENAME}
     else
       echo "File already exists at ${FILENAME}"
     fi
