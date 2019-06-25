@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 
-URL_ACA=gs://coral-atlas-data-share/coral_reefs_2018_visual_v1_mosaic/caribbean/west-caribbean
+URL_ACA='gs://coral-atlas-data-share/coral_reefs_2018_visual_v1_mosaic/caribbean/west-caribbean'
 
 # Create data directory, if necessary
-if [ ! -d ../data/lighthouse ]; then
-  mkdir ../data/lighthouse
+if [[ ! -d ../data/belize ]]; then
+  mkdir ../data/belize
 fi
-cd ../data/lighthouse
+cd ../data/belize
 
 
 echo "Downloading Lighthouse Reef imagery"
@@ -18,7 +18,7 @@ for LAT in 0525E 0526E; do
     FILENAME=L15-${LAT}-${LON}.tif
     if [[ ! -f ${FILENAME} ]]; then
       echo "Downloading ${FILENAME}"
-      gsutil cp ${URL_ACA}/${FILENAME} ../data/lighthouse/tmp_${FILENAME}
+      gsutil cp ${URL_ACA}/${FILENAME} tmp_${FILENAME}
       echo "Reprojecting ${FILENAME}"
       gdalwarp -s_srs EPSG:3857 -t_srs EPSG:4326 tmp_${FILENAME} ${FILENAME}
       rm tmp_${FILENAME}
@@ -32,7 +32,7 @@ done
 
 echo "Building imagery VRT"
 
-if [ ! -f features.vrt ]; then
+if [[ ! -f features.vrt ]]; then
   gdalbuildvrt features.vrt L15-052*.tif
 else
   echo "VRT already built and reprojected"
@@ -41,7 +41,7 @@ fi
 
 echo "Download reef LWR classes"
 
-if [! -f lwr.tif ]; then
+if [[ ! -f lwr.tif ]]; then
 
   curl https://storage.googleapis.com/coral-atlas-data-share/geojson/lighthouse.geojson \
     -o tmp_0.geojson
@@ -54,6 +54,8 @@ if [! -f lwr.tif ]; then
 
   echo "Rasterize reef LWR classes"
   gdal_rasterize \
+    -init -9999 \
+    -a_nodata -9999 \
     -te -87.3632814 16.9727394 -87.7148437 17.6440220 \
     -ts 8380 16001 \
     -a lwr \
