@@ -11,7 +11,7 @@ from rsCNN.utils import logging
 _LOG_LEVEL = 'DEBUG'
 
 _DIR_MODELS = 'models'
-_DIR_IMAGERY = '/scratch/nfabina/gcrmn-benthic-classification/imagery'
+_DIR_IMAGERY = '/scratch/nfabina/gcrmn-benthic-classification/imagery/belize'
 _DIR_BUILT_DATA = os.path.join(_DIR_IMAGERY, 'built')
 _DIR_RAW_DATA = os.path.join(_DIR_IMAGERY, 'raw')
 
@@ -24,8 +24,8 @@ def classify(filepath_config: str) -> None:
     config_name = os.path.splitext(os.path.basename(filepath_config))[0]
 
     # Update config with filesystem references or potentially dynamic values
-    config.raw_files.feature_files = [_FILEPATH_FEATURES]
-    config.raw_files.response_files = [_FILEPATH_RESPONSES]
+    config.raw_files.feature_files = [[_FILEPATH_FEATURES]]
+    config.raw_files.response_files = [[_FILEPATH_RESPONSES]]
     config.data_build.dir_out = _DIR_BUILT_DATA
     config.model_training.dir_out = os.path.join(_DIR_MODELS, config_name)
 
