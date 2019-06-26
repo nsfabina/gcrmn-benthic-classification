@@ -10,7 +10,7 @@ data_build:
   filename_prefix_out: ''
   network_category: FCN
   random_seed: 1
-  max_samples: 10
+  max_samples: 10000
   max_built_data_gb: 10.0
   number_folds: 10
   validation_fold: 0
