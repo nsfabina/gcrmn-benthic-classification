@@ -27,7 +27,6 @@ data_samples:
 model_training:
   dir_out: 'models/unet'
   assert_gpu: true
-  use_multiprocessing: true
   architecture_name: unet
   loss_metric: 'cc'
   max_epochs: 100
