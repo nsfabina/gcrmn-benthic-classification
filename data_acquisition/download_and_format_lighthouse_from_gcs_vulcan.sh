@@ -5,7 +5,7 @@ URL_ACA='gs://coral-atlas-data-share/coral_reefs_2018_visual_v1_mosaic/caribbean
 
 # Create data directory, if necessary
 if [[ ! -d ../data/belize ]]; then
-  mkdir ../data/belize
+  mkdir -p ../data/belize
 fi
 cd ../data/belize
 
