@@ -49,6 +49,7 @@ def clean_dr():
         _save_cleaned_reef_multipolygons_for_review(reef_multipolygon, filepath_source, dir_out)
     logger.info('Save reef adjacent areas')
     _save_reef_adjacent_area_for_review(FILENAME_REEF.format('buffer_{}'.format(BUFFERS[1])), dir_out)
+    _save_landwater_area_for_review(filepath_source, dir_out)
 
 
 def _get_reef_multipolygon(filepath: str) -> shapely.geometry.MultiPolygon:
