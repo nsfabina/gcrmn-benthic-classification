@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-mkdir ../data
-rclone copy remote:imagery/gcrmn/dr ../data/
-rclone copy remote:imagery/gcrmn/usvi ../data/
+mkdir -p ../data/{dr,usvi}
+rclone copy remote:imagery/gcrmn/dr ../data/dr
+rclone copy remote:imagery/gcrmn/usvi ../data/usvi
