@@ -157,7 +157,7 @@ def _save_landwater_areas_clipped_for_review(filepath_source: str, dir_out: str)
     with fiona.open(os.path.join(dir_out, FILENAME_ADJACENT.format('buffer_600'))) as source:
         adjacent_components = [feature for feature in source]
     logger.info('Create multipolygon for adjacent')
-    adjacent_components = shapely.geometry.MultiPolygon(adjacent_components)
+    adjacent_components = shapely.geometry.MultiPolygon(_get_geometries_from_features(adjacent_components))
     logger.info('Calculate overlap')
     landwater_components = [landwater.intersection(adjacent_components) for landwater in landwater_components]
     logger.info('Clean geometries')
