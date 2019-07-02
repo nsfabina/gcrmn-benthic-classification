@@ -15,6 +15,8 @@ REEF_CLASSES = {
     'Coral Back-reef/flat', 'Coral Fore-reef', 'Coral Patch Deep', 'Coral Reef Crest', 'Gorgonian/Soft Coral',
     'Hardbottom with Algae', 'Sand Deep with sparse Macroalgae', 'Sand Shallow', 'Seagrass Dense', 'Seagrass Sparse'
 }
+BUFFERS_REEF = (75, )
+BUFFERS_ADJACENT = (600, )
 
 FILENAME_REEF = 'reef_{}.shp'
 FILENAME_ADJACENT = 'adjacent_{}.shp'
@@ -50,6 +52,7 @@ def clean_dr():
     _save_reef_adjacent_area_for_review(
         os.path.join(dir_out, FILENAME_REEF.format('buffer_75')), dir_out)
     _save_landwater_area_for_review(filepath_source, dir_out)
+    _save_landwater_areas_clipped_for_review(filepath_source, dir_out)
 
 
 def _get_reef_multipolygon(filepath: str) -> shapely.geometry.MultiPolygon:
@@ -69,7 +72,7 @@ def _save_cleaned_reef_multipolygons_for_review(
         filepath_source: str,
         dir_out: str
 ) -> None:
-    for buffer in (75, ):
+    for buffer in BUFFERS_REEF:
         filepath_output = os.path.join(dir_out, FILENAME_REEF.format('buffer_{}'.format(buffer)))
         if os.path.exists(filepath_output):
             continue
@@ -89,12 +92,12 @@ def _save_reef_adjacent_area_for_review(
     with fiona.open(filepath_reef_source) as source:
         reef_components = [feature for feature in source]
     reef_components = _get_geometries_from_features(reef_components)
-    for buffer in (75, 125, 175, 225, 300, 400, 500, 600):
+    for buffer in BUFFERS_ADJACENT:
         filepath_output = os.path.join(dir_out, FILENAME_ADJACENT.format('buffer_{}'.format(buffer)))
         if os.path.exists(filepath_output):
             continue
         logger.info('Save reef adjacent area with buffer of {}'.format(buffer))
-        logger.info('Buffer reef')
+        logger.info('Buffer adjacent areas')
         tmp_adjacent = [component.buffer(buffer).difference(component) for component in reef_components]
         logger.info('Clean geometries')
         tmp_adjacent = _clean_geometries(tmp_adjacent)
@@ -138,6 +141,30 @@ def _merge_small_landwater_geometries(geometries: List[BaseGeometry]) -> List[sh
     merged = shapely.ops.unary_union(unmerged)
     cleaned = _clean_geometries(merged)
     return finalized + cleaned
+
+
+def _save_landwater_areas_clipped_for_review(filepath_source: str, dir_out: str) -> None:
+    logger.info('Read features')
+    filepath_output = os.path.join(dir_out, FILENAME_LANDWATER.format('clipped'))
+    if os.path.exists(filepath_output):
+        return
+    logger.info('Read features')
+    with fiona.open(os.path.join(dir_out, FILENAME_LANDWATER.format('unclipped'))) as source:
+        landwater_components = [feature for feature in source]
+    logger.info('Get geometries')
+    landwater_components = _get_geometries_from_features(landwater_components)
+    logger.info('Read features')
+    with fiona.open(os.path.join(dir_out, FILENAME_ADJACENT.format('buffer_600'))) as source:
+        adjacent_components = [feature for feature in source]
+    logger.info('Create multipolygon for adjacent')
+    adjacent_components = shapely.geometry.MultiPolygon(adjacent_components)
+    logger.info('Calculate overlap')
+    landwater_components = [landwater.intersection(adjacent_components) for landwater in landwater_components]
+    logger.info('Clean geometries')
+    landwater_components = _clean_geometries(landwater_components)
+    logger.info('Save shapefile')
+    _write_geometries_to_shapefile(
+        landwater_components, [PROPERTIES_LANDWATER] * len(landwater_components), filepath_source, filepath_output)
 
 
 def _get_geometries_from_features(features: List[dict]) -> List[BaseGeometry]:
