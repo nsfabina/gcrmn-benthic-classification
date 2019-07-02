@@ -15,7 +15,6 @@ REEF_CLASSES = {
     'Coral Back-reef/flat', 'Coral Fore-reef', 'Coral Patch Deep', 'Coral Reef Crest', 'Gorgonian/Soft Coral',
     'Hardbottom with Algae', 'Sand Deep with sparse Macroalgae', 'Sand Shallow', 'Seagrass Dense', 'Seagrass Sparse'
 }
-BUFFERS = [75, 125]
 
 FILENAME_REEF = 'reef_{}.shp'
 FILENAME_ADJACENT = 'adjacent_{}.shp'
@@ -41,14 +40,15 @@ logger.addHandler(_handler)
 def clean_dr():
     filepath_source = '../data/dr/DR_V1.shp'
     dir_out = '../data/dr/'
-    filepath_reef = os.path.join(dir_out, FILENAME_REEF.format('buffer_{}'.format(BUFFERS[-1])))
+    filepath_reef = os.path.join(dir_out, FILENAME_REEF.format('buffer_75'))
     if not os.path.exists(filepath_reef):
         logger.info('Get reef multipolygon')
         reef_multipolygon = _get_reef_multipolygon(filepath_source)
         logger.info('Save reef multipolygons buffered')
         _save_cleaned_reef_multipolygons_for_review(reef_multipolygon, filepath_source, dir_out)
     logger.info('Save reef adjacent areas')
-    _save_reef_adjacent_area_for_review(FILENAME_REEF.format('buffer_{}'.format(BUFFERS[1])), dir_out)
+    _save_reef_adjacent_area_for_review(
+        os.path.join(dir_out, FILENAME_REEF.format('buffer_75')), dir_out)
     _save_landwater_area_for_review(filepath_source, dir_out)
 
 
@@ -69,7 +69,7 @@ def _save_cleaned_reef_multipolygons_for_review(
         filepath_source: str,
         dir_out: str
 ) -> None:
-    for buffer in BUFFERS:
+    for buffer in (75, ):
         filepath_output = os.path.join(dir_out, FILENAME_REEF.format('buffer_{}'.format(buffer)))
         if os.path.exists(filepath_output):
             continue
@@ -87,9 +87,9 @@ def _save_reef_adjacent_area_for_review(
         dir_out: str
 ) -> None:
     with fiona.open(filepath_reef_source) as source:
-        reef_components = [feature for feature in source if feature['properties']['Class'] in REEF_CLASSES]
+        reef_components = [feature for feature in source]
     reef_components = _get_geometries_from_features(reef_components)
-    for buffer in BUFFERS:
+    for buffer in (75, 125, 175, 225, 300, 400, 500, 600):
         filepath_output = os.path.join(dir_out, FILENAME_ADJACENT.format('buffer_{}'.format(buffer)))
         if os.path.exists(filepath_output):
             continue
