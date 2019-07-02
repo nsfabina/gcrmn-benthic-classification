@@ -15,7 +15,7 @@ REEF_CLASSES = {
     'Coral Back-reef/flat', 'Coral Fore-reef', 'Coral Patch Deep', 'Coral Reef Crest', 'Gorgonian/Soft Coral',
     'Hardbottom with Algae', 'Sand Deep with sparse Macroalgae', 'Sand Shallow', 'Seagrass Dense', 'Seagrass Sparse'
 }
-BUFFERS = [75, 125, 175]
+BUFFERS = [75, 125]
 
 FILENAME_REEF = 'reef_{}.shp'
 FILENAME_ADJACENT = 'adjacent_{}.shp'
@@ -41,10 +41,12 @@ logger.addHandler(_handler)
 def clean_dr():
     filepath_source = '../data/dr/DR_V1.shp'
     dir_out = '../data/dr/'
-    logger.info('Get reef multipolygon')
-    reef_multipolygon = _get_reef_multipolygon(filepath_source)
-    logger.info('Save reef multipolygons buffered')
-    _save_cleaned_reef_multipolygons_for_review(reef_multipolygon, filepath_source, dir_out)
+    filepath_reef = os.path.join(dir_out, FILENAME_REEF.format('buffer_{}'.format(BUFFERS[-1])))
+    if not os.path.exists(filepath_reef):
+        logger.info('Get reef multipolygon')
+        reef_multipolygon = _get_reef_multipolygon(filepath_source)
+        logger.info('Save reef multipolygons buffered')
+        _save_cleaned_reef_multipolygons_for_review(reef_multipolygon, filepath_source, dir_out)
     logger.info('Save reef adjacent areas')
     _save_reef_adjacent_area_for_review(FILENAME_REEF.format('buffer_{}'.format(BUFFERS[1])), dir_out)
 
@@ -67,12 +69,14 @@ def _save_cleaned_reef_multipolygons_for_review(
         dir_out: str
 ) -> None:
     for buffer in BUFFERS:
+        filepath_output = os.path.join(dir_out, FILENAME_REEF.format('buffer_{}'.format(buffer)))
+        if os.path.exists(filepath_output):
+            continue
         logger.info('Save reef with buffer of {}'.format(buffer))
         logger.info('Buffer reef')
         tmp_reef = reef_multipolygon.buffer(buffer).buffer(-buffer)
         logger.info('Clean geometries')
         tmp_reef = _clean_geometries([tmp_reef])
-        filepath_output = os.path.join(dir_out, FILENAME_REEF.format('buffer_{}'.format(buffer)))
         logger.info('Write to shapefile')
         _write_geometries_to_shapefile(tmp_reef, [PROPERTIES_REEF] * len(tmp_reef), filepath_source, filepath_output)
 
@@ -85,12 +89,14 @@ def _save_reef_adjacent_area_for_review(
         reef_components = [feature for feature in source if feature['properties']['Class'] in REEF_CLASSES]
     reef_components = _get_geometries_from_features(reef_components)
     for buffer in BUFFERS:
+        filepath_output = os.path.join(dir_out, FILENAME_ADJACENT.format('buffer_{}'.format(buffer)))
+        if os.path.exists(filepath_output):
+            continue
         logger.info('Save reef adjacent area with buffer of {}'.format(buffer))
         logger.info('Buffer reef')
         tmp_adjacent = [component.buffer(buffer).difference(component) for component in reef_components]
         logger.info('Clean geometries')
         tmp_adjacent = _clean_geometries(tmp_adjacent)
-        filepath_output = os.path.join(dir_out, FILENAME_ADJACENT.format('buffer_{}'.format(buffer)))
         logger.info('Write to shapefile')
         _write_geometries_to_shapefile(
             tmp_adjacent, [PROPERTIES_ADJACENT] * len(tmp_adjacent), filepath_reef_source, filepath_output)
@@ -101,6 +107,9 @@ def _save_landwater_area_for_review(
         filepath_source: str,
         dir_out: str
 ) -> None:
+    filepath_output = os.path.join(dir_out, FILENAME_LANDWATER.format('unclipped'))
+    if os.path.exists(filepath_output):
+        return
     logger.info('Read features')
     with fiona.open(filepath_source) as source:
         other_components = [feature for feature in source if feature['properties']['Class'] not in REEF_CLASSES]
@@ -111,7 +120,6 @@ def _save_landwater_area_for_review(
     logger.info('Merge small geometries')
     other_components = _merge_small_landwater_geometries(other_components)
     logger.info('Save shapefile')
-    filepath_output = os.path.join(dir_out, FILENAME_LANDWATER.format('unclipped'))
     _write_geometries_to_shapefile(
         other_components, [PROPERTIES_LANDWATER] * len(other_components), filepath_source, filepath_output)
 
