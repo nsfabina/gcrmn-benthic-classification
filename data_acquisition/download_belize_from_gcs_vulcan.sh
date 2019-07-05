@@ -8,6 +8,7 @@ URL_ACA='gs://coral-atlas-data-share/coral_reefs_2018_visual_v1_mosaic/caribbean
 if [[ ! -d ../data/belize/raw ]]; then
   mkdir -p ../data/belize/raw
 fi
+cd ../data/belize/raw
 
 
 echo "Downloading Lighthouse Reef imagery"
@@ -18,7 +19,7 @@ for LAT in 0525E 0526E; do
     FILENAME=L15-${LAT}-${LON}.tif
     if [[ ! -f ${FILENAME} ]]; then
       echo "Downloading ${FILENAME}"
-      gsutil cp ${URL_ACA}/${FILENAME} tmp_0_${FILENAME}
+      gsutil cp ${URL_ACA}/${FILENAME} ${FILENAME}
     else
       echo "File already exists at ${FILENAME}"
     fi
@@ -31,7 +32,7 @@ echo "Download reef LWR classes"
 
 if [[ ! -f lwr.tif ]]; then
   curl https://storage.googleapis.com/coral-atlas-data-share/geojson/lighthouse.geojson \
-    -o tmp_0.geojson
+    -o lwr.geojson
 else
   echo "Reef LWR classes already available"
 fi
