@@ -11,12 +11,14 @@ from rsCNN.utils import logging
 _LOG_LEVEL = 'DEBUG'
 
 _DIR_MODELS = 'models'
-_DIR_IMAGERY = '/scratch/nfabina/gcrmn-benthic-classification/imagery/belize'
-_DIR_BUILT_DATA = os.path.join(_DIR_IMAGERY, 'built')
-_DIR_RAW_DATA = os.path.join(_DIR_IMAGERY, 'raw')
+_DIR_DATA_BASE = '/scratch/nfabina/gcrmn-benthic-classification'
 
-_FILEPATH_FEATURES = os.path.join(_DIR_RAW_DATA, 'features.vrt')
-_FILEPATH_RESPONSES = os.path.join(_DIR_RAW_DATA, 'responses.tif')
+_DIR_DATA_REEF = os.path.join(_DIR_DATA_BASE, 'data')
+_DIR_DATA_CLEAN = os.path.join(_DIR_DATA_BASE, '{}/clean')
+_DIR_DATA_BUILT = os.path.join(_DIR_DATA_BASE, 'built')
+
+_FILENAME_FEATURES = 'features.vrt'
+_FILENAME_RESPONSES = 'responses.tif'
 
 
 def classify(filepath_config: str) -> None:
@@ -24,9 +26,15 @@ def classify(filepath_config: str) -> None:
     config_name = os.path.splitext(os.path.basename(filepath_config))[0]
 
     # Update config with filesystem references or potentially dynamic values
-    config.raw_files.feature_files = [[_FILEPATH_FEATURES]]
-    config.raw_files.response_files = [[_FILEPATH_RESPONSES]]
-    config.data_build.dir_out = _DIR_BUILT_DATA
+    feature_files = list()
+    response_files = list()
+    for dir_reef in os.listdir(_DIR_DATA_REEF):
+        dir_clean = _DIR_DATA_CLEAN.format(dir_reef)
+        feature_files.append([os.path.join(dir_clean, _FILENAME_FEATURES)])
+        response_files.append([os.path.join(dir_clean, _FILENAME_RESPONSES)])
+    config.raw_files.feature_files = feature_files
+    config.raw_files.response_files = response_files
+    config.data_build.dir_out = _DIR_DATA_BUILT
     config.model_training.dir_out = os.path.join(_DIR_MODELS, config_name)
 
     # Create directories if necessary
