@@ -41,7 +41,7 @@ for DIR_REEF in ../data/*; do
         echo "Cleaning data for LWR data"
         # Note that the lwr_class key with string values causes issues with the SQL in rasterization, so we convert that to
         # the lwr key with integer values
-        FILENAME=${basename ${DIR_REEF}/raw/*.geojson}
+        FILENAME=$(basename ${DIR_REEF}/raw/*.geojson)
         DIR_TMP=${DIR_REEF}/tmp
         sed 's/"lwr_class": "Land"/"lwr": 1/g' "${DIR_REEF}/raw/${FILENAME}" > ${DIR_TMP}/0_${FILENAME}
         sed 's/"lwr_class": "Reef"/"lwr": 3/g' ${DIR_TMP}/0_${FILENAME} > ${DIR_TMP}/1_${FILENAME}
@@ -49,16 +49,16 @@ for DIR_REEF in ../data/*; do
         sed 's/"lwr_class": "Cloud-Shade"/"lwr": 4/g' ${DIR_TMP}/2_${FILENAME} > ${DIR_TMP}/responses.geojson
 
         echo "Rasterize reef LWR classes"
-        PT_REGEX='\-*[0-9]+\.*[0-9]+, \-*[0-9]+\.*[0-9]+'
-        LOWER_LEFT=${gdalinfo ${DIR_REEF}/clean/features.vrt | grep 'Lower Left' | egrep -o ${PT_REGEX} | tr -d ','}
-        UPPER_RIGHT=${gdalinfo ${DIR_REEF}/clean/features.vrt | grep 'Upper Right' | egrep -o ${PT_REGEX} | tr -d ','}
+        PT_REGEX='\-*[0-9]+\.*[0-9]+,( )*\-*[0-9]+\.*[0-9]+'
+        LOWER_LEFT=$(gdalinfo ${DIR_REEF}/clean/features.vrt | grep 'Lower Left' | egrep -o "${PT_REGEX}" | tr -d ',')
+        UPPER_RIGHT=$(gdalinfo ${DIR_REEF}/clean/features.vrt | grep 'Upper Right' | egrep -o "${PT_REGEX}" | tr -d ',')
         RES_REGEX='[0-9]+\.*[0-9]+,\-[0-9]+\.*[0-9]+'
-        RESOLUTION=${gdalinfo ${DIR_REEF}/clean/features.vrt | grep 'Pixel Size' | egrep -o ${RES_REGEX} | tr ',' ' '}
+        RESOLUTION=$(gdalinfo ${DIR_REEF}/clean/features.vrt | grep 'Pixel Size' | egrep -o "${RES_REGEX}" | tr ',' ' ')
         gdal_rasterize \
         -init -9999 \
         -a_nodata -9999 \
         -te ${LOWER_LEFT} ${UPPER_RIGHT} \
-        -ts ${RESOLUTION} \
+        -tr ${RESOLUTION} \
         -a lwr \
         ${DIR_TMP}/responses.geojson ${DIR_REEF}/clean/responses.tif
     else
