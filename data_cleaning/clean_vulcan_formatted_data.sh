@@ -23,7 +23,7 @@ for DIR_REEF in ../data/*; do
             gdalwarp -s_srs EPSG:3857 -t_srs EPSG:4326 ${FILEPATH} ${DIR_REEF}/tmp/${FILENAME}
 
             echo "Storing only blue and green bands"
-            gdal_translate -b 1 -b 2 -a_nodata -9999 ${DIR_REEF}/tmp/${FILENAME} ${DIR_REEF}/clean/${FILENAME}
+            gdal_translate -b 2 -b 3 -a_nodata -9999 ${DIR_REEF}/tmp/${FILENAME} ${DIR_REEF}/clean/${FILENAME}
         else
             echo "Imagery file already cleaned: " ${FILEPATH}
         fi
