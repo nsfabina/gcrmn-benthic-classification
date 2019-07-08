@@ -71,7 +71,8 @@ def classify(filepath_config: str) -> None:
 
     # Apply model
     filepath_out = os.path.join(config.model_training.dir_out, 'applied.tif')
-    apply_model_to_data.apply_model_to_raster(experiment.model, data_container, _FILEPATH_FEATURES, filepath_out)
+    for feature_file in feature_files:
+        apply_model_to_data.apply_model_to_raster(experiment.model, data_container, feature_file[0], filepath_out)
 
 
 if __name__ == '__main__':
