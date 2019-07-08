@@ -1,10 +1,11 @@
 raw_files:
-  feature_files: ['data/belize/features.vrt']
-  response_files: ['data/belize/responses.vrt']
+  feature_files: 
+  response_files:
   feature_data_type: ['R']
   response_data_type: ['C']
   feature_nodata_value: -9999
   response_nodata_value: -9999
+  ignore_projections: True
 data_build:
   dir_out:
   filename_prefix_out: ''

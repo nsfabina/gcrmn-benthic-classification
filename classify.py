@@ -14,7 +14,7 @@ _DIR_MODELS = 'models'
 _DIR_DATA_BASE = '/scratch/nfabina/gcrmn-benthic-classification'
 
 _DIR_DATA_REEF = os.path.join(_DIR_DATA_BASE, 'data')
-_DIR_DATA_CLEAN = os.path.join(_DIR_DATA_BASE, '{}/clean')
+_DIR_DATA_CLEAN = os.path.join(_DIR_DATA_REEF, '{}/clean')
 _DIR_DATA_BUILT = os.path.join(_DIR_DATA_BASE, 'built')
 
 _FILENAME_FEATURES = 'features.vrt'
