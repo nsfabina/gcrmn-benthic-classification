@@ -6,6 +6,7 @@ raw_files:
   response_data_type: ['C']
   feature_nodata_value: -9999
   response_nodata_value: -9999
+  boundary_bad_value: -999
   ignore_projections: True
 data_build:
   dir_out:
@@ -20,6 +21,7 @@ data_build:
   loss_window_radius: 64
   feature_mean_centering: false
   feature_nodata_maximum_fraction: 0.25
+  response_background_values: [0, 1]
 data_samples:
   apply_random_transformations: true
   batch_size: 64
