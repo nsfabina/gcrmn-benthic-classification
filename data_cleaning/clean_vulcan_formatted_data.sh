@@ -61,6 +61,9 @@ for DIR_REEF in ../data/*; do
         -tr ${RESOLUTION} \
         -a lwr \
         ${DIR_TMP}/responses.geojson ${DIR_REEF}/clean/responses.tif
+
+        echo "Create compressed version"
+        gdal_translate -co "COMPRESS=LZW" ${DIR_REEF}/clean/responses.tif ${DIR_REEF}/clean/responses_compressed.tif
     else
         echo "LWR data already cleaned"
     fi
