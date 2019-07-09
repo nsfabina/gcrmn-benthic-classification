@@ -6,7 +6,7 @@ raw_files:
   response_data_type: ['C']
   feature_nodata_value: -9999
   response_nodata_value: -9999
-  boundary_bad_value: -999
+  boundary_bad_value: 0
   ignore_projections: True
 data_build:
   dir_out:
