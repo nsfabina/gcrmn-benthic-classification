@@ -10,6 +10,7 @@ raw_files:
   ignore_projections: True
 data_build:
   dir_out:
+  log_level: DEBUG
   filename_prefix_out: ''
   network_category: FCN
   random_seed: 1
@@ -30,6 +31,7 @@ data_samples:
   feature_nodata_encoding: -10.0
 model_training:
   dir_out: 'models/unet'
+  log_level: DEBUG
   assert_gpu: true
   architecture_name: unet
   loss_metric: 'cc'
