@@ -19,6 +19,7 @@ _DIR_DATA_BUILT = os.path.join(_DIR_DATA_BASE, 'built')
 
 _FILENAME_FEATURES = 'features.vrt'
 _FILENAME_RESPONSES = 'responses.tif'
+_FILENAME_BOUNDARIES = 'boundaries.shp'
 
 
 def classify(filepath_config: str) -> None:
@@ -28,12 +29,15 @@ def classify(filepath_config: str) -> None:
     # Update config with filesystem references or potentially dynamic values
     feature_files = list()
     response_files = list()
+    boundary_files = list()
     for dir_reef in os.listdir(_DIR_DATA_REEF):
         dir_clean = _DIR_DATA_CLEAN.format(dir_reef)
         feature_files.append([os.path.join(dir_clean, _FILENAME_FEATURES)])
         response_files.append([os.path.join(dir_clean, _FILENAME_RESPONSES)])
+        boundary_files.append(os.path.join(dir_clean, _FILENAME_BOUNDARIES))
     config.raw_files.feature_files = feature_files
     config.raw_files.response_files = response_files
+    config.raw_files.boundary_files = boundary_files
     config.data_build.dir_out = _DIR_DATA_BUILT
     config.model_training.dir_out = os.path.join(_DIR_MODELS, config_name)
 
