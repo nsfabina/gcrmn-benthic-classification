@@ -7,6 +7,9 @@
 
 for REEF in belize hawaii heron karimunjawa moorea; do
   if [[ ! -d ../data/${REEF}/raw ]]; then
-     mkdir ../data/${REEF}/raw
+    mkdir ../data/${REEF}/raw
+  fi
 
-  rclone copy -v remote:imagery/gcrmn/${REEF}/raw/*.geojson ../data/${REEF}/raw/
+  rclone copy remote:imagery/gcrmn/${REEF}/raw/responses.geojson ../data/${REEF}/raw/
+done
+
