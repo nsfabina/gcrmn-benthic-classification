@@ -18,8 +18,8 @@ data_build:
   max_built_data_gb: 10.0
   number_folds: 10
   validation_fold: 0
-  window_radius: 128
-  loss_window_radius: 64
+  window_radius: 256
+  loss_window_radius: 128
   feature_mean_centering: false
   feature_nodata_maximum_fraction: 0.25
   response_background_values: [0, 1]
