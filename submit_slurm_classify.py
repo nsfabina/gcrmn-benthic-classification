@@ -5,7 +5,7 @@ import subprocess
 
 SLURM_COMMAND = 'sbatch --mail-type=END,FAIL --mail-user=nsfabina@asu.edu --qos=wildfire --time=24:00:00 ' + \
                 '--nodes=1 --cpus-per-task=1 --mem-per-cpu=40000 --gres=gpu:1 --ntasks=1 ' + \
-                '--partition=physicsgpu1,cidsegpu1,sulcgpu1,sulcgpu2,mrlinegpu1,asinghargpu1 '                
+                '--partition=mrlinegpu1,rcgpu1 '
 
 SLURM_COMMAND_WRAP = '--wrap "python classify.py --filepath_config=configs/{}"'
 
