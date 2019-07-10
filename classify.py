@@ -5,10 +5,7 @@ from rsCNN.configuration import configs
 from rsCNN.data_management import apply_model_to_data, data_core
 from rsCNN.reporting import reports
 from rsCNN.experiments import experiments
-from rsCNN.utils import logging
 
-
-_LOG_LEVEL = 'DEBUG'
 
 _DIR_MODELS = 'models'
 _DIR_DATA_BASE = '/scratch/nfabina/gcrmn-benthic-classification'
@@ -46,10 +43,6 @@ def classify(filepath_config: str) -> None:
         os.makedirs(config.data_build.dir_out)
     if not os.path.exists(config.model_training.dir_out):
         os.makedirs(config.model_training.dir_out)
-    
-    # Logger for tracking progress and debugging
-    logger = logging.get_root_logger(os.path.join(config.model_training.dir_out, 'log.out'))
-    logger.setLevel(_LOG_LEVEL)
 
     # Build dataset
     data_container = data_core.DataContainer(config)
@@ -60,8 +53,6 @@ def classify(filepath_config: str) -> None:
     # Build experiment
     experiment = experiments.Experiment(config)
     experiment.build_or_load_model(data_container)
-    logger.info('Model memory: {} GB'.format(
-        experiment.calculate_model_memory_footprint(batch_size=config.data_samples.batch_size)))
 
     # Create preliminary model report before training
     reporter = reports.Reporter(data_container, experiment, config)
