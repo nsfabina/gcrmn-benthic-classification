@@ -8,9 +8,16 @@ from rsCNN.experiments import experiments
 
 _DIR_MODELS = 'models'
 _DIR_APPLIED = 'applied'
+
 _DIR_DATA_BASE = '/scratch/nfabina/gcrmn-benthic-classification'
+_DIR_DATA_REEF = os.path.join(_DIR_DATA_BASE, 'data')
+_DIR_DATA_CLEAN = os.path.join(_DIR_DATA_REEF, '{}/clean')
 _DIR_DATA_BUILT = os.path.join(_DIR_DATA_BASE, 'built')
 _DIR_DATA_APPLY = os.path.join(_DIR_DATA_BASE, 'for_application')
+
+_FILENAME_FEATURES = 'features.vrt'
+_FILENAME_RESPONSES = 'responses.tif'
+_FILENAME_BOUNDARIES = 'boundaries.shp'
 
 
 def apply(filepath_config: str) -> None:
@@ -18,6 +25,17 @@ def apply(filepath_config: str) -> None:
     config_name = os.path.splitext(os.path.basename(filepath_config))[0]
 
     # Update config with filesystem references or potentially dynamic values
+    feature_files = list()
+    response_files = list()
+    boundary_files = list()
+    for dir_reef in os.listdir(_DIR_DATA_REEF):
+        dir_clean = _DIR_DATA_CLEAN.format(dir_reef)
+        feature_files.append([os.path.join(dir_clean, _FILENAME_FEATURES)])
+        response_files.append([os.path.join(dir_clean, _FILENAME_RESPONSES)])
+        boundary_files.append(os.path.join(dir_clean, _FILENAME_BOUNDARIES))
+    config.raw_files.feature_files = feature_files
+    config.raw_files.response_files = response_files
+    config.raw_files.boundary_files = boundary_files
     config.data_build.dir_out = _DIR_DATA_BUILT
     config.model_training.dir_out = os.path.join(_DIR_MODELS, config_name)
 
