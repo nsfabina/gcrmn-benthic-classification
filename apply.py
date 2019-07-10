@@ -56,10 +56,10 @@ def apply(filepath_config: str) -> None:
 
     filenames_apply = os.listdir(_DIR_DATA_APPLY)
     for idx_apply, filename_apply in enumerate(filenames_apply):
-        if os.path.exists(filepath_out):
-            continue
         filepath_in = os.path.join(_DIR_DATA_APPLY, filename_apply)
         filepath_out = os.path.join(dir_applied, filename_apply)
+        if os.path.exists(filepath_out):
+            continue
         apply_model_to_data.apply_model_to_raster(experiment.model, data_container, filepath_in, filepath_out)
 
 
