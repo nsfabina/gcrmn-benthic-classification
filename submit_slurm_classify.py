@@ -15,7 +15,7 @@ if __name__ == '__main__':
     parser.add_argument('-f', dest='rerun', action='store_true')
     args = parser.parse_args()
 
-    filename_configs = ('unet.yaml', )
+    filename_configs = ('unet.yaml', 'unet_growth.yaml', 'unet_mini.yaml', 'unet_mini_growth.yaml')
     for filename_config in filename_configs:
         job_name = os.path.splitext(filename_config)[0]
         dir_model = os.path.join('models', job_name)
