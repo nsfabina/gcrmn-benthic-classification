@@ -26,7 +26,7 @@ if [[ ! -d ../data/heron/raw ]]; then
     mkdir -p ../data/heron/raw
 fi
 
-gsutil cp -r ${GCS_URL}/Heron/* ../data/heron/raw/
+gsutil cp -r ${GCS_URL}/Heron/*.tif ../data/heron/raw/
 
 
 echo "Download Karimunjawa data"
@@ -35,7 +35,7 @@ if [[ ! -d ../data/karimunjawa/raw ]]; then
     mkdir -p ../data/karimunjawa/raw
 fi
 
-gsutil cp -r ${GCS_URL}/karimunjawa/* ../data/karimunjawa/raw/
+gsutil cp -r ${GCS_URL}/karimunjawa/*.tif ../data/karimunjawa/raw/
 
 
 echo "Download Moorea data"
@@ -54,3 +54,4 @@ if [[ ! -d ../data/hawaii/raw ]]; then
 fi
 
 gsutil cp -r ${GCS_URL}/hawaii/hawaii/*.tif ../data/hawaii/raw/
+
