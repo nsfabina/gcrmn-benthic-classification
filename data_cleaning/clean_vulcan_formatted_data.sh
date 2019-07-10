@@ -20,7 +20,7 @@ for DIR_REEF in ../data/*; do
 
             echo "Reprojecting"
             # Note that mosaics come in different projections than individual scenes
-            gdalwarp -s_srs EPSG:3857 -t_srs EPSG:4326 ${FILEPATH} ${DIR_REEF}/tmp/${FILENAME}
+            gdalwarp -s_srs EPSG:3857 -t_srs EPSG:4326 ${FILEPATH} ${DIR_REEF}/clean/${FILENAME}
 
         else
             echo "Imagery file already cleaned: " ${FILEPATH}
