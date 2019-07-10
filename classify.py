@@ -73,11 +73,6 @@ def classify(filepath_config: str) -> None:
     # Create completed model report
     reporter.create_model_report()
 
-    # Apply model
-    for idx_file, feature_file in enumerate(feature_files):
-        filepath_out = os.path.join(config.model_training.dir_out, 'applied_{}'.format(idx_file))
-        apply_model_to_data.apply_model_to_raster(experiment.model, data_container, feature_file[0], filepath_out)
-
 
 if __name__ == '__main__':
     parser = ArgumentParser()
