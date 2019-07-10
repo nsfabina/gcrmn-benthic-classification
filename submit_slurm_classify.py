@@ -30,7 +30,6 @@ if __name__ == '__main__':
             '--output={}/slurm.%j.%t.OUT'.format(dir_model),
             '--error={}/slurm.%j.%t.ERROR'.format(dir_model),
         ])
-        print(slurm_args_dynamic)
         # Set dynamic python arguments
         slurm_python_wrap = SLURM_COMMAND_WRAP.format(filename_config)
 
