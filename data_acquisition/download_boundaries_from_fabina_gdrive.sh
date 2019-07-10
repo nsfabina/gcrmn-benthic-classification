@@ -6,7 +6,7 @@
 
 for REEF in belize hawaii heron karimunjawa moorea; do
   if [[ ! -d ../data/${REEF}/clean ]]; then
-    mkdir ../data/${REEF}/clean
+    mkdir -p ../data/${REEF}/clean
   fi
 
   rclone copy -v remote:imagery/gcrmn/${REEF}/clean/boundaries.* ../data/${REEF}/clean/
