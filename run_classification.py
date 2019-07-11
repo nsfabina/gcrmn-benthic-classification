@@ -21,6 +21,7 @@ _FILENAME_RESPONSES = 'responses_{}.tif'
 _FILENAME_BOUNDARIES = 'boundaries.shp'
 
 _RESPONSE_MAPPINGS = ('lwr', 'bio')
+_RESPONSE_MAPPING_CLASSES = {'lwr': 3, 'bio': 4}
 
 _OPERATION_CLASSIFY = 'classify'
 _OPERATION_APPLY = 'apply'
@@ -49,6 +50,7 @@ def run_classification(filepath_config: str, response_mapping: str, operations: 
     config.raw_files.boundary_files = boundary_files
     config.data_build.dir_out = _DIR_DATA_BUILT
     config.model_training.dir_out = os.path.join(_DIR_MODELS.format(response_mapping), config_name)
+    config.architecture.n_classes = _RESPONSE_MAPPING_CLASSES[response_mapping]
 
     # Create directories if necessary
     if not os.path.exists(config.data_build.dir_out):
