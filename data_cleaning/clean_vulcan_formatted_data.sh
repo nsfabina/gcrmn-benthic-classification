@@ -91,7 +91,7 @@ for DIR_REEF in ../data/*; do
         sed -i 's/"benthic_class": "Unknown"/"benthic": -9999/g' ${DIR_TMP}/responses_bio.geojson
 
         echo "Rasterize reef biotic/abiotic classes"
-        gdal_rasterize -init -9999 -a_nodata -9999 -te ${LOWER_LEFT} ${UPPER_RIGHT} -tr ${RESOLUTION} -a lwr \
+        gdal_rasterize -init -9999 -a_nodata -9999 -te ${LOWER_LEFT} ${UPPER_RIGHT} -tr ${RESOLUTION} -a benthic \
             ${DIR_TMP}/responses_bio.geojson ${DIR_REEF}/clean/responses_bio.tif
 
         echo "Create compressed version"

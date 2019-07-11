@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
 
+if [[ ! -d ../data/for_application ]]; then
+    mkdir -p ../data/for_application
+fi
+
 # The values for windows were identified with manual inspections in QGIS. Rather than exporting the slices of rasters
 # in QGIS, the commands are implemented here in case data needs to be regenerated.
 

@@ -31,14 +31,14 @@ if __name__ == '__main__':
     filename_configs = [filename for filename in os.listdir('configs')
                         if filename.endswith('yaml') and filename != 'config_template.yaml']
     if args.operations == 'build':
-        filename_configs = [filename for filename in filename_configs if re.search('unet_\d+_2.yaml', filename)]
+        filename_configs = [filename for filename in filename_configs if re.search('^unet_\d+_2.yaml', filename)]
 
     # Loop through configs and submit jobs
     for filename_config in filename_configs:
         job_name = os.path.splitext(filename_config)[0]
 
         # Create model directory or confirm we want to rerun if already exists
-        dir_model = os.path.join('models', job_name)
+        dir_model = os.path.join('models', job_name, args.response_mapping)
         if not os.path.exists(dir_model):
             os.makedirs(dir_model)
         elif not args.rerun:

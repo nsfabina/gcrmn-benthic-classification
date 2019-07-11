@@ -13,7 +13,7 @@ _DIR_APPLIED = 'applied'
 _DIR_DATA_BASE = '/scratch/nfabina/gcrmn-benthic-classification'
 _DIR_DATA_REEF = os.path.join(_DIR_DATA_BASE, 'data')
 _DIR_DATA_CLEAN = os.path.join(_DIR_DATA_REEF, '{}/clean')
-_DIR_DATA_BUILT = os.path.join(_DIR_DATA_BASE, 'built_{}')
+_DIR_DATA_BUILT = os.path.join(_DIR_DATA_BASE, 'built_{}_{}')
 _DIR_DATA_APPLY = os.path.join(_DIR_DATA_BASE, 'for_application')
 
 _FILENAME_FEATURES = 'features.vrt'
@@ -31,8 +31,10 @@ _OPERATIONS = (_OPERATION_ALL, _OPERATION_BUILD, _OPERATION_CLASSIFY, _OPERATION
 
 
 def run_classification(filepath_config: str, response_mapping: str, operations: str) -> None:
-    assert response_mapping in _RESPONSE_MAPPINGS, 'response_mapping must be one of:  {}'.format(_RESPONSE_MAPPINGS)
-    assert all([operation in _OPERATIONS for operation in operations]), 'operations must be in:  {}'.format(_OPERATIONS)
+    assert response_mapping in _RESPONSE_MAPPINGS, \
+        'response_mapping is {} but must be one of:  {}'.format(response_mapping, _RESPONSE_MAPPINGS)
+    assert operations in _OPERATIONS, \
+        'operations is {} but must be in:  {}'.format(operations, _OPERATIONS)
 
     config = configs.create_config_from_file(filepath_config)
     config_name = os.path.splitext(os.path.basename(filepath_config))[0]
@@ -49,8 +51,8 @@ def run_classification(filepath_config: str, response_mapping: str, operations: 
     config.raw_files.feature_files = feature_files
     config.raw_files.response_files = response_files
     config.raw_files.boundary_files = boundary_files
-    config.data_build.dir_out = _DIR_DATA_BUILT.format(config.data_build.window_radius)
-    config.model_training.dir_out = os.path.join(_DIR_MODELS, config_name)
+    config.data_build.dir_out = _DIR_DATA_BUILT.format(response_mapping, config.data_build.window_radius)
+    config.model_training.dir_out = os.path.join(_DIR_MODELS, config_name, response_mapping)
     config.architecture.n_classes = _RESPONSE_MAPPING_CLASSES[response_mapping]
 
     # Create directories if necessary
