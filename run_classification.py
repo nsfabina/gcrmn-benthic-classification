@@ -88,11 +88,13 @@ def run_classification(filepath_config: str, response_mapping: str, operations: 
         filenames_apply = os.listdir(_DIR_DATA_APPLY)
         for idx_apply, filename_apply in enumerate(filenames_apply):
             filepath_in = os.path.join(_DIR_DATA_APPLY, filename_apply)
-            filepath_out = os.path.join(dir_applied, filename_apply)
-            if os.path.exists(filepath_out):
-                continue
-            apply_model_to_data.apply_model_to_raster(
-                experiment.model, data_container, filepath_in, os.path.splitext(filepath_out)[0])
+            filepath_out_base = os.path.splitext(os.path.join(dir_applied, filename_apply))[0]
+            if not os.path.exists(filepath_out_base + 'apply.tif'):
+                apply_model_to_data.apply_model_to_raster(
+                    experiment.model, data_container, filepath_in, filepath_out_base + 'apply')
+            if not os.path.exists(filepath_out_base + 'class.tif'):
+                apply_model_to_data.maximum_likelihood_classification(
+                    filepath_out_base + 'apply.tif', filepath_out_base + 'class.tif')
 
 
 if __name__ == '__main__':
