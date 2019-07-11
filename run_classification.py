@@ -13,7 +13,7 @@ _DIR_APPLIED = 'applied'
 _DIR_DATA_BASE = '/scratch/nfabina/gcrmn-benthic-classification'
 _DIR_DATA_REEF = os.path.join(_DIR_DATA_BASE, 'data')
 _DIR_DATA_CLEAN = os.path.join(_DIR_DATA_REEF, '{}/clean')
-_DIR_DATA_BUILT = os.path.join(_DIR_DATA_BASE, 'built')
+_DIR_DATA_BUILT = os.path.join(_DIR_DATA_BASE, 'built_{}')
 _DIR_DATA_APPLY = os.path.join(_DIR_DATA_BASE, 'for_application')
 
 _FILENAME_FEATURES = 'features.vrt'
@@ -49,7 +49,7 @@ def run_classification(filepath_config: str, response_mapping: str, operations: 
     config.raw_files.feature_files = feature_files
     config.raw_files.response_files = response_files
     config.raw_files.boundary_files = boundary_files
-    config.data_build.dir_out = _DIR_DATA_BUILT
+    config.data_build.dir_out = _DIR_DATA_BUILT.format(config.data_build.window_radius)
     config.model_training.dir_out = os.path.join(_DIR_MODELS, config_name)
     config.architecture.n_classes = _RESPONSE_MAPPING_CLASSES[response_mapping]
 
