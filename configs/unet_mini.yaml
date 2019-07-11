@@ -30,7 +30,7 @@ data_samples:
   response_scaler_names: ['NullScaler']
   feature_nodata_encoding: -10.0
 model_training:
-  dir_out: 'models/unet'
+  dir_out:
   log_level: DEBUG
   assert_gpu: true
   architecture_name: unet
@@ -43,7 +43,7 @@ architecture:
   filters: 16
   kernel_size: [3, 3]
   min_conv_width: 8
-  n_classes: 4
+  n_classes:
   output_activation: softmax
   padding: same
   pool_size: [2, 2]

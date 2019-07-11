@@ -7,11 +7,13 @@ SLURM_COMMAND = 'sbatch --mail-type=END,FAIL --mail-user=nsfabina@asu.edu --qos=
                 '--nodes=1 --cpus-per-task=1 --mem-per-cpu=40000 --gres=gpu:1 --ntasks=1 ' + \
                 '--partition=mrlinegpu1,rcgpu1 '
 
-SLURM_COMMAND_WRAP = '--wrap "python classify.py --filepath_config=configs/{}"'
+SLURM_COMMAND_WRAP = '--wrap "python classify.py --filepath_config=configs/{} --response_mapping={} --operations={}"'
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('--response_mapping', dest='response_mapping', required=True)
+    parser.add_argument('--operations', dest='operations', required=True)
     parser.add_argument('-f', dest='rerun', action='store_true')
     args = parser.parse_args()
 
@@ -31,7 +33,7 @@ if __name__ == '__main__':
             '--error={}/slurm.%j.%t.ERROR'.format(dir_model),
         ])
         # Set dynamic python arguments
-        slurm_python_wrap = SLURM_COMMAND_WRAP.format(filename_config)
+        slurm_python_wrap = SLURM_COMMAND_WRAP.format(filename_config, args.response_mapping, args.operations)
 
         print('Submitting job {}'.format(job_name))
         command = ' '.join([SLURM_COMMAND, slurm_args_dynamic, slurm_python_wrap])
