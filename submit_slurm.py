@@ -5,10 +5,14 @@ import subprocess
 
 
 SLURM_COMMAND = 'sbatch --mail-type=END,FAIL --mail-user=nsfabina@asu.edu --qos=wildfire --time=24:00:00 ' + \
-                '--nodes=1 --cpus-per-task=1 --mem-per-cpu=40000 --gres=gpu:1 --ntasks=1 ' + \
-                '--partition=mrlinegpu1,rcgpu1 '
-
+                '--nodes=1 --cpus-per-task=1 --mem-per-cpu=40000 --gres=gpu:1 --ntasks=1 '
+SLURM_GPUS = '--partition=mrlinegpu1,rcgpu1 '
 SLURM_COMMAND_WRAP = '--wrap "python classify.py --filepath_config=configs/{} --response_mapping={} --operations={}"'
+
+_OPERATION_BUILD = 'build'
+_OPERATION_CLASSIFY = 'classify'
+_OPERATION_APPLY = 'apply'
+_OPERATION_ALL = 'all'
 
 
 if __name__ == '__main__':
@@ -17,6 +21,11 @@ if __name__ == '__main__':
     parser.add_argument('--operations', dest='operations', required=True)
     parser.add_argument('-f', dest='rerun', action='store_true')
     args = parser.parse_args()
+
+    # Prep commands
+    slurm_command = SLURM_COMMAND
+    if args.operations in (_OPERATION_CLASSIFY, _OPERATION_APPLY, _OPERATION_ALL):
+        slurm_command += SLURM_GPUS
 
     # Get relevant configs, only get one config per built data type if building
     filename_configs = [filename for filename in os.listdir('configs')
@@ -47,5 +56,5 @@ if __name__ == '__main__':
         slurm_python_wrap = SLURM_COMMAND_WRAP.format(filename_config, args.response_mapping, args.operations)
 
         print('Submitting job {}'.format(job_name))
-        command = ' '.join([SLURM_COMMAND, slurm_args_dynamic, slurm_python_wrap])
+        command = ' '.join([slurm_command, slurm_args_dynamic, slurm_python_wrap])
         subprocess.call(command, shell=True)
