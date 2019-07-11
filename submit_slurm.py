@@ -4,10 +4,10 @@ import re
 import subprocess
 
 
-SLURM_COMMAND = 'sbatch --mail-type=END,FAIL --mail-user=nsfabina@asu.edu --qos=wildfire --time=24:00:00 ' + \
-                '--nodes=1 --cpus-per-task=1 --mem-per-cpu=40000 --ntasks=1 '
-SLURM_GPUS = '--gres=gpu:1 --partition=mrlinegpu1,rcgpu1 '
-SLURM_COMMAND_WRAP = '--wrap "python classify.py --filepath_config=configs/{} --response_mapping={} --operations={}"'
+SLURM_COMMAND = 'sbatch --mail-type=END,FAIL --mail-user=nsfabina@asu.edu --time=24:00:00 ' + \
+                '--nodes=1 --cpus-per-task=1 --mem-per-cpu=20000 --ntasks=1 '
+SLURM_GPUS = '--qos=wildfire --gres=gpu:1 --partition=mrlinegpu1,rcgpu1 '
+SLURM_COMMAND_WRAP = '--wrap "python run_classification.py --filepath_config=configs/{} --response_mapping={} --operations={}"'
 
 _OPERATION_BUILD = 'build'
 _OPERATION_CLASSIFY = 'classify'
@@ -35,10 +35,11 @@ if __name__ == '__main__':
 
     # Loop through configs and submit jobs
     for filename_config in filename_configs:
-        job_name = os.path.splitext(filename_config)[0]
+        config_name = os.path.splitext(filename_config)[0]
+        job_name = config_name + '_' + args.response_mapping
 
         # Create model directory or confirm we want to rerun if already exists
-        dir_model = os.path.join('models', job_name, args.response_mapping)
+        dir_model = os.path.join('models', config_name, args.response_mapping)
         if not os.path.exists(dir_model):
             os.makedirs(dir_model)
         elif not args.rerun:
