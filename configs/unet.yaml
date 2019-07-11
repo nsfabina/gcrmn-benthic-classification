@@ -37,7 +37,7 @@ model_training:
   loss_metric: 'cc'
   max_epochs: 100
   optimizer: adam
-  weighted: false
+  weighted: true
 architecture:
   block_structure: [4, 4, 4]
   filters: 16
