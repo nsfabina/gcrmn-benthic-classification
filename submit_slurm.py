@@ -1,5 +1,6 @@
 import argparse
 import os
+import re
 import subprocess
 
 
@@ -17,21 +18,31 @@ if __name__ == '__main__':
     parser.add_argument('-f', dest='rerun', action='store_true')
     args = parser.parse_args()
 
-    filename_configs = ('unet.yaml', 'unet_growth.yaml', 'unet_mini.yaml', 'unet_mini_growth.yaml')
+    # Get relevant configs, only get one config per built data type if building
+    filename_configs = [filename for filename in os.listdir('configs')
+                        if filename.endswith('yaml') and filename != 'config_template.yaml']
+    if args.operations == 'build':
+        filename_configs = [filename for filename in filename_configs if re.search('unet_\d+_2.yaml', filename)]
+
+    # Loop through configs and submit jobs
     for filename_config in filename_configs:
         job_name = os.path.splitext(filename_config)[0]
+
+        # Create model directory or confirm we want to rerun if already exists
         dir_model = os.path.join('models', job_name)
         if not os.path.exists(dir_model):
             os.makedirs(dir_model)
         elif not args.rerun:
             print('Job {} already submitted, not resubmitting'.format(job_name))
             continue
+
         # Set dynamic SLURM arguments
         slurm_args_dynamic = ' '.join([
             '--job-name={}'.format(job_name),
             '--output={}/slurm.%j.%t.OUT'.format(dir_model),
             '--error={}/slurm.%j.%t.ERROR'.format(dir_model),
         ])
+
         # Set dynamic python arguments
         slurm_python_wrap = SLURM_COMMAND_WRAP.format(filename_config, args.response_mapping, args.operations)
 

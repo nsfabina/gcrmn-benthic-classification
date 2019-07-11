@@ -7,7 +7,7 @@ from rsCNN.reporting import reports
 from rsCNN.experiments import experiments
 
 
-_DIR_MODELS = 'models_{}'
+_DIR_MODELS = 'models'
 _DIR_APPLIED = 'applied'
 
 _DIR_DATA_BASE = '/scratch/nfabina/gcrmn-benthic-classification'
@@ -23,10 +23,11 @@ _FILENAME_BOUNDARIES = 'boundaries.shp'
 _RESPONSE_MAPPINGS = ('lwr', 'bio')
 _RESPONSE_MAPPING_CLASSES = {'lwr': 3, 'bio': 4}
 
+_OPERATION_BUILD = 'build'
 _OPERATION_CLASSIFY = 'classify'
 _OPERATION_APPLY = 'apply'
 _OPERATION_ALL = 'all'
-_OPERATIONS = (_OPERATION_ALL, _OPERATION_CLASSIFY, _OPERATION_APPLY)
+_OPERATIONS = (_OPERATION_ALL, _OPERATION_BUILD, _OPERATION_CLASSIFY, _OPERATION_APPLY)
 
 
 def run_classification(filepath_config: str, response_mapping: str, operations: str) -> None:
@@ -49,7 +50,7 @@ def run_classification(filepath_config: str, response_mapping: str, operations: 
     config.raw_files.response_files = response_files
     config.raw_files.boundary_files = boundary_files
     config.data_build.dir_out = _DIR_DATA_BUILT
-    config.model_training.dir_out = os.path.join(_DIR_MODELS.format(response_mapping), config_name)
+    config.model_training.dir_out = os.path.join(_DIR_MODELS, config_name)
     config.architecture.n_classes = _RESPONSE_MAPPING_CLASSES[response_mapping]
 
     # Create directories if necessary
