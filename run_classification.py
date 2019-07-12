@@ -92,9 +92,10 @@ def run_classification(filepath_config: str, response_mapping: str, operations: 
             if not os.path.exists(filepath_out_base + 'apply.tif'):
                 apply_model_to_data.apply_model_to_raster(
                     experiment.model, data_container, filepath_in, filepath_out_base + 'apply')
-            if not os.path.exists(filepath_out_base + 'class.tif'):
-                apply_model_to_data.maximum_likelihood_classification(
-                    filepath_out_base + 'apply.tif', filepath_out_base + 'class.tif')
+            # Broken, written by Phil and don't understand
+            #if not os.path.exists(filepath_out_base + 'class.tif'):
+            #    apply_model_to_data.maximum_likelihood_classification(
+            #        filepath_out_base + 'apply.tif', filepath_out_base + 'class.tif')
 
 
 if __name__ == '__main__':
