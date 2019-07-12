@@ -17,9 +17,9 @@ _OPERATION_ALL = 'all'
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--response_mappings', type=str, dest='response_mappings', required=True)
-    parser.add_argument('--operations', type=str, dest='operations', required=True)
-    parser.add_argument('--filepath_configs', type=str, dest='filepath_config')
+    parser.add_argument('--response_mappings', type=str, required=True)
+    parser.add_argument('--operations', type=str, required=True)
+    parser.add_argument('--filepath_configs', type=str)
     parser.add_argument('-f', dest='rerun', action='store_true')
     args = parser.parse_args()
 
@@ -29,7 +29,7 @@ if __name__ == '__main__':
         slurm_command += SLURM_GPUS
 
     # Get relevant configs, only get one config per built data type if building
-    if args.filepath_config:
+    if args.filepath_configs:
         filename_configs = [os.path.basename(filepath) for filepath in args.filepath_configs.split(',')]
     else:
         filename_configs = [filename for filename in os.listdir('configs')
@@ -41,10 +41,10 @@ if __name__ == '__main__':
     for filename_config in filename_configs:
         for response_mapping in args.response_mappings.split(','):
             config_name = os.path.splitext(filename_config)[0]
-            job_name = config_name + '_' + args.response_mapping
+            job_name = config_name + '_' + response_mapping
 
             # Create model directory or confirm we want to rerun if already exists
-            dir_model = os.path.join('models', config_name, args.response_mapping)
+            dir_model = os.path.join('models', config_name, response_mapping)
             if not os.path.exists(dir_model):
                 os.makedirs(dir_model)
             elif not args.rerun:
@@ -59,7 +59,7 @@ if __name__ == '__main__':
             ])
 
             # Set dynamic python arguments
-            slurm_python_wrap = SLURM_COMMAND_WRAP.format(filename_config, args.response_mapping, args.operations)
+            slurm_python_wrap = SLURM_COMMAND_WRAP.format(filename_config, response_mapping, args.operations)
 
             print('Submitting job {}'.format(job_name))
             command = ' '.join([slurm_command, slurm_args_dynamic, slurm_python_wrap])
