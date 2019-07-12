@@ -85,7 +85,7 @@ def run_classification(filepath_config: str, response_mapping: str, operations: 
         dir_applied = os.path.join(config.model_training.dir_out, _DIR_APPLIED)
         if not os.path.exists(dir_applied):
             os.makedirs(dir_applied)
-        filenames_apply = [filename for filename in os.listdir(_DIR_DATA_APPLY) if filename.endswith('.tif')]
+        filenames_apply = sorted([filename for filename in os.listdir(_DIR_DATA_APPLY) if filename.endswith('.tif')])
         for idx_apply, filename_apply in enumerate(filenames_apply):
             filepath_in = os.path.join(_DIR_DATA_APPLY, filename_apply)
             filepath_out_base = os.path.splitext(os.path.join(dir_applied, filename_apply))[0]
