@@ -52,7 +52,7 @@ for DIR_REEF in ../data/*; do
         sed 's/"lwr_class": "Land"/"lwr": 1/g' "${DIR_REEF}/raw/${FILENAME}" > ${DIR_TMP}/responses_lwr.geojson
         sed -i 's/"lwr_class": "Deep Reef Water 10m+"/"lwr": 2/g' ${DIR_TMP}/responses_lwr.geojson
         sed -i 's/"lwr_class": "Reef"/"lwr": 3/g' ${DIR_TMP}/responses_lwr.geojson
-        sed -i 's/"lwr_class": "Cloud-Shade"/"lwr": -9999/g' ${DIR_TMP}/responses_lwr.geojson
+        sed -i 's/"lwr_class": "Cloud[^"]*Shade"/"lwr": -9999/g' ${DIR_TMP}/responses_lwr.geojson
 
         echo "Rasterize reef LWR classes"
         gdal_rasterize -init -9999 -a_nodata -9999 -te ${LOWER_LEFT} ${UPPER_RIGHT} -tr ${RESOLUTION} -a lwr \
@@ -74,17 +74,17 @@ for DIR_REEF in ../data/*; do
         sed -i 's/"benthic_class": "Deep"/"benthic": 2/g' ${DIR_TMP}/responses_bio.geojson
 
         sed -i 's/"benthic_class": "Benthic Microalgae"/"benthic": 3/g' ${DIR_TMP}/responses_bio.geojson
-        sed -i 's/"benthic_class": "Coral *\/ *Algae"/"benthic": 3/g' ${DIR_TMP}/responses_bio.geojson
+        sed -i 's/"benthic_class": "Coral[^"]*Algae"/"benthic": 3/g' ${DIR_TMP}/responses_bio.geojson
         sed -i 's/"benthic_class": "Seagrass"/"benthic": 3/g' ${DIR_TMP}/responses_bio.geojson
 
         sed -i 's/"benthic_class": "Plateau 3-10m"/"benthic": 4/g' ${DIR_TMP}/responses_bio.geojson
         sed -i 's/"benthic_class": "Rock"/"benthic": 4/g' ${DIR_TMP}/responses_bio.geojson
         sed -i 's/"benthic_class": "Rubble"/"benthic": 4/g' ${DIR_TMP}/responses_bio.geojson
         sed -i 's/"benthic_class": "Sand"/"benthic": 4/g' ${DIR_TMP}/responses_bio.geojson
-        sed -i 's/"benthic_class": "Sand *\/ *Mud"/"benthic": 4/g' ${DIR_TMP}/responses_bio.geojson
+        sed -i 's/"benthic_class": "Sand[^"]*Mud"/"benthic": 4/g' ${DIR_TMP}/responses_bio.geojson
 
         sed -i 's/"benthic_class": "Breaking Waves"/"benthic": -9999/g' ${DIR_TMP}/responses_bio.geojson
-        sed -i 's/"benthic_class": "Cloud *- *Shade"/"benthic": -9999/g' ${DIR_TMP}/responses_bio.geojson
+        sed -i 's/"benthic_class": "Cloud[^"]*Shade"/"benthic": -9999/g' ${DIR_TMP}/responses_bio.geojson
         # Small reef looks like it's a combination of biotic and abiotic components, so I'm marking it as unknown to
         # avoid training the model on bad data
         sed -i 's/"benthic_class": "Small Reef"/"benthic": -9999/g' ${DIR_TMP}/responses_bio.geojson
