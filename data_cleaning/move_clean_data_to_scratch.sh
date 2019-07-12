@@ -3,11 +3,11 @@
 SCRATCH_DIR='/scratch/nfabina/gcrmn-benthic-classification/'
 
 if [[ ! -d ${SCRATCH_DIR}/data ]]; then
-    mkdir -p ${SCRATCH_DIR}
+    mkdir -p ${SCRATCH_DIR}/data
 fi
 
-if [[ ! -d ${SCRATCH_DIR}/for_appilcation ]]; then
-    mkdir -p ${SCRATCH_DIR}
+if [[ ! -d ${SCRATCH_DIR}/for_application ]]; then
+    mkdir -p ${SCRATCH_DIR}/for_application
 fi
 
 mv ../data/for_application/* ${SCRATCH_DIR}/for_application
