@@ -53,12 +53,12 @@ gdal_translate -projwin 110.11690416345574 -5.713882309361406 110.27568459607161
 
 gdal_translate -projwin -149.929225855583 -17.46683590582376 -149.74953782288253 -17.509586961930943 \
   ../data/moorea/clean/features.vrt \
-  ../data/for_application/karimunjawa_1.tif
+  ../data/for_application/moorea_0.tif
 
 gdal_translate -projwin -149.8910393653623 -17.56068783368406 -149.77547791682258 -17.607892124802405 \
   ../data/moorea/clean/features.vrt \
-  ../data/for_application/karimunjawa_1.tif
+  ../data/for_application/moorea_1.tif
 
 gdal_translate -projwin -149.59400859011762 -17.734586660870033 -149.2938605503651 -17.799158568531922 \
   ../data/moorea/clean/features.vrt \
-  ../data/for_application/karimunjawa_1.tif
+  ../data/for_application/moorea_2.tif
