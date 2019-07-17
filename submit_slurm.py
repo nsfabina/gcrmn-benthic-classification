@@ -7,25 +7,20 @@ import subprocess
 SLURM_COMMAND = 'sbatch --mail-type=END,FAIL --mail-user=nsfabina@asu.edu --time=24:00:00 ' + \
                 '--nodes=1 --cpus-per-task=1 --mem-per-cpu=20000 --ntasks=1 '
 SLURM_GPUS = '--qos=wildfire --gres=gpu:1 --partition=mrlinegpu1,rcgpu1 '
-SLURM_COMMAND_WRAP = '--wrap "python run_classification.py --filepath_config=configs/{} --response_mapping={} --operations={}"'
-
-_OPERATION_BUILD = 'build'
-_OPERATION_CLASSIFY = 'classify'
-_OPERATION_APPLY = 'apply'
-_OPERATION_ALL = 'all'
+SLURM_COMMAND_WRAP = '--wrap "python run_classification.py --filepath_config=configs/{} --response_mapping={} '
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--response_mappings', type=str, required=True)
-    parser.add_argument('--operations', type=str, required=True)
     parser.add_argument('--filepath_configs', type=str)
+    parser.add_argument('--response_mappings', type=str, required=True)
+    parser.add_argument('--build_only', type=bool, action='store_true')
     parser.add_argument('-f', dest='rerun', action='store_true')
     args = parser.parse_args()
 
     # Prep commands
     slurm_command = SLURM_COMMAND
-    if args.operations in (_OPERATION_CLASSIFY, _OPERATION_APPLY, _OPERATION_ALL):
+    if not args.build_only:
         slurm_command += SLURM_GPUS
 
     # Get relevant configs, only get one config per built data type if building

@@ -1,59 +1,15 @@
 from argparse import ArgumentParser
 import os
 
-from rsCNN.configuration import configs
-from rsCNN.data_management import apply_model_to_data, data_core
+from rsCNN.data_management import data_core
 from rsCNN.reporting import reports
 from rsCNN.experiments import experiments
 
-
-_DIR_MODELS = 'models'
-_DIR_APPLIED = 'applied'
-
-_DIR_DATA_BASE = '/scratch/nfabina/gcrmn-benthic-classification'
-_DIR_DATA_REEF = os.path.join(_DIR_DATA_BASE, 'training_data')
-_DIR_DATA_CLEAN = os.path.join(_DIR_DATA_REEF, '{}/clean')
-_DIR_DATA_BUILT = os.path.join(_DIR_DATA_BASE, 'built_{}_{}')
-_DIR_DATA_APPLY = os.path.join(_DIR_DATA_BASE, 'for_application')
-
-_FILENAME_FEATURES = 'features.vrt'
-_FILENAME_RESPONSES = 'responses_{}.tif'
-_FILENAME_BOUNDARIES = 'boundaries.shp'
-
-_RESPONSE_MAPPINGS = ('lwr', 'bio')
-_RESPONSE_MAPPING_CLASSES = {'lwr': 3, 'bio': 4}
-
-_OPERATION_BUILD = 'build'
-_OPERATION_CLASSIFY = 'classify'
-_OPERATION_APPLY = 'apply'
-_OPERATION_ALL = 'all'
-_OPERATIONS = (_OPERATION_ALL, _OPERATION_BUILD, _OPERATION_CLASSIFY, _OPERATION_APPLY)
+import build_dynamic_config
 
 
-def run_classification(filepath_config: str, response_mapping: str, operations: str) -> None:
-    assert response_mapping in _RESPONSE_MAPPINGS, \
-        'response_mapping is {} but must be one of:  {}'.format(response_mapping, _RESPONSE_MAPPINGS)
-    assert operations in _OPERATIONS, \
-        'operations is {} but must be in:  {}'.format(operations, _OPERATIONS)
-
-    config = configs.create_config_from_file(filepath_config)
-    config_name = os.path.splitext(os.path.basename(filepath_config))[0]
-
-    # Update config with filesystem references or potentially dynamic values
-    feature_files = list()
-    response_files = list()
-    boundary_files = list()
-    for dir_reef in os.listdir(_DIR_DATA_REEF):
-        dir_clean = _DIR_DATA_CLEAN.format(dir_reef)
-        feature_files.append([os.path.join(dir_clean, _FILENAME_FEATURES)])
-        response_files.append([os.path.join(dir_clean, _FILENAME_RESPONSES.format(response_mapping))])
-        boundary_files.append(os.path.join(dir_clean, _FILENAME_BOUNDARIES))
-    config.raw_files.feature_files = feature_files
-    config.raw_files.response_files = response_files
-    config.raw_files.boundary_files = boundary_files
-    config.data_build.dir_out = _DIR_DATA_BUILT.format(response_mapping, config.data_build.window_radius)
-    config.model_training.dir_out = os.path.join(_DIR_MODELS, config_name, response_mapping)
-    config.architecture.n_classes = _RESPONSE_MAPPING_CLASSES[response_mapping]
+def run_classification(filepath_config: str, response_mapping: str, build_only: bool = False) -> None:
+    config = build_dynamic_config.build_dynamic_config(filepath_config, response_mapping)
 
     # Create directories if necessary
     if not os.path.exists(config.data_build.dir_out):
@@ -74,34 +30,18 @@ def run_classification(filepath_config: str, response_mapping: str, operations: 
     # Create preliminary model report before training
     reporter = reports.Reporter(data_container, experiment, config)
     reporter.create_model_report()
+    if build_only:
+        return
 
     # Train model
-    if _OPERATION_CLASSIFY in operations or _OPERATION_ALL in operations:
-        experiment.fit_model_with_data_container(data_container)
-        reporter.create_model_report()
-
-    # Apply model
-    if _OPERATION_APPLY in operations or _OPERATION_ALL in operations:
-        dir_applied = os.path.join(config.model_training.dir_out, _DIR_APPLIED)
-        if not os.path.exists(dir_applied):
-            os.makedirs(dir_applied)
-        filenames_apply = sorted([filename for filename in os.listdir(_DIR_DATA_APPLY) if filename.endswith('.tif')])
-        for idx_apply, filename_apply in enumerate(filenames_apply):
-            filepath_in = os.path.join(_DIR_DATA_APPLY, filename_apply)
-            filepath_out_base = os.path.splitext(os.path.join(dir_applied, filename_apply))[0]
-            if not os.path.exists(filepath_out_base + 'apply.tif'):
-                apply_model_to_data.apply_model_to_raster(
-                    experiment.model, data_container, filepath_in, filepath_out_base + 'apply')
-            # Broken, written by Phil and don't understand
-            #if not os.path.exists(filepath_out_base + 'class.tif'):
-            #    apply_model_to_data.maximum_likelihood_classification(
-            #        filepath_out_base + 'apply.tif', filepath_out_base + 'class.tif')
+    experiment.fit_model_with_data_container(data_container)
+    reporter.create_model_report()
 
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('--filepath_config', dest='filepath_config', required=True)
-    parser.add_argument('--response_mapping', dest='response_mapping', required=True)
-    parser.add_argument('--operations', dest='operations', required=True)
+    parser.add_argument('--filepath_config', required=True)
+    parser.add_argument('--response_mapping', required=True)
+    parser.add_argument('--build_only', type=bool, action='store_true')
     args = vars(parser.parse_args())
     run_classification(**args)
