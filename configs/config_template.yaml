@@ -41,8 +41,8 @@ model_training:
 architecture:
   block_structure:
   filters: 16
+  internal_activation: relu
   kernel_size: [3, 3]
-  min_conv_width: 8
   n_classes:
   output_activation: softmax
   padding: same
