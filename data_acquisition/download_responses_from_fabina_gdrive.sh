@@ -9,9 +9,10 @@ DIR_DEST=/scratch/nfabina/gcrmn-benthic-classification/training_data
 
 
 for REEF in belize hawaii heron karimunjawa moorea; do
-  if [[ ! -d ${DIR_DEST/${REEF}/raw ]]; then
-    mkdir -p .${DIR_DEST}/${REEF}/raw
+  if [[ ! -d ${DIR_DEST}/${REEF}/raw ]]; then
+    mkdir -p ${DIR_DEST}/${REEF}/raw
   fi
   
-  rclone copy remote:imagery/gcrmn/${REEF}/raw/responses.geojson ${DIR_DEST}/${REEF}/raw/
+  rclone copy remote:/data/gcrmn/${REEF}/raw/responses.geojson ${DIR_DEST}/${REEF}/raw/
 done
+

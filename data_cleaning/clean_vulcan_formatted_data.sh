@@ -39,7 +39,7 @@ for DIR_REEF in ${DIR_DEST}/*; do
     fi
 
     # Calculate parameters for responses
-    FILENAME=$(basename ${DIR_REEF}/raw/*.geojson)
+    FILENAME=$(basename ${DIR_REEF}/raw/responses.geojson)
     DIR_TMP=${DIR_REEF}/tmp
     PT_REGEX='\-*[0-9]+\.*[0-9]+,( )*\-*[0-9]+\.*[0-9]+'
     LOWER_LEFT=$(gdalinfo ${DIR_REEF}/clean/features.vrt | grep 'Lower Left' | egrep -o "${PT_REGEX}" | tr -d ',')

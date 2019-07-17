@@ -30,7 +30,7 @@ if [[ ! -d ${DIR_DEST}/heron/raw ]]; then
     mkdir -p ${DIR_DEST}/heron/raw
 fi
 
-cp -r ${DIR_SRC}/Heron/*.tif ${DIR_DEST}/heron/raw/
+cp -r ${DIR_SRC}/GBR/Heron/*.tif ${DIR_DEST}/heron/raw/
 
 
 echo "Clean Karimunjawa data"

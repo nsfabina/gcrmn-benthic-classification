@@ -11,5 +11,5 @@ for REEF in belize hawaii heron karimunjawa moorea; do
     mkdir -p ${DIR_DEST}/${REEF}/clean
   fi
 
-  rclone copy -v --include=boundaries* remote:imagery/gcrmn/${REEF}/clean/ ${DIR_DEST}/${REEF}/clean/
+  rclone copy -v --include=boundaries* remote:/data/gcrmn/${REEF}/clean/ ${DIR_DEST}/${REEF}/clean/
 done
