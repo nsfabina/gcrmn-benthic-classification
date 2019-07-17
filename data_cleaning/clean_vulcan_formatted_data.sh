@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
 
-for DIR_REEF in ../data/*; do
+DIR_DEST=/scratch/nfabina/gcrmn-benthic-classification/training_data
+
+
+for DIR_REEF in ${DIR_DEST}/*; do
     echo "Cleaning data for reef directory: " ${DIR_REEF}
 
     if [[ ! -d ${DIR_REEF}/tmp ]]; then
