@@ -84,7 +84,7 @@ for DIR_REEF in ${DIR_DEST}/*; do
         sed -i 's/"geomorphic_class": "Patch Reefs"/"geomorphic": 3/g' ${TMP_FILEPATH_OUT}
         sed -i 's/"geomorphic_class": "Reef Rim"/"geomorphic": 3/g' ${TMP_FILEPATH_OUT}
         sed -i 's/"geomorphic_class": "Slope[^"]*Exposed"/"geomorphic": 3/g' ${TMP_FILEPATH_OUT}
-        sed -i 's/"geomorphic_class": "Slope[^"}*Sheltered"/"geomorphic": 3/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Slope[^"]*Sheltered"/"geomorphic": 3/g' ${TMP_FILEPATH_OUT}
         sed -i 's/"geomorphic_class": "Small Reef"/"geomorphic": 3/g' ${TMP_FILEPATH_OUT}
 
         sed -i 's/"geomorphic_class": "Deep Lagoon"/"geomorphic": 4/g' ${TMP_FILEPATH_OUT}
@@ -95,7 +95,7 @@ for DIR_REEF in ${DIR_DEST}/*; do
 
         sed -i 's/"geomorphic_class": "Cloud[^"]*Shade"/"geomorphic": -9999/g' ${TMP_FILEPATH_OUT}
         sed -i 's/"geomorphic_class": "Unknown"/"geomorphic": -9999/g' ${TMP_FILEPATH_OUT}
-        sed -i 's/"geomorphic_class": "[^"]"/"geomorphic": -9999/g' ${TMP_FILEPATH_OUT}  # Catch-all for anything missed
+        sed -i 's/"geomorphic_class": "[^"]*"/"geomorphic": -9999/g' ${TMP_FILEPATH_OUT}  # Catch-all for anything missed
 
 
         echo "Rasterize reef habitat classes"

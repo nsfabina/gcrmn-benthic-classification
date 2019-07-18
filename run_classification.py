@@ -42,6 +42,6 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--filepath_config', required=True)
     parser.add_argument('--response_mapping', required=True)
-    parser.add_argument('--build_only', type=bool, action='store_true')
+    parser.add_argument('--build_only', action='store_true')
     args = vars(parser.parse_args())
     run_classification(**args)
