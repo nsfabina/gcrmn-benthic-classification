@@ -7,7 +7,7 @@ import subprocess
 SLURM_COMMAND = 'sbatch --mail-type=END,FAIL --mail-user=nsfabina@asu.edu --time=24:00:00 ' + \
                 '--nodes=1 --cpus-per-task=1 --mem-per-cpu=20000 --ntasks=1 '
 SLURM_GPUS = '--qos=wildfire --gres=gpu:1 --partition=mrlinegpu1,rcgpu1 '
-SLURM_COMMAND_WRAP = '--wrap "python run_classification.py --filepath_config=configs/{} --response_mapping={} '
+SLURM_COMMAND_WRAP = '--wrap "python run_classification.py --filepath_config=configs/{} --response_mapping={} {}"'
 
 
 if __name__ == '__main__':
@@ -60,8 +60,10 @@ if __name__ == '__main__':
             ])
 
             # Set dynamic python arguments
-            slurm_python_wrap = SLURM_COMMAND_WRAP.format(filename_config, response_mapping, args.operations)
+            slurm_python_wrap = SLURM_COMMAND_WRAP.format(
+                filename_config, response_mapping, '--build_only' if args.build_only else '')
 
             print('Submitting job {}'.format(job_name))
             command = ' '.join([slurm_command, slurm_args_dynamic, slurm_python_wrap])
+            #print(command)
             subprocess.call(command, shell=True)
