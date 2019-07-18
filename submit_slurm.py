@@ -14,13 +14,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--filepath_configs', type=str)
     parser.add_argument('--response_mappings', type=str, required=True)
-    parser.add_argument('--build_only', type=bool, action='store_true')
+    parser.add_argument('--build_only', action='store_true')
     parser.add_argument('-f', dest='rerun', action='store_true')
     args = parser.parse_args()
 
     # Warning about usage and error checks
-    if args.build_only and (args.filepaths_configs or args.response_mappings):
-        print('WARNING:  build_only takes precedence over filepaths_configs and response_mappings, which are ignored')
+    if args.build_only and args.filepath_configs:
+        print('WARNING:  build_only takes precedence over filepath_configs, which is ignored')
 
     # Prep commands
     slurm_command = SLURM_COMMAND
