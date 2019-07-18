@@ -39,7 +39,7 @@ for DIR_REEF in ${DIR_DEST}/*; do
     fi
 
     # Calculate parameters for responses
-    FILENAME=$(basename ${DIR_REEF}/raw/responses.geojson)
+    FILENAME_IN=$(basename ${DIR_REEF}/raw/responses.geojson)
     DIR_TMP=${DIR_REEF}/tmp
     PT_REGEX='\-*[0-9]+\.*[0-9]+,( )*\-*[0-9]+\.*[0-9]+'
     LOWER_LEFT=$(gdalinfo ${DIR_REEF}/clean/features.vrt | grep 'Lower Left' | egrep -o "${PT_REGEX}" | tr -d ',')
@@ -48,60 +48,61 @@ for DIR_REEF in ${DIR_DEST}/*; do
     RESOLUTION=$(gdalinfo ${DIR_REEF}/clean/features.vrt | grep 'Pixel Size' | egrep -o "${RES_REGEX}" | tr ',' ' ')
 
 
-    if [[ ! -f ${DIR_REEF}/clean/responses_lwr.tif ]]; then
+    TMP_FILEPATH_OUT="${DIR_TMP}/responses_lwr.geojson"
+    CLEAN_FILEPATH_OUT="${DIR_REEF}/clean/responses_lwr.tif"
+    if [[ ! -f ${CLEAN_FILEPATH_OUT} ]]; then
         echo "Cleaning data for LWR data"
+
         # Note that the lwr_class key with string values causes issues with the SQL in rasterization, so we convert
         # that to the lwr key with integer values
-        sed 's/"lwr_class": "Land"/"lwr": 1/g' "${DIR_REEF}/raw/${FILENAME}" > ${DIR_TMP}/responses_lwr.geojson
-        sed -i 's/"lwr_class": "Deep Reef Water 10m+"/"lwr": 2/g' ${DIR_TMP}/responses_lwr.geojson
-        sed -i 's/"lwr_class": "Reef"/"lwr": 3/g' ${DIR_TMP}/responses_lwr.geojson
-        sed -i 's/"lwr_class": "Cloud[^"]*Shade"/"lwr": -9999/g' ${DIR_TMP}/responses_lwr.geojson
+        sed 's/"lwr_class": "Land"/"lwr": 1/g' "${DIR_REEF}/raw/${FILENAME_IN}" > ${TMP_FILEPATH_OUT}
+        sed -i 's/"lwr_class": "Deep Reef Water 10m+"/"lwr": 2/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"lwr_class": "Reef"/"lwr": 3/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"lwr_class": "Cloud[^"]*Shade"/"lwr": -9999/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"lwr_class": "[^"]*"/"lwr": -9999/g' ${TMP_FILEPATH_OUT}  # Catch-all for anything missed
 
         echo "Rasterize reef LWR classes"
         gdal_rasterize -init -9999 -a_nodata -9999 -te ${LOWER_LEFT} ${UPPER_RIGHT} -tr ${RESOLUTION} -a lwr \
-            ${DIR_TMP}/responses_lwr.geojson ${DIR_REEF}/clean/responses_lwr.tif
-
-        echo "Create compressed version"
-        gdal_translate -co "COMPRESS=LZW" \
-            ${DIR_REEF}/clean/responses_lwr.tif ${DIR_REEF}/clean/responses_lwr_compressed.tif
+            ${TMP_FILEPATH_OUT} ${CLEAN_FILEPATH_OUT}
     else
         echo "LWR data already cleaned"
     fi
 
-    if [[ ! -f ${DIR_REEF}/clean/responses_bio.tif ]]; then
-        echo "Cleaning data for biotic/abiotic data"
-        # Note that I didn't want to test whether the find and replace was necessary for this layer as well, so I just
-        # assumed it would be necessary
-        sed 's/"benthic_class": "Land"/"benthic": 1/g' "${DIR_REEF}/raw/${FILENAME}" > ${DIR_TMP}/responses_bio.geojson
+    TMP_FILEPATH_OUT="${DIR_TMP}/responses_habitat.geojson"
+    CLEAN_FILEPATH_OUT="${DIR_REEF}/clean/responses_habitat.tif"
+    if [[ ! -f ${CLEAN_FILEPATH_OUT} ]]; then
+        echo "Cleaning data for data"
 
-        sed -i 's/"benthic_class": "Deep"/"benthic": 2/g' ${DIR_TMP}/responses_bio.geojson
+        # Note that I didn't want to test whether the find and replace for the category name was necessary for this
+        # layer as well, so I just assumed it would be necessary
+        sed 's/"geomorphic_class": "Land"/"geomorphic": 1/g' "${DIR_REEF}/raw/${FILENAME_IN}" > ${TMP_FILEPATH_OUT}
 
-        sed -i 's/"benthic_class": "Benthic Microalgae"/"benthic": 3/g' ${DIR_TMP}/responses_bio.geojson
-        sed -i 's/"benthic_class": "Coral[^"]*Algae"/"benthic": 3/g' ${DIR_TMP}/responses_bio.geojson
-        sed -i 's/"benthic_class": "Seagrass"/"benthic": 3/g' ${DIR_TMP}/responses_bio.geojson
+        sed -i 's/"geomorphic_class": "Deep[^"]*"/"geomorphic": 2/g' ${CLEAN_FILEPATH_OUT}
 
-        sed -i 's/"benthic_class": "Plateau 3-10m"/"benthic": 4/g' ${DIR_TMP}/responses_bio.geojson
-        sed -i 's/"benthic_class": "Rock"/"benthic": 4/g' ${DIR_TMP}/responses_bio.geojson
-        sed -i 's/"benthic_class": "Rubble"/"benthic": 4/g' ${DIR_TMP}/responses_bio.geojson
-        sed -i 's/"benthic_class": "Sand"/"benthic": 4/g' ${DIR_TMP}/responses_bio.geojson
-        sed -i 's/"benthic_class": "Sand[^"]*Mud"/"benthic": 4/g' ${DIR_TMP}/responses_bio.geojson
+        sed -i 's/"geomorphic_class": "Inner Reef Flat"/"geomorphic": 3/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Outer Reef Flat"/"geomorphic": 3/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Patch Reefs"/"geomorphic": 3/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Reef Rim"/"geomorphic": 3/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Slope[^"]*Exposed"/"geomorphic": 3/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Slope[^"}*Sheltered"/"geomorphic": 3/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Small Reef"/"geomorphic": 3/g' ${TMP_FILEPATH_OUT}
 
-        sed -i 's/"benthic_class": "Breaking Waves"/"benthic": -9999/g' ${DIR_TMP}/responses_bio.geojson
-        sed -i 's/"benthic_class": "Cloud[^"]*Shade"/"benthic": -9999/g' ${DIR_TMP}/responses_bio.geojson
-        # Small reef looks like it's a combination of biotic and abiotic components, so I'm marking it as unknown to
-        # avoid training the model on bad data
-        sed -i 's/"benthic_class": "Small Reef"/"benthic": -9999/g' ${DIR_TMP}/responses_bio.geojson
-        sed -i 's/"benthic_class": "Unknown"/"benthic": -9999/g' ${DIR_TMP}/responses_bio.geojson
+        sed -i 's/"geomorphic_class": "Deep Lagoon"/"geomorphic": 4/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Open Complex Lagoon"/"geomorphic": 4/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Plateau[^"]*"/"geomorphic": 4/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Shallow Lagoon"/"geomorphic": 4/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Terrestrial Reef Flat"/"geomorphic": 4/g' ${TMP_FILEPATH_OUT}
 
-        echo "Rasterize reef biotic/abiotic classes"
-        gdal_rasterize -init -9999 -a_nodata -9999 -te ${LOWER_LEFT} ${UPPER_RIGHT} -tr ${RESOLUTION} -a benthic \
-            ${DIR_TMP}/responses_bio.geojson ${DIR_REEF}/clean/responses_bio.tif
+        sed -i 's/"geomorphic_class": "Cloud[^"]*Shade"/"geomorphic": -9999/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Unknown"/"geomorphic": -9999/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "[^"]"/"geomorphic": -9999/g' ${TMP_FILEPATH_OUT}  # Catch-all for anything missed
 
-        echo "Create compressed version"
-        gdal_translate -co "COMPRESS=LZW" \
-            ${DIR_REEF}/clean/responses_bio.tif ${DIR_REEF}/clean/responses_bio_compressed.tif
+
+        echo "Rasterize reef habitat classes"
+        gdal_rasterize -init -9999 -a_nodata -9999 -te ${LOWER_LEFT} ${UPPER_RIGHT} -tr ${RESOLUTION} -a geomorphic \
+            ${TMP_FILEPATH_OUT} ${CLEAN_FILEPATH_OUT}
     else
-        echo "Biotic/abiotic data already cleaned"
+        echo "Habitat data already cleaned"
     fi
 
 done
