@@ -13,7 +13,7 @@ SLURM_COMMAND_WRAP = '--wrap "python run_classification.py --filepath_config=con
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--filepath_configs', type=str)
-    parser.add_argument('--response_mappings', type=str)
+    parser.add_argument('--response_mappings', type=str, required=True)
     parser.add_argument('--build_only', type=bool, action='store_true')
     parser.add_argument('-f', dest='rerun', action='store_true')
     args = parser.parse_args()
@@ -21,7 +21,6 @@ if __name__ == '__main__':
     # Warning about usage and error checks
     if args.build_only and (args.filepaths_configs or args.response_mappings):
         print('WARNING:  build_only takes precedence over filepaths_configs and response_mappings, which are ignored')
-    assert args.build_only or args.response_mappings, 'response_mappings must be provided if not using build_only'
 
     # Prep commands
     slurm_command = SLURM_COMMAND
