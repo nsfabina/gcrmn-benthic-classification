@@ -51,7 +51,7 @@ for DIR_REEF in ${DIR_DEST}/*; do
     TMP_FILEPATH_OUT="${DIR_TMP}/responses_lwr.geojson"
     CLEAN_FILEPATH_OUT="${DIR_REEF}/clean/responses_lwr.tif"
     if [[ ! -f ${CLEAN_FILEPATH_OUT} ]]; then
-        echo "Cleaning data for LWR data"
+        echo "Cleaning data for LWR models"
 
         # Note that the lwr_class key with string values causes issues with the SQL in rasterization, so we convert
         # that to the lwr key with integer values
@@ -71,13 +71,13 @@ for DIR_REEF in ${DIR_DEST}/*; do
     TMP_FILEPATH_OUT="${DIR_TMP}/responses_habitat.geojson"
     CLEAN_FILEPATH_OUT="${DIR_REEF}/clean/responses_habitat.tif"
     if [[ ! -f ${CLEAN_FILEPATH_OUT} ]]; then
-        echo "Cleaning data for data"
+        echo "Cleaning data for habitat models"
 
         # Note that I didn't want to test whether the find and replace for the category name was necessary for this
         # layer as well, so I just assumed it would be necessary
         sed 's/"geomorphic_class": "Land"/"geomorphic": 1/g' "${DIR_REEF}/raw/${FILENAME_IN}" > ${TMP_FILEPATH_OUT}
 
-        sed -i 's/"geomorphic_class": "Deep[^"]*"/"geomorphic": 2/g' ${CLEAN_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Deep[^"]*"/"geomorphic": 2/g' ${TMP_FILEPATH_OUT}
 
         sed -i 's/"geomorphic_class": "Inner Reef Flat"/"geomorphic": 3/g' ${TMP_FILEPATH_OUT}
         sed -i 's/"geomorphic_class": "Outer Reef Flat"/"geomorphic": 3/g' ${TMP_FILEPATH_OUT}
