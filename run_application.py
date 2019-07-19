@@ -1,27 +1,32 @@
 from argparse import ArgumentParser
-import logging
 import os
 import re
 from typing import List
 
 from rsCNN.data_management import apply_model_to_data, data_core
 from rsCNN.experiments import experiments
+from rsCNN.utils import logging
 
 import shared_configs
-
-
-_logger = logging.getLogger(__name__)
 
 
 _DIR_BASE = '/scratch/nfabina/gcrmn-benthic-classification'
 _SUBDIR_IN = 'visual_mosaic_v1'
 _SUBDIR_OUT = 'visual_mosaic_v1_applied/{}'
 _DIR_APPLY_IN = os.path.join(_DIR_BASE, _SUBDIR_IN)
+_LOG_OUT = os.path.join(_DIR_BASE, _SUBDIR_OUT, 'log.out')
 _FILE_SUFFIX_OUT = '_applied.tif'
+
+filepath_config = 'configs/unet_128_24_8.yaml'
+response_mapping = 'lwr'
 
 
 def run_application(filepath_config: str, response_mapping: str) -> None:
     config = shared_configs.build_dynamic_config(filepath_config, response_mapping)
+
+    # Get paths and logger
+    config_name = os.path.splitext(os.path.basename(filepath_config))[0]
+    _logger = logging.get_root_logger(_LOG_OUT.format(config_name))
 
     # Build dataset
     data_container = data_core.DataContainer(config)
@@ -35,10 +40,11 @@ def run_application(filepath_config: str, response_mapping: str) -> None:
 
     # Apply model
     filepaths_apply = _get_application_raster_filepaths()
-    config_name = os.path.splitext(os.path.basename(filepath_config))[0]
     subdir_out = _SUBDIR_OUT.format(config_name)
     for idx_filepath, filepath_apply in enumerate(filepaths_apply):
         filepath_out = os.path.splitext(re.sub(_SUBDIR_IN, subdir_out, filepath_apply))[0] + _FILE_SUFFIX_OUT
+        if not os.path.exists(os.path.dirname(filepath_out)):
+            os.makedirs(os.path.dirname(filepath_out))
         _logger.debug('Applying model to raster {} of {}; input and output filepaths are {} and {}'.format(
             idx_filepath+1, len(filepath_apply), filepath_apply, filepath_out))
         _apply_to_raster(experiment, data_container, filepath_apply, filepath_out)
