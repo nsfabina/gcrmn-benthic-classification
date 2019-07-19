@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from logging import Logger
 import os
 import re
 from typing import List
@@ -26,7 +27,7 @@ def run_application(filepath_config: str, response_mapping: str) -> None:
 
     # Get paths and logger
     config_name = os.path.splitext(os.path.basename(filepath_config))[0]
-    _logger = logging.get_root_logger(_LOG_OUT.format(config_name))
+    logger = logging.get_root_logger(_LOG_OUT.format(config_name))
 
     # Build dataset
     data_container = data_core.DataContainer(config)
@@ -39,25 +40,25 @@ def run_application(filepath_config: str, response_mapping: str) -> None:
     experiment.build_or_load_model(data_container)
 
     # Apply model
-    filepaths_apply = _get_application_raster_filepaths()
+    filepaths_apply = _get_application_raster_filepaths(logger)
     subdir_out = _SUBDIR_OUT.format(config_name)
     for idx_filepath, filepath_apply in enumerate(filepaths_apply):
         filepath_out = os.path.splitext(re.sub(_SUBDIR_IN, subdir_out, filepath_apply))[0] + _FILE_SUFFIX_OUT
         if not os.path.exists(os.path.dirname(filepath_out)):
             os.makedirs(os.path.dirname(filepath_out))
-        _logger.debug('Applying model to raster {} of {}; input and output filepaths are {} and {}'.format(
+        logger.debug('Applying model to raster {} of {}; input and output filepaths are {} and {}'.format(
             idx_filepath+1, len(filepath_apply), filepath_apply, filepath_out))
-        _apply_to_raster(experiment, data_container, filepath_apply, filepath_out)
+        _apply_to_raster(experiment, data_container, filepath_apply, filepath_out, logger)
 
 
-def _get_application_raster_filepaths() -> List[str]:
+def _get_application_raster_filepaths(logger: Logger) -> List[str]:
     filepaths = list()
     for path, dirnames, filenames in os.walk(_DIR_APPLY_IN):
         for filename in filenames:
             if not filename.endswith('.tif'):
                 continue
             filepaths.append(os.path.join(path, filename))
-    _logger.debug('Found {} rasters for application'.format(len(filepaths)))
+    logger.debug('Found {} rasters for application'.format(len(filepaths)))
     return sorted(filepaths)
 
 
@@ -65,23 +66,24 @@ def _apply_to_raster(
         experiment: experiments.Experiment,
         data_container: data_core.DataContainer,
         filepath_apply: str,
-        filepath_out: str
+        filepath_out: str,
+        logger: Logger
 ) -> None:
     # Return early if application is completed or in progress
     if os.path.exists(filepath_out):
-        _logger.debug('Skipping application:  output file already exists at {}'.format(filepath_out))
+        logger.debug('Skipping application:  output file already exists at {}'.format(filepath_out))
         return
     basename_out = os.path.splitext(filepath_out)[0]
     filepath_lock = basename_out + '.lock'
     if os.path.exists(filepath_lock):
-        _logger.debug('Skipping application:  lock file already exists at {}'.format(filepath_lock))
+        logger.debug('Skipping application:  lock file already exists at {}'.format(filepath_lock))
         return
 
     # Acquire the file lock or return if we lose the race condition
     try:
         file_lock = open(filepath_lock, 'x')
     except OSError:
-        _logger.debug('Skipping application:  lock file acquired by another process at {}'.format(filepath_lock))
+        logger.debug('Skipping application:  lock file acquired by another process at {}'.format(filepath_lock))
         return
 
     # Apply model to raster and clean up file lock
@@ -93,7 +95,7 @@ def _apply_to_raster(
     finally:
         file_lock.close()
         os.remove(filepath_lock)
-        _logger.debug('Removing lock file after error in application')
+        logger.debug('Removing lock file after error in application')
 
 
 if __name__ == '__main__':
