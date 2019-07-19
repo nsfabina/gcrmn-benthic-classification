@@ -18,9 +18,6 @@ _DIR_APPLY_IN = os.path.join(_DIR_BASE, _SUBDIR_IN)
 _LOG_OUT = os.path.join(_DIR_BASE, _SUBDIR_OUT, 'log.out')
 _FILE_SUFFIX_OUT = '_applied.tif'
 
-filepath_config = 'configs/unet_128_24_8.yaml'
-response_mapping = 'lwr'
-
 
 def run_application(filepath_config: str, response_mapping: str) -> None:
     config = shared_configs.build_dynamic_config(filepath_config, response_mapping)
