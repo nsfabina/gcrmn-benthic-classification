@@ -25,7 +25,10 @@ def run_application(config_name: str, response_mapping: str) -> None:
     config = shared_configs.build_dynamic_config(filepath_config, response_mapping)
 
     # Get paths and logger
-    logger = logging.get_root_logger(_LOG_OUT.format(config_name))
+    log_out = _LOG_OUT.format(config_name)
+    if not os.path.exists(os.path.dirname(log_out)):
+        os.makedirs(os.path.dirname(log_out))
+    logger = logging.get_root_logger(log_out)
 
     # Build dataset
     data_container = data_core.DataContainer(config)
