@@ -13,7 +13,6 @@ if __name__ == '__main__':
     parser.add_argument('--config_names', type=str)
     parser.add_argument('--response_mappings', type=str, required=True)
     parser.add_argument('--build_only', action='store_true')
-    parser.add_argument('-f', dest='rerun', action='store_true')
     args = parser.parse_args()
 
     # Warning about usage and error checks
@@ -42,13 +41,10 @@ if __name__ == '__main__':
             config_name = os.path.splitext(filename_config)[0]
             job_name = config_name + '_' + response_mapping
 
-            # Create model directory or confirm we want to rerun if already exists
+            # Create model directory
             dir_model = os.path.join('models', config_name, response_mapping)
             if not os.path.exists(dir_model):
                 os.makedirs(dir_model)
-            elif not args.rerun:
-                print('Job {} already submitted, not resubmitting'.format(job_name))
-                continue
 
             # Set dynamic SLURM arguments
             slurm_args_dynamic = ' '.join([
