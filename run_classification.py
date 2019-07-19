@@ -5,11 +5,11 @@ from rsCNN.data_management import data_core
 from rsCNN.reporting import reports
 from rsCNN.experiments import experiments
 
-import build_dynamic_config
+import shared_configs
 
 
 def run_classification(filepath_config: str, response_mapping: str, build_only: bool = False) -> None:
-    config = build_dynamic_config.build_dynamic_config(filepath_config, response_mapping)
+    config = shared_configs.build_dynamic_config(filepath_config, response_mapping)
 
     # Create directories if necessary
     if not os.path.exists(config.data_build.dir_out):

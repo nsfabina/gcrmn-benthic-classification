@@ -1,14 +1,10 @@
 import argparse
 import os
-import re
 import subprocess
 
+from shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS
 
-SLURM_COMMAND = 'sbatch --mail-type=END,FAIL --mail-user=nsfabina@asu.edu --time=24:00:00 ' + \
-                '--nodes=1 --cpus-per-task=1 --mem-per-cpu=20000 --ntasks=1 '
-SLURM_GPUS_LARGE = '--qos=wildfire --gres=gpu:1 --partition=mrlinegpu1,rcgpu1 '
-SLURM_GPUS = '--qos=wildfire --gres=gpu:1 ' + \
-             '--partition=mrlinegpu1,rcgpu1,physicsgpu1,cidsegpu1,cidsegpu2,sulcgpu1,sulcgpu2,asinghargpu1 '
+
 SLURM_COMMAND_WRAP = '--wrap "python run_classification.py --filepath_config=configs/{} --response_mapping={} {}"'
 
 
@@ -57,8 +53,8 @@ if __name__ == '__main__':
             # Set dynamic SLURM arguments
             slurm_args_dynamic = ' '.join([
                 '--job-name={}'.format(job_name),
-                '--output={}/slurm.%j.%t.OUT'.format(dir_model),
-                '--error={}/slurm.%j.%t.ERROR'.format(dir_model),
+                '--output={}/slurm.classify.%j.%t.OUT'.format(dir_model),
+                '--error={}/slurm.classify.%j.%t.ERROR'.format(dir_model),
             ])
 
             # Set dynamic python arguments
@@ -67,5 +63,5 @@ if __name__ == '__main__':
 
             print('Submitting job {}'.format(job_name))
             command = ' '.join([slurm_command, slurm_args_dynamic, slurm_python_wrap])
-            #print(command)
+            # print(command)
             subprocess.call(command, shell=True)

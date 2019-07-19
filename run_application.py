@@ -1,5 +1,4 @@
 from argparse import ArgumentParser
-import errno
 import logging
 import os
 import re
@@ -8,7 +7,7 @@ from typing import List
 from rsCNN.data_management import apply_model_to_data, data_core
 from rsCNN.experiments import experiments
 
-import build_dynamic_config
+import shared_configs
 
 
 _logger = logging.getLogger(__name__)
@@ -16,20 +15,13 @@ _logger = logging.getLogger(__name__)
 
 _DIR_BASE = '/scratch/nfabina/gcrmn-benthic-classification'
 _SUBDIR_IN = 'visual_mosaic_v1'
-_SUBDIR_OUT = 'visual_mosaic_v1_applied'
+_SUBDIR_OUT = 'visual_mosaic_v1_applied/{}'
 _DIR_APPLY_IN = os.path.join(_DIR_BASE, _SUBDIR_IN)
-_DIR_APPLY_OUT = os.path.join(_DIR_BASE, _SUBDIR_OUT)
-_FILE_SUFFIX_OUT = 'applied.tif'
-_LOCK_FLAGS = os.O_CREAT | os.O_EXCL | os.O_WRONLY
+_FILE_SUFFIX_OUT = '_applied.tif'
 
 
 def run_application(filepath_config: str, response_mapping: str) -> None:
-    config = build_dynamic_config.build_dynamic_config(filepath_config, response_mapping)
-
-    # Create directories if necessary
-    dir_applied = os.path.join(config.model_training.dir_out, _DIR_APPLY_OUT)
-    if not os.path.exists(dir_applied):
-        os.makedirs(dir_applied)
+    config = shared_configs.build_dynamic_config(filepath_config, response_mapping)
 
     # Build dataset
     data_container = data_core.DataContainer(config)
@@ -43,8 +35,10 @@ def run_application(filepath_config: str, response_mapping: str) -> None:
 
     # Apply model
     filepaths_apply = _get_application_raster_filepaths()
+    config_name = os.path.splitext(os.path.basename(filepath_config))[0]
+    subdir_out = _SUBDIR_OUT.format(config_name)
     for idx_filepath, filepath_apply in enumerate(filepaths_apply):
-        filepath_out = os.path.splitext(re.sub(_SUBDIR_IN, _SUBDIR_OUT, filepath_apply))[0] + _FILE_SUFFIX_OUT
+        filepath_out = os.path.splitext(re.sub(_SUBDIR_IN, subdir_out, filepath_apply))[0] + _FILE_SUFFIX_OUT
         _logger.debug('Applying model to raster {} of {}; input and output filepaths are {} and {}'.format(
             idx_filepath+1, len(filepath_apply), filepath_apply, filepath_out))
         _apply_to_raster(experiment, data_container, filepath_apply, filepath_out)
