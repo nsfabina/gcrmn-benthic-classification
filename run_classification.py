@@ -8,11 +8,13 @@ from rsCNN.experiments import experiments
 import shared_configs
 
 
+_DIR_CONFIGS = 'configs'
 _FILENAME_LOCK = 'classify.lock'
 _FILENAME_SUCCESS = 'classify.complete'
 
 
-def run_classification(filepath_config: str, response_mapping: str, build_only: bool = False) -> None:
+def run_classification(config_name: str, response_mapping: str, build_only: bool = False) -> None:
+    filepath_config = os.path.join(_DIR_CONFIGS, config_name + '.yaml')
     config = shared_configs.build_dynamic_config(filepath_config, response_mapping)
 
     # Create directories if necessary
@@ -61,7 +63,7 @@ def run_classification(filepath_config: str, response_mapping: str, build_only: 
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('--filepath_config', required=True)
+    parser.add_argument('--config_name', required=True)
     parser.add_argument('--response_mapping', required=True)
     parser.add_argument('--build_only', action='store_true')
     args = vars(parser.parse_args())

@@ -5,20 +5,20 @@ import subprocess
 from shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS
 
 
-SLURM_COMMAND_WRAP = '--wrap "python run_classification.py --filepath_config=configs/{} --response_mapping={} {}"'
+SLURM_COMMAND_WRAP = '--wrap "python run_classification.py --config_names={} --response_mapping={} {}"'
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--filepath_configs', type=str)
+    parser.add_argument('--config_names', type=str)
     parser.add_argument('--response_mappings', type=str, required=True)
     parser.add_argument('--build_only', action='store_true')
     parser.add_argument('-f', dest='rerun', action='store_true')
     args = parser.parse_args()
 
     # Warning about usage and error checks
-    if args.build_only and args.filepath_configs:
-        print('WARNING:  build_only takes precedence over filepath_configs, which is ignored')
+    if args.build_only and args.config_names:
+        print('WARNING:  build_only takes precedence over config_names, which is ignored')
 
     # Prep commands
     slurm_command = SLURM_COMMAND
@@ -28,8 +28,8 @@ if __name__ == '__main__':
     # Get relevant configs, only get one config per window radius if building
     if args.build_only:
         filename_configs = [filename for filename in os.listdir('configs') if filename.startswith('build_only')]
-    elif args.filepath_configs:
-        filename_configs = [os.path.basename(filepath) for filepath in args.filepath_configs.split(',')]
+    elif args.config_names:
+        filename_configs = [os.path.basename(filepath) for filepath in args.config_names.split(',')]
     else:
         filename_configs = [
             filename for filename in os.listdir('configs') if filename.endswith('yaml')
@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
             # Set dynamic python arguments
             slurm_python_wrap = SLURM_COMMAND_WRAP.format(
-                filename_config, response_mapping, '--build_only' if args.build_only else '')
+                config_name, response_mapping, '--build_only' if args.build_only else '')
 
             print('Submitting job {}'.format(job_name))
             command = ' '.join([slurm_command, slurm_args_dynamic, slurm_python_wrap])

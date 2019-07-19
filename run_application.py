@@ -11,19 +11,20 @@ from rsCNN.utils import logging
 import shared_configs
 
 
-_DIR_BASE = '/scratch/nfabina/gcrmn-benthic-classification'
-_SUBDIR_IN = 'visual_mosaic_v1'
-_SUBDIR_OUT = 'visual_mosaic_v1_applied/{}'
-_DIR_APPLY_IN = os.path.join(_DIR_BASE, _SUBDIR_IN)
-_LOG_OUT = os.path.join(_DIR_BASE, _SUBDIR_OUT, 'log.out')
-_FILE_SUFFIX_OUT = '_applied.tif'
+_DIR_CONFIGS = 'configs'
+_DIR_APPLY_BASE = '/scratch/nfabina/gcrmn-benthic-classification'
+_SUBDIR_APPLY_IN = 'visual_mosaic_v1'
+_SUBDIR_APPLY_OUT = 'visual_mosaic_v1_applied/{}'
+_DIR_APPLY_IN = os.path.join(_DIR_APPLY_BASE, _SUBDIR_APPLY_IN)
+_LOG_OUT = os.path.join(_DIR_APPLY_BASE, _SUBDIR_APPLY_OUT, 'log.out')
+_FILE_APPLY_OUT = '_applied.tif'
 
 
-def run_application(filepath_config: str, response_mapping: str) -> None:
+def run_application(config_name: str, response_mapping: str) -> None:
+    filepath_config = os.path.join(_DIR_CONFIGS, config_name + '.yaml')
     config = shared_configs.build_dynamic_config(filepath_config, response_mapping)
 
     # Get paths and logger
-    config_name = os.path.splitext(os.path.basename(filepath_config))[0]
     logger = logging.get_root_logger(_LOG_OUT.format(config_name))
 
     # Build dataset
@@ -38,9 +39,9 @@ def run_application(filepath_config: str, response_mapping: str) -> None:
 
     # Apply model
     filepaths_apply = _get_application_raster_filepaths(logger)
-    subdir_out = _SUBDIR_OUT.format(config_name)
+    subdir_out = _SUBDIR_APPLY_OUT.format(config_name)
     for idx_filepath, filepath_apply in enumerate(filepaths_apply):
-        filepath_out = os.path.splitext(re.sub(_SUBDIR_IN, subdir_out, filepath_apply))[0] + _FILE_SUFFIX_OUT
+        filepath_out = os.path.splitext(re.sub(_SUBDIR_APPLY_IN, subdir_out, filepath_apply))[0] + _FILE_APPLY_OUT
         if not os.path.exists(os.path.dirname(filepath_out)):
             os.makedirs(os.path.dirname(filepath_out))
         logger.debug('Applying model to raster {} of {}; input and output filepaths are {} and {}'.format(
@@ -98,7 +99,7 @@ def _apply_to_raster(
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('--filepath_config', dest='filepath_config', required=True)
-    parser.add_argument('--response_mapping', dest='response_mapping', required=True)
+    parser.add_argument('--config_name', required=True)
+    parser.add_argument('--response_mapping', required=True)
     args = vars(parser.parse_args())
     run_application(**args)
