@@ -92,7 +92,7 @@ for DIR_REEF in ${DIR_DEST}/*; do
         sed -i 's/"geomorphic_class": "Plateau[^"]*"/"geomorphic": 4/g' ${TMP_FILEPATH_OUT}
         sed -i 's/"geomorphic_class": "Shallow Lagoon"/"geomorphic": 4/g' ${TMP_FILEPATH_OUT}
         sed -i 's/"geomorphic_class": "Terrestrial Reef Flat"/"geomorphic": 4/g' ${TMP_FILEPATH_OUT}
-
+        
         sed -i 's/"geomorphic_class": "Cloud[^"]*Shade"/"geomorphic": -9999/g' ${TMP_FILEPATH_OUT}
         sed -i 's/"geomorphic_class": "Unknown"/"geomorphic": -9999/g' ${TMP_FILEPATH_OUT}
         sed -i 's/"geomorphic_class": "[^"]*"/"geomorphic": -9999/g' ${TMP_FILEPATH_OUT}  # Catch-all for anything missed
