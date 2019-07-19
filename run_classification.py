@@ -8,6 +8,10 @@ from rsCNN.experiments import experiments
 import shared_configs
 
 
+_FILENAME_LOCK = 'classify.lock'
+_FILENAME_SUCCESS = 'classify.complete'
+
+
 def run_classification(filepath_config: str, response_mapping: str, build_only: bool = False) -> None:
     config = shared_configs.build_dynamic_config(filepath_config, response_mapping)
 
@@ -16,6 +20,18 @@ def run_classification(filepath_config: str, response_mapping: str, build_only: 
         os.makedirs(config.data_build.dir_out)
     if not os.path.exists(config.model_training.dir_out):
         os.makedirs(config.model_training.dir_out)
+
+    # Exit early if classification already finished -- assume build is finished too
+    filepath_success = os.path.join(config.model_training.dir_out, _FILENAME_SUCCESS)
+    if os.path.exists(filepath_success):
+        return
+
+    # Exit early if classification in progress
+    filepath_lock = os.path.join(config.model_training.dir_out, _FILENAME_LOCK)
+    try:
+        file_lock = open(filepath_lock, 'x')
+    except OSError:
+        return
 
     # Build dataset
     data_container = data_core.DataContainer(config)
@@ -36,6 +52,11 @@ def run_classification(filepath_config: str, response_mapping: str, build_only: 
     # Train model
     experiment.fit_model_with_data_container(data_container)
     reporter.create_model_report()
+
+    # Create success file to avoid rerunning in the future, close and remove lock file
+    open(filepath_success, 'w')
+    file_lock.close()
+    os.remove(filepath_lock)
 
 
 if __name__ == '__main__':
