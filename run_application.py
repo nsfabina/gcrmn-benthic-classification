@@ -87,12 +87,13 @@ def _apply_to_raster(
     try:
         apply_model_to_data.apply_model_to_raster(
             experiment.model, data_container, filepath_apply, basename_out, exclude_feature_nodata=True)
+        logger.debug('Application success, removing lock file')
     except Exception as error_:
         raise error_
     finally:
         file_lock.close()
         os.remove(filepath_lock)
-        logger.debug('Removing lock file after error in application')
+        logger.debug('Lock file removed')
 
 
 if __name__ == '__main__':
