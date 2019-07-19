@@ -10,8 +10,9 @@ SLURM_COMMAND_WRAP = '--wrap "python run_classification.py --config_name={} --re
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_name', type=str)
+    parser.add_argument('--config_name', type=str, required=True)
     parser.add_argument('--response_mappings', type=str, required=True)
+    parser.add_argument('--num_jobs', type=int, required=True)
     args = parser.parse_args()
 
     # Prep commands
@@ -35,4 +36,5 @@ if __name__ == '__main__':
         print('Submitting job {}'.format(job_name))
         command = ' '.join([slurm_command, slurm_args_dynamic, slurm_python_wrap])
         # print(command)
-        subprocess.call(command, shell=True)
+        for idx_job in range(args.num_jobs):
+            subprocess.call(command, shell=True)
