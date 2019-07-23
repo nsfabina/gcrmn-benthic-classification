@@ -24,7 +24,7 @@ for REEF in "batt_tongue" "little" "ribbon"; do
 
     if [[ ! -f "${DIR_CLEAN}/features.vrt" ]]; then
         echo "Convert reflectance to correct projection"
-        gdalwarp -t_srs EPSG:${PROJ} "${DIR_RAW}/*dove_rrs.tif" "${DIR_TMP}/dove_rrs_0_projected.tif"
+        gdalwarp -t_srs EPSG:${PROJ} "${DIR_RAW}/${REEF}_dove_rrs.tif" "${DIR_TMP}/dove_rrs_0_projected.tif"
 
         echo "Switch from BGR to RGB to match Vulcan quads"
         gdal_translate -b 3 -b 2 -b 1 "${DIR_TMP}/dove_rrs_0_projected.tif" "${DIR_TMP}/dove_rrs_1_banded.tif"
@@ -35,7 +35,7 @@ for REEF in "batt_tongue" "little" "ribbon"; do
 
     if [[ ! -f "${DIR_CLEAN}/responses_lwr.tif" ]]; then
         echo "Convert geomorphic to correct projection"
-        gdalwarp -t_srs EPSG:${PROJ} "${DIR_RAW}/*geomorphic.tif" "${DIR_TMP}/geomorphic_0_projected.tif"
+        gdalwarp -t_srs EPSG:${PROJ} "${DIR_RAW}/${REEF}_geomorphic.tif" "${DIR_TMP}/geomorphic_0_projected.tif"
 
         echo "Convert geomorphic codes to LWR mappings"
         # Note that order matters and values are found in Mitch's Github repo
@@ -45,8 +45,8 @@ for REEF in "batt_tongue" "little" "ribbon"; do
         # 0, then encodings of 0 or nan to -9999
         gdal_calc.py -A "${DIR_TMP}/geomorphic_0_projected.tif" --outfile="${DIR_TMP}/geomorphic_1_mapped.tif" \
             --calc="A*(A!=3)"
-        gdal_calc.py -A "${DIR_TMP}/geomorphic_1_mapped.tif" --overwrite \
-            --calc="A*(A>0)-9999*(numpy.logical_or(A<=0, numpy.isnan(A)))"
+        gdal_calc.py -A "${DIR_TMP}/geomorphic_1_mapped.tif" --outfile="${DIR_TMP}/geomorphic_1_mapped.tif" \
+            --calc="A*(A>0)-9999*(numpy.logical_or(A<=0, numpy.isnan(A)))" --overwrite
         # Reef should be encoded as 3 which is fine now that turbidity has been changed, so everything greater than 3 can be
         # mapped to 3
         gdal_calc.py -A "${DIR_TMP}/geomorphic_1_mapped.tif" --outfile="${DIR_CLEAN}/responses_lwr.tif" \

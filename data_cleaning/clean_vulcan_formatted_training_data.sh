@@ -22,7 +22,7 @@ for REEF in belize hawaii heron karimunjawa moorea; do
         mkdir -p "${DIR_CLEAN}"
     fi
 
-    for FILEPATH in "${DIR_RAW}/*.tif"; do
+    for FILEPATH in ${DIR_RAW}/*.tif; do
         FILENAME=$(basename ${FILEPATH})
 
         if [[ ! -f "${DIR_CLEAN}/${FILENAME}" ]]; then
@@ -43,7 +43,7 @@ for REEF in belize hawaii heron karimunjawa moorea; do
     if [[ ! -f "${DIR_CLEAN}/features.vrt" ]]; then
         echo "Building imagery VRT"
         # Note that it's easier to use a vrt than to assemble paired features/responses manually
-        gdalbuildvrt "${DIR_CLEAN}/features.vrt" "${DIR_CLEAN}/*.tif"
+        gdalbuildvrt "${DIR_CLEAN}/features.vrt" ${DIR_CLEAN}/*.tif
     else
         echo "Imagery VRT already built"
     fi
