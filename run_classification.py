@@ -35,30 +35,34 @@ def run_classification(config_name: str, response_mapping: str, build_only: bool
     except OSError:
         return
 
-    # Build dataset
-    data_container = data_core.DataContainer(config)
-    data_container.build_or_load_rawfile_data()
-    data_container.build_or_load_scalers()
-    data_container.load_sequences()
+    try:
+        # Build dataset
+        data_container = data_core.DataContainer(config)
+        data_container.build_or_load_rawfile_data()
+        data_container.build_or_load_scalers()
+        data_container.load_sequences()
 
-    # Build experiment
-    experiment = experiments.Experiment(config)
-    experiment.build_or_load_model(data_container)
+        # Build experiment
+        experiment = experiments.Experiment(config)
+        experiment.build_or_load_model(data_container)
 
-    # Create preliminary model report before training
-    reporter = reports.Reporter(data_container, experiment, config)
-    reporter.create_model_report()
-    if build_only:
-        return
+        # Create preliminary model report before training
+        reporter = reports.Reporter(data_container, experiment, config)
+        reporter.create_model_report()
+        if build_only:
+            return
 
-    # Train model
-    experiment.fit_model_with_data_container(data_container)
-    reporter.create_model_report()
+        # Train model
+        experiment.fit_model_with_data_container(data_container)
+        reporter.create_model_report()
 
-    # Create success file to avoid rerunning in the future, close and remove lock file
-    open(filepath_success, 'w')
-    file_lock.close()
-    os.remove(filepath_lock)
+        # Create success file to avoid rerunning in the future, close and remove lock file
+        open(filepath_success, 'w')
+    except Exception as error_:
+        raise error_
+    finally:
+        file_lock.close()
+        os.remove(filepath_lock)
 
 
 if __name__ == '__main__':
