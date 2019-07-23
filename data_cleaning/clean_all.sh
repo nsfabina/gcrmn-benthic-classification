@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 
 
-./clean_vulcan_formatted_data.sh
+./clean_gbr_training_data.sh
+./clean_vulcan_formatted_training_data.sh
