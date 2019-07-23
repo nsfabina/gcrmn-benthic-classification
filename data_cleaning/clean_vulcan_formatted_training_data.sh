@@ -33,7 +33,7 @@ for REEF in belize hawaii heron karimunjawa moorea; do
             gdalwarp -s_srs EPSG:3857 -t_srs EPSG:4326 ${FILEPATH} "${DIR_TMP}/${FILENAME}"
 
             echo "Removing fourth band"
-            gdal_translate -b 1 -b -2 -b -3 "${DIR_TMP}/${FILENAME}" "${DIR_CLEAN}/${FILENAME}"
+            gdal_translate -b 1 -b 2 -b 3 "${DIR_TMP}/${FILENAME}" "${DIR_CLEAN}/${FILENAME}"
 
         else
             echo "Imagery file already cleaned: ${FILEPATH}"

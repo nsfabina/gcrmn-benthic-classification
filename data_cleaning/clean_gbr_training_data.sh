@@ -27,7 +27,7 @@ for REEF in "batt_tongue" "little" "ribbon"; do
         gdalwarp -t_srs EPSG:${PROJ} "${DIR_RAW}/*dove_rrs.tif" "${DIR_TMP}/dove_rrs_0_projected.tif"
 
         echo "Switch from BGR to RGB to match Vulcan quads"
-        gdal_translate -b 3 -b -2 -b -1 "${DIR_TMP}/dove_rrs_0_projected.tif" "${DIR_TMP}/dove_rrs_1_banded.tif"
+        gdal_translate -b 3 -b 2 -b 1 "${DIR_TMP}/dove_rrs_0_projected.tif" "${DIR_TMP}/dove_rrs_1_banded.tif"
 
         echo "Create a VRT file to keep consistent with Vulcan training data"
         gdalbuildvrt "${DIR_CLEAN}/features.vrt" "${DIR_TMP}/dove_rrs_1_banded.tif"
