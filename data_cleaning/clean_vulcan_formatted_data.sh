@@ -4,7 +4,8 @@
 DIR_DEST=/scratch/nfabina/gcrmn-benthic-classification/training_data
 
 
-for DIR_REEF in ${DIR_DEST}/*; do
+for REEF in belize hawaii heron karimunjawa moorea; do
+    DIR_REEF="${DIR_DEST}/${REEF}"
     echo "Cleaning data for reef directory: " ${DIR_REEF}
 
     if [[ ! -d ${DIR_REEF}/tmp ]]; then
