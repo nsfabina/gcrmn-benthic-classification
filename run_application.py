@@ -14,7 +14,7 @@ import shared_configs
 _DIR_CONFIGS = 'configs'
 _DIR_APPLY_BASE = '/scratch/nfabina/gcrmn-benthic-classification'
 _SUBDIR_APPLY_IN = 'visual_mosaic_v1'
-_SUBDIR_APPLY_OUT = 'visual_mosaic_v1_applied/{}'
+_SUBDIR_APPLY_OUT = 'visual_mosaic_v1_applied/{}/{}'
 _DIR_APPLY_IN = os.path.join(_DIR_APPLY_BASE, _SUBDIR_APPLY_IN)
 _LOG_OUT = os.path.join(_DIR_APPLY_BASE, _SUBDIR_APPLY_OUT, 'log.out')
 _FILE_APPLY_OUT = '_applied.tif'
@@ -42,7 +42,7 @@ def run_application(config_name: str, response_mapping: str) -> None:
 
     # Apply model
     filepaths_apply = _get_application_raster_filepaths(logger)
-    subdir_out = _SUBDIR_APPLY_OUT.format(config_name)
+    subdir_out = _SUBDIR_APPLY_OUT.format(config_name, response_mapping)
     for idx_filepath, filepath_apply in enumerate(filepaths_apply):
         filepath_out = os.path.splitext(re.sub(_SUBDIR_APPLY_IN, subdir_out, filepath_apply))[0] + _FILE_APPLY_OUT
         if not os.path.exists(os.path.dirname(filepath_out)):
