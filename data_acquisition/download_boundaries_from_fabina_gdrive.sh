@@ -8,7 +8,7 @@ set -e
 DIR_DEST=/scratch/nfabina/gcrmn-benthic-classification/training_data
 
 
-for REEF in belize hawaii heron karimunjawa moorea; do
+for REEF in batt_tongue belize hawaii heron karimunjawa little moorea ribbon; do
   if [[ ! -d ${DIR_DEST}/${REEF}/clean ]]; then
     mkdir -p ${DIR_DEST}/${REEF}/clean
   fi
