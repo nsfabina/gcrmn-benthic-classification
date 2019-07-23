@@ -24,6 +24,8 @@ for REEF in "batt_tongue" "little" "ribbon"; do
 
     if [[ ! -f "${DIR_CLEAN}/features.vrt" ]]; then
         echo "Convert reflectance to correct projection"
+        # Note that the resolutions of this imagery and the Vulcan quads (other script) are approximately the same and
+        # that I've verified this, so there's no need to specify the resolution
         gdalwarp -t_srs EPSG:${PROJ} "${DIR_RAW}/${REEF}_dove_rrs.tif" "${DIR_TMP}/dove_rrs_0_projected.tif"
 
         echo "Switch from BGR to RGB to match Vulcan quads"
