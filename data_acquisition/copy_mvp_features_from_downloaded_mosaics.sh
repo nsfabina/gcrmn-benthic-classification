@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 
+set -e
+
 DIR_SRC=/scratch/nfabina/gcrmn-benthic-classification/visual_mosaic_v1
 DIR_DEST=/scratch/nfabina/gcrmn-benthic-classification/training_data
 

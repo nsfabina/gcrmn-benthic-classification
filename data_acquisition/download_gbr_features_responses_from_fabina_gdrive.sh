@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 
+set -e
+
 # This data was acquired from Mitch's Earth Engine account. Mitch shared a script with Nick, which is now on Nick's
 # Earth Engine account. This script allowed Nick to download several data layers for specific reef complexes. Nick
 # stored that data on his GDrive account and it is now accessible there.

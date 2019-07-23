@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 
+set -e
+
 SCRATCH_BASE="/scratch/nfabina/gcrmn-benthic-classification/training_data"
 PROJ=4326
 

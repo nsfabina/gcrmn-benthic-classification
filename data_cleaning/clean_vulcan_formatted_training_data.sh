@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 
+set -e
+
 DIR_DEST="/scratch/nfabina/gcrmn-benthic-classification/training_data"
 
 
