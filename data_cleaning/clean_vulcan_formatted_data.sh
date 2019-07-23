@@ -68,41 +68,38 @@ for DIR_REEF in ${DIR_DEST}/*; do
         echo "LWR data already cleaned"
     fi
 
-    TMP_FILEPATH_OUT="${DIR_TMP}/responses_habitat.geojson"
-    CLEAN_FILEPATH_OUT="${DIR_REEF}/clean/responses_habitat.tif"
+    TMP_FILEPATH_OUT="${DIR_TMP}/responses_detailed.geojson"
+    CLEAN_FILEPATH_OUT="${DIR_REEF}/clean/responses_detailed.tif"
     if [[ ! -f ${CLEAN_FILEPATH_OUT} ]]; then
-        echo "Cleaning data for habitat models"
+        echo "Cleaning data for detailed reef models"
 
         # Note that I didn't want to test whether the find and replace for the category name was necessary for this
         # layer as well, so I just assumed it would be necessary
         sed 's/"geomorphic_class": "Land"/"geomorphic": 1/g' "${DIR_REEF}/raw/${FILENAME_IN}" > ${TMP_FILEPATH_OUT}
-
         sed -i 's/"geomorphic_class": "Deep[^"]*"/"geomorphic": 2/g' ${TMP_FILEPATH_OUT}
-
         sed -i 's/"geomorphic_class": "Inner Reef Flat"/"geomorphic": 3/g' ${TMP_FILEPATH_OUT}
-        sed -i 's/"geomorphic_class": "Outer Reef Flat"/"geomorphic": 3/g' ${TMP_FILEPATH_OUT}
-        sed -i 's/"geomorphic_class": "Patch Reefs"/"geomorphic": 3/g' ${TMP_FILEPATH_OUT}
-        sed -i 's/"geomorphic_class": "Reef Rim"/"geomorphic": 3/g' ${TMP_FILEPATH_OUT}
-        sed -i 's/"geomorphic_class": "Slope[^"]*Exposed"/"geomorphic": 3/g' ${TMP_FILEPATH_OUT}
-        sed -i 's/"geomorphic_class": "Slope[^"]*Sheltered"/"geomorphic": 3/g' ${TMP_FILEPATH_OUT}
-        sed -i 's/"geomorphic_class": "Small Reef"/"geomorphic": 3/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Outer Reef Flat"/"geomorphic": 4/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Patch Reefs"/"geomorphic": 5/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Reef Rim"/"geomorphic": 6/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Slope[^"]*Exposed"/"geomorphic": 7/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Slope[^"]*Sheltered"/"geomorphic": 8/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Small Reef"/"geomorphic": 9/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Deep Lagoon"/"geomorphic": 10/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Open Complex Lagoon"/"geomorphic": 11/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Plateau[^"]*"/"geomorphic": 12/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Shallow Lagoon"/"geomorphic": 13/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"geomorphic_class": "Terrestrial Reef Flat"/"geomorphic": 14/g' ${TMP_FILEPATH_OUT}
 
-        sed -i 's/"geomorphic_class": "Deep Lagoon"/"geomorphic": 4/g' ${TMP_FILEPATH_OUT}
-        sed -i 's/"geomorphic_class": "Open Complex Lagoon"/"geomorphic": 4/g' ${TMP_FILEPATH_OUT}
-        sed -i 's/"geomorphic_class": "Plateau[^"]*"/"geomorphic": 4/g' ${TMP_FILEPATH_OUT}
-        sed -i 's/"geomorphic_class": "Shallow Lagoon"/"geomorphic": 4/g' ${TMP_FILEPATH_OUT}
-        sed -i 's/"geomorphic_class": "Terrestrial Reef Flat"/"geomorphic": 4/g' ${TMP_FILEPATH_OUT}
-        
         sed -i 's/"geomorphic_class": "Cloud[^"]*Shade"/"geomorphic": -9999/g' ${TMP_FILEPATH_OUT}
         sed -i 's/"geomorphic_class": "Unknown"/"geomorphic": -9999/g' ${TMP_FILEPATH_OUT}
         sed -i 's/"geomorphic_class": "[^"]*"/"geomorphic": -9999/g' ${TMP_FILEPATH_OUT}  # Catch-all for anything missed
 
 
-        echo "Rasterize reef habitat classes"
+        echo "Rasterize detailed reef classes"
         gdal_rasterize -init -9999 -a_nodata -9999 -te ${LOWER_LEFT} ${UPPER_RIGHT} -tr ${RESOLUTION} -a geomorphic \
             ${TMP_FILEPATH_OUT} ${CLEAN_FILEPATH_OUT}
     else
-        echo "Habitat data already cleaned"
+        echo "Detailed reef data already cleaned"
     fi
 
 done
