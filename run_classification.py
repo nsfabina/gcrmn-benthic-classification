@@ -1,9 +1,9 @@
 from argparse import ArgumentParser
 import os
 
-from rsCNN.data_management import data_core
-from rsCNN.reporting import reports
-from rsCNN.experiments import experiments
+from bfgn.data_management import data_core
+from bfgn.reporting import reports
+from bfgn.experiments import experiments
 
 import shared_configs
 

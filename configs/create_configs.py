@@ -1,4 +1,4 @@
-from rsCNN.configuration import configs
+from bfgn.configuration import configs
 
 
 _FILEPATH_TEMPLATE = 'config_template.yaml'

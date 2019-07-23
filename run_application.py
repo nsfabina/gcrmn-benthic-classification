@@ -4,9 +4,9 @@ import os
 import re
 from typing import List
 
-from rsCNN.data_management import apply_model_to_data, data_core
-from rsCNN.experiments import experiments
-from rsCNN.utils import logging
+from bfgn.data_management import apply_model_to_data, data_core
+from bfgn.experiments import experiments
+from bfgn.utils import logging
 
 import shared_configs
 

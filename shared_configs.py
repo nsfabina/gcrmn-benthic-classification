@@ -1,6 +1,6 @@
 import os
 
-from rsCNN.configuration import configs
+from bfgn.configuration import configs
 
 
 _DIR_MODELS = 'models'
