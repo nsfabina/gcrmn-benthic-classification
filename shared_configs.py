@@ -14,8 +14,8 @@ _FILENAME_FEATURES = 'features.vrt'
 _FILENAME_RESPONSES = 'responses_{}.tif'
 _FILENAME_BOUNDARIES = 'boundaries.shp'
 
-_RESPONSE_MAPPINGS = ('lwr', 'detailed')
-_RESPONSE_MAPPING_CLASSES = {'lwr': 3, 'detailed': 14}
+_RESPONSE_MAPPINGS = ('lwr', )
+_RESPONSE_MAPPING_CLASSES = {'lwr': 3, }
 
 
 def build_dynamic_config(filepath_config: str, response_mapping: str) -> configs.Config:
