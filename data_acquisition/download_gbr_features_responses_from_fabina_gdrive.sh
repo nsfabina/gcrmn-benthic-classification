@@ -7,7 +7,7 @@
 
 
 GDRIVE_BASE="/data/atlas/gbr_earth_engine_samples"
-SCRATCH_BASE="/scratch/nfabina/gcrmn-benthic-classification/training_data/"
+SCRATCH_BASE="/scratch/nfabina/gcrmn-benthic-classification/training_data"
 
 
 for REEF in batt_tongue little ribbon; do
@@ -16,7 +16,6 @@ for REEF in batt_tongue little ribbon; do
         mkdir -p ${SCRATCH_BASE}/${REEF}/raw
     fi
 
-  rclone copy remote:${GDRIVE_BASE}/${REEF}_geomorphic.tif ${SCRATCH_BASE}/${REEF}/raw/geomorphic.tif
-  rclone copy remote:${GDRIVE_BASE}/${REEF}_dove_rrf.tif ${SCRATCH_BASE}/${REEF}/raw/dove_rrs.tif
-
+    rclone copy --include="${REEF}_{geomorphic,dove_rrs}.tif" remote:${GDRIVE_BASE}/ ${SCRATCH_BASE}/${REEF}/raw/
+  
 done
