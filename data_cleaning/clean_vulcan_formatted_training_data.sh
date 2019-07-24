@@ -30,10 +30,10 @@ for REEF in belize hawaii heron karimunjawa moorea; do
 
             echo "Reprojecting"
             # Note that mosaics come in different projections than individual scenes
-            gdalwarp -s_srs EPSG:3857 -t_srs EPSG:4326 ${FILEPATH} "${DIR_TMP}/${FILENAME}"
+            gdalwarp -s_srs EPSG:3857 -t_srs EPSG:4326 ${FILEPATH} "${DIR_TMP}/${FILENAME}" -q
 
             echo "Removing fourth band"
-            gdal_translate -b 1 -b 2 -b 3 "${DIR_TMP}/${FILENAME}" "${DIR_CLEAN}/${FILENAME}"
+            gdal_translate -b 1 -b 2 -b 3 "${DIR_TMP}/${FILENAME}" "${DIR_CLEAN}/${FILENAME}" -q
 
         else
             echo "Imagery file already cleaned: ${FILEPATH}"
@@ -72,7 +72,7 @@ for REEF in belize hawaii heron karimunjawa moorea; do
 
         echo "Rasterize reef LWR classes"
         gdal_rasterize -init -9999 -a_nodata -9999 -te ${LOWER_LEFT} ${UPPER_RIGHT} -tr ${RESOLUTION} -a lwr \
-            ${TMP_FILEPATH_OUT} ${CLEAN_FILEPATH_OUT}
+            ${TMP_FILEPATH_OUT} ${CLEAN_FILEPATH_OUT} -q
     else
         echo "LWR data already cleaned"
     fi
