@@ -39,19 +39,23 @@ for REEF in "batt_tongue" "little" "ribbon"; do
         echo "Convert geomorphic to correct projection"
         gdalwarp -t_srs EPSG:${PROJ} "${DIR_RAW}/${REEF}_geomorphic.tif" "${DIR_TMP}/geomorphic_0_projected.tif"
 
+        echo "Change no data value"
+        gdal_translate -of GTIFF -a_nodata -9999 \
+            "${DIR_TMP}/geomorphic_0_projected.tif" "${DIR_TMP}/geomorphic_1_nodata.tif"
+
         echo "Convert geomorphic codes to LWR mappings"
         # Note that order matters and values are found in Mitch's Github repo
         # Land should be encoded as 1 and is already via the "Land" class
         # Water should be encoded as 2 and is already via the "Deep" class
         # Missing or invalid data -- "turbid" can be 0 or 3 but we also handle missing data. We set turbid encodings of 3 to
         # 0, then encodings of 0 or nan to -9999
-        gdal_calc.py -A "${DIR_TMP}/geomorphic_0_projected.tif" --outfile="${DIR_TMP}/geomorphic_1_mapped.tif" \
+        gdal_calc.py -A "${DIR_TMP}/geomorphic_1_nodata.tif" --outfile="${DIR_TMP}/geomorphic_2_mapped.tif" \
             --calc="A*(A!=3)"
-        gdal_calc.py -A "${DIR_TMP}/geomorphic_1_mapped.tif" --outfile="${DIR_TMP}/geomorphic_1_mapped.tif" \
+        gdal_calc.py -A "${DIR_TMP}/geomorphic_2_mapped.tif" --outfile="${DIR_TMP}/geomorphic_2_mapped.tif" \
             --calc="A*(A>0)-9999*(numpy.logical_or(A<=0, numpy.isnan(A)))" --overwrite
         # Reef should be encoded as 3 which is fine now that turbidity has been changed, so everything greater than 3 can be
         # mapped to 3
-        gdal_calc.py -A "${DIR_TMP}/geomorphic_1_mapped.tif" --outfile="${DIR_CLEAN}/responses_lwr.tif" \
+        gdal_calc.py -A "${DIR_TMP}/geomorphic_2_mapped.tif" --outfile="${DIR_CLEAN}/responses_lwr.tif" \
             --calc="A*(A<=2)+3*(A>=3)"
     fi
 
