@@ -6,6 +6,7 @@ set -e
 SCRATCH_BASE="/scratch/nfabina/gcrmn-benthic-classification/training_data"
 PROJ=4326
 NODATA_VALUE=-9999
+OUTPUT_TYPE="Float32"
 
 
 for REEF in "batt_tongue" "little" "ribbon"; do
@@ -38,8 +39,9 @@ for REEF in "batt_tongue" "little" "ribbon"; do
 
     if [[ ! -f "${DIR_CLEAN}/responses_lwr.tif" ]]; then
         echo "Convert geomorphic to correct projection"
-        gdalwarp -t_srs EPSG:${PROJ} "${DIR_RAW}/${REEF}_geomorphic.tif" "${DIR_TMP}/geomorphic_0_projected.tif" \
-            -dstnodata ${NODATA_VALUE} --overwrite -q
+        gdalwarp -t_srs EPSG:${PROJ} -ot ${OUTPUT_TYPE}
+            "${DIR_RAW}/${REEF}_geomorphic.tif" "${DIR_TMP}/geomorphic_0_projected.tif" -dstnodata ${NODATA_VALUE} \
+             --overwrite -q
 
         echo "Convert geomorphic codes to LWR mappings"
         # Note that order matters and values are found in Mitch's Github repo. Land and water are already encoded as
@@ -47,12 +49,12 @@ for REEF in "batt_tongue" "little" "ribbon"; do
         # First, we set all turbid==3 to 0, and then all 0 to -9999. Second, we set all reef classes, which is anything
         # encoded as 4 or greater, as 3, which is the encoding for the land/water/reef model.
         gdal_calc.py -A "${DIR_TMP}/geomorphic_1_nodata.tif" --outfile="${DIR_TMP}/geomorphic_2_mapped.tif" \
-            --calc="A*(A!=3)" --NoDataValue=${NODATA_VALUE} --overwrite --quiet
+            --calc="A*(A!=3)" --NoDataValue=${NODATA_VALUE} --type=${OUTPUT_TYPE} --overwrite --quiet
         gdal_calc.py -A "${DIR_TMP}/geomorphic_2_mapped.tif" --outfile="${DIR_TMP}/geomorphic_2_mapped.tif" \
             --calc="A*(A>0)${NODATA_VALUE}*(numpy.logical_or(A<=0, numpy.isnan(A)))" \
-            --NoDataValue=${NODATA_VALUE} --overwrite --quiet
+            --NoDataValue=${NODATA_VALUE} --type=${OUTPUT_TYPE} --overwrite --quiet
         gdal_calc.py -A "${DIR_TMP}/geomorphic_2_mapped.tif" --outfile="${DIR_CLEAN}/responses_lwr.tif" \
-            --calc="A*(A<=2)+3*(A>=3)" --NoDataValue=${NODATA_VALUE} --quiet
+            --calc="A*(A<=2)+3*(A>=3)" --NoDataValue=${NODATA_VALUE} --type=${OUTPUT_TYPE} --quiet
     fi
 
 done

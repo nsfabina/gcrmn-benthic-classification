@@ -4,6 +4,7 @@
 set -e
 
 DIR_DEST="/scratch/nfabina/gcrmn-benthic-classification/training_data"
+NODATA_VALUE=-9999
 
 
 for REEF in belize hawaii heron karimunjawa moorea; do
@@ -67,11 +68,12 @@ for REEF in belize hawaii heron karimunjawa moorea; do
         sed 's/"lwr_class": "Land"/"lwr": 1/g' "${DIR_RAW}/${FILENAME_IN}" > ${TMP_FILEPATH_OUT}
         sed -i 's/"lwr_class": "Deep Reef Water 10m+"/"lwr": 2/g' ${TMP_FILEPATH_OUT}
         sed -i 's/"lwr_class": "Reef"/"lwr": 3/g' ${TMP_FILEPATH_OUT}
-        sed -i 's/"lwr_class": "Cloud[^"]*Shade"/"lwr": -9999/g' ${TMP_FILEPATH_OUT}
-        sed -i 's/"lwr_class": "[^"]*"/"lwr": -9999/g' ${TMP_FILEPATH_OUT}  # Catch-all for anything missed
+        sed -i 's/"lwr_class": "Cloud[^"]*Shade"/"lwr": ${NODATA_VALUE}/g' ${TMP_FILEPATH_OUT}
+        sed -i 's/"lwr_class": "[^"]*"/"lwr": ${NODATA_VALUE}/g' ${TMP_FILEPATH_OUT}  # Catch-all for anything missed
 
         echo "Rasterize reef LWR classes"
-        gdal_rasterize -init -9999 -a_nodata -9999 -te ${LOWER_LEFT} ${UPPER_RIGHT} -tr ${RESOLUTION} -a lwr \
+        gdal_rasterize -init ${NODATA_VALUE} -a_nodata ${NODATA_VALUE} -ot "Float32" \
+            -te ${LOWER_LEFT} ${UPPER_RIGHT} -tr ${RESOLUTION} -a "lwr" \
             ${TMP_FILEPATH_OUT} ${CLEAN_FILEPATH_OUT} -q
     else
         echo "LWR data already cleaned"
