@@ -5,6 +5,7 @@ set -e
 
 SCRATCH_BASE="/scratch/nfabina/gcrmn-benthic-classification/training_data"
 PROJ=4326
+NODATA_VALUE=-9999
 
 
 for REEF in "batt_tongue" "little" "ribbon"; do
@@ -37,26 +38,21 @@ for REEF in "batt_tongue" "little" "ribbon"; do
 
     if [[ ! -f "${DIR_CLEAN}/responses_lwr.tif" ]]; then
         echo "Convert geomorphic to correct projection"
-        gdalwarp -t_srs EPSG:${PROJ} "${DIR_RAW}/${REEF}_geomorphic.tif" "${DIR_TMP}/geomorphic_0_projected.tif" -q
-
-        echo "Change no data value"
-        gdal_translate -of GTIFF -a_nodata -9999 \
-            "${DIR_TMP}/geomorphic_0_projected.tif" "${DIR_TMP}/geomorphic_1_nodata.tif" -q
+        gdalwarp -t_srs EPSG:${PROJ} "${DIR_RAW}/${REEF}_geomorphic.tif" "${DIR_TMP}/geomorphic_0_projected.tif" \
+            -dstnodata ${NODATA_VALUE} --overwrite -q
 
         echo "Convert geomorphic codes to LWR mappings"
-        # Note that order matters and values are found in Mitch's Github repo
-        # Land should be encoded as 1 and is already via the "Land" class
-        # Water should be encoded as 2 and is already via the "Deep" class
-        # Missing or invalid data -- "turbid" can be 0 or 3 but we also handle missing data. We set turbid encodings of
-        # 3 to 0, then encodings of 0 or nan to -9999
+        # Note that order matters and values are found in Mitch's Github repo. Land and water are already encoded as
+        # 1 and 2, respectively. Turbid areas can be encoded as either 0 or 3 and we treat this class as missing data.
+        # First, we set all turbid==3 to 0, and then all 0 to -9999. Second, we set all reef classes, which is anything
+        # encoded as 4 or greater, as 3, which is the encoding for the land/water/reef model.
         gdal_calc.py -A "${DIR_TMP}/geomorphic_1_nodata.tif" --outfile="${DIR_TMP}/geomorphic_2_mapped.tif" \
-            --calc="A*(A!=3)" --quiet
+            --calc="A*(A!=3)" --NoDataValue=${NODATA_VALUE} --overwrite --quiet
         gdal_calc.py -A "${DIR_TMP}/geomorphic_2_mapped.tif" --outfile="${DIR_TMP}/geomorphic_2_mapped.tif" \
-            --calc="A*(A>0)-9999*(numpy.logical_or(A<=0, numpy.isnan(A)))" --overwrite --quiet
-        # Reef should be encoded as 3 which is fine now that turbidity has been changed, so everything greater than 3
-        # can be mapped to 3
+            --calc="A*(A>0)${NODATA_VALUE}*(numpy.logical_or(A<=0, numpy.isnan(A)))" \
+            --NoDataValue=${NODATA_VALUE} --overwrite --quiet
         gdal_calc.py -A "${DIR_TMP}/geomorphic_2_mapped.tif" --outfile="${DIR_CLEAN}/responses_lwr.tif" \
-            --calc="A*(A<=2)+3*(A>=3)" --quiet
+            --calc="A*(A<=2)+3*(A>=3)" --NoDataValue=${NODATA_VALUE} --quiet
     fi
 
 done
