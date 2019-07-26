@@ -49,8 +49,9 @@ def run_application_to_training_data(config_name: str, response_mapping: str) ->
     filepaths_apply = _get_application_raster_filepaths_for_training_data(response_mapping, logger)
     subdir_out = _SUBDIR_TRAINING_OUT.format(config_name, response_mapping)
     for idx_filepath, filepath_apply in enumerate(filepaths_apply):
-        filepath_out = \
-            os.path.splitext(re.sub(_SUBDIR_TRAINING_IN, subdir_out, filepath_apply))[0] + _FILENAME_SUFFIX_OUT
+        dir_out = os.path.dirname(os.path.dirname(re.sub(_SUBDIR_TRAINING_IN, subdir_out, filepath_apply)))
+        filename_out = 'responses_{}'.format(response_mapping) + _FILENAME_SUFFIX_OUT
+        filepath_out = os.path.join(dir_out, filename_out)
         if not os.path.exists(os.path.dirname(filepath_out)):
             os.makedirs(os.path.dirname(filepath_out))
         logger.debug('Applying model to raster {} of {}; input and output filepaths are {} and {}'.format(
