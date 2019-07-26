@@ -44,7 +44,7 @@ def run_classification(config_name: str, response_mapping: str, build_only: bool
 
         # Build experiment
         experiment = experiments.Experiment(config)
-        experiment.build_or_load_model(data_container)
+        experiment.build_or_load_model(data_container, resume_training=True)
 
         # Create preliminary model report before training
         reporter = reports.Reporter(data_container, experiment, config)
