@@ -140,7 +140,7 @@ def _calculate_area_in_square_kilometers(geometry: shapely.geometry.base.BaseGeo
 
 
 def _generate_pdf_summary(statistics: dict) -> None:
-    lines = ['UNEP Reef Summary', '', '']
+    lines = ['UNEP Reef Performance Summary', '', '']
 
     for reef, stats in sorted(statistics.items()):
         reef_name = re.sub('_', ' ', reef).title()
