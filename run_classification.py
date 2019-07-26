@@ -53,7 +53,7 @@ def run_classification(config_name: str, response_mapping: str, build_only: bool
             return
 
         # Train model
-        experiment.fit_model_with_data_container(data_container)
+        experiment.fit_model_with_data_container(data_container, resume_training=True)
         reporter.create_model_report()
 
         # Create success file to avoid rerunning in the future, close and remove lock file
