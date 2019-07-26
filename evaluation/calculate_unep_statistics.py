@@ -39,6 +39,7 @@ def calculate_unep_statistics(recalculate: bool = False) -> None:
         _logger.debug('Calculating statistics from scratch')
         statistics = dict()
     reefs = os.listdir(_DIR_REEFS)
+
     for reef in reefs:
         if reef in statistics and not recalculate:
             _logger.debug('Skipping {}:  already calculated'.format(reef))
@@ -58,28 +59,14 @@ def _calculate_unep_statistics_for_reef(reef: str) -> dict:
     uq = fiona.open(_FILEPATH_UQ.format(reef))
 
     _logger.debug('Generate UQ reef multipolygon')
-    uq_polygons = [shapely.geometry.shape(feature['geometry']) for feature in uq]
-    uq_reef = shapely.geometry.MultiPolygon(uq_polygons)
-    del uq_polygons
+    uq_reef = _parse_multipolygon_from_features(uq)
 
     _logger.debug('Generate UQ reef bounds')
     x, y, w, z = uq_reef.bounds
     uq_bounds = shapely.geometry.Polygon([[x, y], [x, z], [w, z], [w, y]])
 
     _logger.debug('Generate UNEP reef multipolygon nearby UQ reef bounds')
-    unep_polygons = list()
-    for feature in unep:
-        geom_type = feature['geometry']['type']
-        assert geom_type in ('MultiPolygon', 'Polygon'), 'Type is {}'.format(geom_type)
-        shape = shapely.geometry.shape(feature['geometry'])
-        if not uq_bounds.intersects(shape):
-            continue
-        if geom_type == 'Polygon':
-            polygons = [shape]
-        elif geom_type == 'MultiPolygon':
-            polygons = [polygon for polygon in shape]
-        unep_polygons.extend(polygons)
-    unep_reef = shapely.geometry.MultiPolygon(unep_polygons).buffer(0)
+    unep_reef = _parse_multipolygon_from_features(unep, uq_bounds)
 
     _logger.debug('Calculate reef area statistics')
     # Note that the obvious calculation for the area of true negatives, i.e., the overlap between UQ and UNEP
@@ -115,6 +102,24 @@ def _calculate_unep_statistics_for_reef(reef: str) -> dict:
     stats['recall'] = stats['pct_tp'] / (stats['pct_tp'] + stats['pct_fp'])
 
     return stats
+
+
+def _parse_multipolygon_from_features(features: fiona.Collection, bounds: shapely.geometry.Polygon = None) \
+        -> shapely.geometry.MultiPolygon:
+    polygons = list()
+    for feature in features:
+        geom_type = feature['geometry']['type']
+        assert geom_type in ('MultiPolygon', 'Polygon'), 'Type is {}'.format(geom_type)
+        shape = shapely.geometry.shape(feature['geometry'])
+        if bounds:
+            if not bounds.intersects(shape):
+                continue
+        if geom_type == 'Polygon':
+            polygons = [shape]
+        elif geom_type == 'MultiPolygon':
+            polygons = [polygon for polygon in shape]
+        polygons.extend(polygons)
+    return shapely.geometry.MultiPolygon(polygons).buffer(0)
 
 
 def _calculate_area_in_square_kilometers(geometry: shapely.geometry.base.BaseGeometry) -> float:
