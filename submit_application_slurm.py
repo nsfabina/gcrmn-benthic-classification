@@ -5,11 +5,12 @@ import subprocess
 from shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS
 
 
-SLURM_COMMAND_WRAP = '--wrap "python run_application.py --config_name={} --response_mapping={} "'
+SLURM_COMMAND_WRAP = '--wrap "python run_application.py --target={} --config_name={} --response_mapping={} "'
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('--target', required=True)
     parser.add_argument('--config_name', type=str, required=True)
     parser.add_argument('--response_mappings', type=str, required=True)
     parser.add_argument('--num_jobs', type=int, required=True)
@@ -31,7 +32,7 @@ if __name__ == '__main__':
         ])
 
         # Set dynamic python arguments
-        slurm_python_wrap = SLURM_COMMAND_WRAP.format(args.config_name, response_mapping)
+        slurm_python_wrap = SLURM_COMMAND_WRAP.format(args.target, args.config_name, response_mapping)
 
         print('Submitting job {}'.format(job_name))
         command = ' '.join([slurm_command, slurm_args_dynamic, slurm_python_wrap])
