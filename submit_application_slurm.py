@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
     # Loop through parameters and submit jobs
     for response_mapping in args.response_mappings.split(','):
-        job_name = 'apply' + '_' + args.config_name + '_' + response_mapping
+        job_name = 'apply_' + args.config_name + '_' + response_mapping
 
         # Set dynamic SLURM arguments
         dir_model = os.path.join('models', args.config_name, response_mapping)

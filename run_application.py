@@ -139,7 +139,7 @@ def _apply_to_raster(
 
     # Apply model to raster and clean up file lock
     try:
-        apply_model_to_data.apply_model_to_raster(
+        apply_model_to_data.apply_model_to_site(
             experiment.model, data_container, [filepath_apply], basename_out, exclude_feature_nodata=True)
         logger.debug('Application success, removing lock file')
     except Exception as error_:

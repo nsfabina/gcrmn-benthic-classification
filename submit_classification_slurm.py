@@ -39,7 +39,7 @@ if __name__ == '__main__':
     for filename_config in filename_configs:
         for response_mapping in args.response_mappings.split(','):
             config_name = os.path.splitext(filename_config)[0]
-            job_name = config_name + '_' + response_mapping
+            job_name = 'classify_' + config_name + '_' + response_mapping
 
             # Create model directory
             dir_model = os.path.join('models', config_name, response_mapping)
