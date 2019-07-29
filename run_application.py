@@ -20,7 +20,7 @@ _DIR_MOSAIC_IN = os.path.join(_DIR_APPLY_BASE, _SUBDIR_MOSAIC_IN)
 
 _SUBDIR_TRAINING_IN = 'training_data'
 _SUBDIR_TRAINING_OUT = 'training_data_applied/{}/{}'
-_DIR_TRAINING_IN = os.path.join(_DIR_APPLY_BASE, _SUBDIR_MOSAIC_IN)
+_DIR_TRAINING_IN = os.path.join(_DIR_APPLY_BASE, _SUBDIR_TRAINING_IN)
 
 _FILENAME_SUFFIX_OUT = '_applied.tif'
 
