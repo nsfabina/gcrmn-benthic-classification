@@ -48,7 +48,7 @@ def calculate_asu_statistics(config_name: str, recalculate: bool = False) -> Non
         _logger.debug('Calculating statistics from scratch')
         statistics = dict()
 
-    reefs = os.listdir(dir_config)
+    reefs = [dir_reef for dir_reef in os.listdir(dir_config) if os.path.isdir(dir_reef)]
     for reef in reefs:
         if reef in statistics and not recalculate:
             _logger.debug('Skipping {}:  already calculated'.format(reef))
