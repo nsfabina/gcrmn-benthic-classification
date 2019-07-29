@@ -180,10 +180,18 @@ def _generate_pdf_summary(statistics: dict, config_name: str) -> None:
             stats['asu_nonreef_area'], 100*stats['asu_nonreef_pct']))
         lines.append('')
         lines.append('  Non-reef detections')
-        lines.append('  True negatives:     {:8.1f} km2 | {:4.1f} % of non-reef area'.format(
-            stats['area_tn'], 100*stats['area_tn']/stats['uq_nonreef_area']))
-        lines.append('  False negatives:    {:8.1f} km2 | {:4.1f} % of non-reef area'.format(
-            stats['area_fn'], 100*stats['area_fn']/stats['uq_nonreef_area']))
+        if stats['uq_nonreef_area'] > 0:
+            line = '  True negatives:     {:8.1f} km2 | {:4.1f} % of non-reef area'.format(
+                stats['area_tn'], 100*stats['area_tn']/stats['uq_nonreef_area'])
+        else:
+            line = '  True negatives:     {:8.1f} km2'.format(stats['area_tn'])
+        lines.append(line)
+        if stats['uq_nonreef_area'] > 0:
+            line = '  False negatives:    {:8.1f} km2 | {:4.1f} % of non-reef area'.format(
+                stats['area_fn'], 100*stats['area_fn']/stats['uq_nonreef_area'])
+        else:
+            line = '  False negatives:    {:8.1f} km2'.format(stats['area_fn'])
+        lines.append(line)
         lines.append('')
         lines.append('')
 
