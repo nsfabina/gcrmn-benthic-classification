@@ -13,8 +13,8 @@ def compare_models() -> None:
     for path_history in paths_histories_started:
         if _RESPONSE_MAPPING not in path_history:
             continue
-        path_success = os.path.join(os.path.dirname(path_history), 'classify.success')
-        if os.path.exists(path_success):
+        path_complete = os.path.join(os.path.dirname(path_history), 'classify.complete')
+        if os.path.exists(path_complete):
             paths_histories_complete.append(path_history)
 
     comparisons.create_model_comparison_report(
