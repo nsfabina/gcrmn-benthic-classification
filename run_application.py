@@ -156,9 +156,9 @@ if __name__ == '__main__':
     parser.add_argument('--config_name', required=True)
     parser.add_argument('--response_mapping', required=True)
     args = parser.parse_args()
-    if args.target == 'training':
+    if args.target == 'training_data':
         run_application_to_training_data(args.config_name, args.response_mapping)
-    elif args.target == 'mosaic':
+    elif args.target == 'global_mosaic':
         run_application_to_global_mosaic(args.config_name, args.response_mapping)
     else:
         raise AssertionError('target must be either training or mosaic')
