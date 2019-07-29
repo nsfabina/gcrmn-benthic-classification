@@ -26,7 +26,7 @@ _logger.addHandler(_handler)
 _DIR_BASE = '/scratch/nfabina/gcrmn-benthic-classification/'
 _DIR_CONFIG = os.path.join(_DIR_BASE, 'training_data_applied/{}/lwr')
 _FILEPATH_UQ_OUTLINE = os.path.join(_DIR_BASE, 'training_data/{}/clean/reef_outline.shp')
-_FILEPATH_ASU_OUTLINE = os.path.join(_DIR_CONFIG, '{}/reef_outline.shp')
+_FILEPATH_ASU_OUTLINE = os.path.join(_DIR_CONFIG, 'reefs/{}/reef_outline.shp')
 _FILEPATH_DATA_OUT = os.path.join(_DIR_CONFIG, 'asu_statistics.json')
 _FILEPATH_FIG_OUT = os.path.join(_DIR_CONFIG, 'asu_statistics.pdf')
 

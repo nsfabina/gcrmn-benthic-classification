@@ -11,30 +11,29 @@ if [[ -z "${CONFIG_NAME}" ]]; then
     exit 1
 fi
 
-DIR_IN="/scratch/nfabina/gcrmn-benthic-classification/training_data"
-DIR_OUT="/scratch/nfabina/gcrmn-benthic-classification/training_data_applied/${CONFIG_NAME}/lwr"
+DIR_BASE="/scratch/nfabina/gcrmn-benthic-classification/training_data_applied/${CONFIG_NAME}/lwr/reefs"
 
-if [[ ! -d "${DIR_OUT}" ]]; then
+if [[ ! -d "${DIR_BASE}" ]]; then
     echo "There are no training data application files for specified config"
     exit 1
 fi
 
 
-for REEF in `ls ${DIR_IN}`; do
+for REEF in `ls ${DIR_BASE}`; do
     echo "Creating Reef/NoReef shapefile for ${REEF}"
 
-    FILEPATH_IN="${DIR_IN}/${REEF}/clean/responses_lwr.tif"
-    DIR_OUT_REEF="${DIR_OUT}/${REEF}"
-    FILEPATH_OUT_TMP="${DIR_OUT_REEF}/responses_r.tif"
-    FILEPATH_OUT_CLEAN="${DIR_OUT_REEF}/reef_outline.shp"
+    DIR_REEF="${DIR_BASE}/${DIR_REEF}"
+    FILEPATH_IN="${DIR_REEF}/responses_lwr_applied.tif"
+    FILEPATH_OUT_TMP="${DIR_REEF}/responses_r.tif"
+    FILEPATH_OUT_CLEAN="${DIR_REEF}/reef_outline.shp"
 
     if [[ -f "${FILEPATH_OUT_CLEAN}" ]]; then
         echo "Shapefile already created at ${FILEPATH_OUT_CLEAN}, skipping"
         continue
     fi
 
-    if [[ ! -d "${DIR_OUT_REEF}" ]]; then
-        mkdir -p "${DIR_OUT_REEF}"
+    if [[ ! -d "${DIR_REEF}" ]]; then
+        mkdir -p "${DIR_REEF}"
     fi
 
     echo "Creating intermediate Reef/NoReef raster"

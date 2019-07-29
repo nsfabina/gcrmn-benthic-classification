@@ -15,11 +15,11 @@ _DIR_CONFIGS = 'configs'
 _DIR_APPLY_BASE = '/scratch/nfabina/gcrmn-benthic-classification'
 
 _SUBDIR_MOSAIC_IN = 'visual_mosaic_v1'
-_SUBDIR_MOSAIC_OUT = 'visual_mosaic_v1_applied/{}/{}'
+_SUBDIR_MOSAIC_OUT = 'visual_mosaic_v1_applied/{}/{}/reefs'
 _DIR_MOSAIC_IN = os.path.join(_DIR_APPLY_BASE, _SUBDIR_MOSAIC_IN)
 
 _SUBDIR_TRAINING_IN = 'training_data'
-_SUBDIR_TRAINING_OUT = 'training_data_applied/{}/{}'
+_SUBDIR_TRAINING_OUT = 'training_data_applied/{}/{}/reefs'
 _DIR_TRAINING_IN = os.path.join(_DIR_APPLY_BASE, _SUBDIR_TRAINING_IN)
 _FILENAME_IN = 'features.vrt'
 
