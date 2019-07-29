@@ -10,4 +10,3 @@ for MODEL in `ls models`; do
     fi
   done
 done
-

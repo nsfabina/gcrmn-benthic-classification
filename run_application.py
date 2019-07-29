@@ -21,7 +21,7 @@ _DIR_MOSAIC_IN = os.path.join(_DIR_APPLY_BASE, _SUBDIR_MOSAIC_IN)
 _SUBDIR_TRAINING_IN = 'training_data'
 _SUBDIR_TRAINING_OUT = 'training_data_applied/{}/{}/reefs'
 _DIR_TRAINING_IN = os.path.join(_DIR_APPLY_BASE, _SUBDIR_TRAINING_IN)
-_FILENAME_IN = 'features.vrt'
+_FILENAME_VRT = 'features.vrt'
 
 _FILENAME_SUFFIX_OUT = '_applied.tif'
 
@@ -51,7 +51,7 @@ def run_application_to_training_data(config_name: str, response_mapping: str) ->
     subdir_out = _SUBDIR_TRAINING_OUT.format(config_name, response_mapping)
     for idx_filepath, filepath_apply in enumerate(filepaths_apply):
         dir_out = os.path.dirname(os.path.dirname(re.sub(_SUBDIR_TRAINING_IN, subdir_out, filepath_apply)))
-        filename_out = 'responses_{}'.format(response_mapping) + _FILENAME_SUFFIX_OUT
+        filename_out = os.path.splitext(os.path.basename(filepath_apply))[0] + _FILENAME_SUFFIX_OUT
         filepath_out = os.path.join(dir_out, filename_out)
         if not os.path.exists(os.path.dirname(filepath_out)):
             os.makedirs(os.path.dirname(filepath_out))
@@ -62,11 +62,16 @@ def run_application_to_training_data(config_name: str, response_mapping: str) ->
 
 def _get_application_raster_filepaths_for_training_data(logger: Logger) -> List[str]:
     filepaths = list()
-    for path, dirnames, filenames in os.walk(_DIR_TRAINING_IN):
+    dirs_reefs = [os.path.join(_DIR_TRAINING_IN, reef) for reef in os.listdir(_DIR_TRAINING_IN)]
+    for dir_reef in dirs_reefs:
+        has_quads = False
+        filenames = os.listdir(dir_reef)
         for filename in filenames:
-            if filename != _FILENAME_IN:
-                continue
-            filepaths.append(os.path.join(path, filename))
+            if filename.startswith('L15'):
+                has_quads = True
+                filepaths.append(os.path.join(dir_reef, filename))
+        if not has_quads:
+            filepaths.append(os.path.join(dir_reef, _FILENAME_VRT))
     logger.debug('Found {} rasters for application'.format(len(filepaths)))
     return sorted(filepaths)
 
