@@ -37,7 +37,7 @@ def calculate_asu_statistics(config_name: str, recalculate: bool = False) -> Non
     filepath_data_out = _FILEPATH_DATA_OUT.format(config_name)
 
     _logger.info('Preparing performance evaluation rasters')
-    subprocess.call(shlex.split('./create_asu_performance_evaluation_rasters.sh {}'.format(config_name)))
+    #subprocess.call(shlex.split('./create_asu_performance_evaluation_rasters.sh {}'.format(config_name)))
 
     _logger.info('Calculating ASU statistics')
     if os.path.exists(filepath_data_out) and not recalculate:
@@ -48,7 +48,7 @@ def calculate_asu_statistics(config_name: str, recalculate: bool = False) -> Non
         _logger.debug('Calculating statistics from scratch')
         statistics = dict()
 
-    reefs = [dir_reef for dir_reef in os.listdir(dir_config) if dir_reef != 'log.out']
+    reefs = sorted([dir_reef for dir_reef in os.listdir(dir_config)])
     for reef in reefs:
         if reef in statistics and not recalculate:
             _logger.debug('Skipping {}:  already calculated'.format(reef))
@@ -137,6 +137,8 @@ def _calculate_area_in_square_kilometers(geometry: shapely.geometry.base.BaseGeo
         https://gis.stackexchange.com/questions/127607/area-in-km-from-polygon-of-coordinates
     Trusted because the answer is from sgillies
     """
+    if not geometry.bounds:
+        return 0.0
     transformed = shapely.ops.transform(
         functools.partial(
             pyproj.transform,

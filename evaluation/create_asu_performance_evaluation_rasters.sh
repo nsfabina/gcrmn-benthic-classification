@@ -22,7 +22,7 @@ fi
 for REEF in `ls ${DIR_BASE}`; do
     echo "Creating Reef/NoReef shapefile for ${REEF}"
 
-    DIR_REEF="${DIR_BASE}/${DIR_REEF}"
+    DIR_REEF="${DIR_BASE}/${REEF}"
     FILEPATH_IN="${DIR_REEF}/responses_lwr_applied.tif"
     FILEPATH_OUT_TMP="${DIR_REEF}/responses_r.tif"
     FILEPATH_OUT_CLEAN="${DIR_REEF}/reef_outline.shp"
