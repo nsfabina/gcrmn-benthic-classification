@@ -18,6 +18,11 @@ for REEF in `ls ${DIR_IN}`; do
     FILEPATH_OUT_TMP="${DIR_OUT_REEF}/responses_r.tif"
     FILEPATH_OUT_CLEAN="${DIR_OUT_REEF}/reef_outline.shp"
 
+    if [[ -f "${FILEPATH_OUT_CLEAN}" ]]; then
+        echo "Shapefile alread created, skipping"
+        continue
+    fi
+
     if [[ ! -d "${DIR_OUT_REEF}" ]]; then
         mkdir -p "${DIR_OUT_REEF}"
     fi
