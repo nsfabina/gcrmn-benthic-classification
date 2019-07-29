@@ -62,7 +62,7 @@ def run_application_to_training_data(config_name: str, response_mapping: str) ->
 
 def _get_application_raster_filepaths_for_training_data(logger: Logger) -> List[str]:
     filepaths = list()
-    dirs_reefs = [os.path.join(_DIR_TRAINING_IN, reef) for reef in os.listdir(_DIR_TRAINING_IN)]
+    dirs_reefs = [os.path.join(_DIR_TRAINING_IN, reef, 'clean') for reef in os.listdir(_DIR_TRAINING_IN)]
     for dir_reef in dirs_reefs:
         has_quads = False
         filenames = os.listdir(dir_reef)
