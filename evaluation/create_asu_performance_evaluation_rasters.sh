@@ -6,8 +6,18 @@ set -e
 
 CONFIG_NAME=$1
 
+if [[ -z "${CONFIG_NAME}" ]]; then
+    echo "Config name required as first argument to script"
+    exit 1
+fi
+
 DIR_IN="/scratch/nfabina/gcrmn-benthic-classification/training_data"
-DIR_OUT="/scratch/nfabina/gcrmn-benthic-classification/training_data_applied/${CONFIG_NAME}/lwr/"
+DIR_OUT="/scratch/nfabina/gcrmn-benthic-classification/training_data_applied/${CONFIG_NAME}/lwr"
+
+if [[ ! -d "${DIR_OUT}" ]]; then
+    echo "There are no training data application files for specified config"
+    exit 1
+fi
 
 
 for REEF in `ls ${DIR_IN}`; do
@@ -19,7 +29,7 @@ for REEF in `ls ${DIR_IN}`; do
     FILEPATH_OUT_CLEAN="${DIR_OUT_REEF}/reef_outline.shp"
 
     if [[ -f "${FILEPATH_OUT_CLEAN}" ]]; then
-        echo "Shapefile alread created, skipping"
+        echo "Shapefile already created at ${FILEPATH_OUT_CLEAN}, skipping"
         continue
     fi
 
