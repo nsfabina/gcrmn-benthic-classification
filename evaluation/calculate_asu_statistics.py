@@ -4,6 +4,8 @@ import json
 import logging
 import os
 import re
+import shlex
+import subprocess
 import sys
 
 import fiona
@@ -22,41 +24,48 @@ _logger.addHandler(_handler)
 
 
 _DIR_BASE = '/scratch/nfabina/gcrmn-benthic-classification/'
-_FILEPATH_UNEP = os.path.join(_DIR_BASE, 'unep/14_001_WCMC008_CoralReefs2018_v4/01_Data/WCMC008_CoralReef2018_Py_v4.shp')
-_DIR_REEFS = os.path.join(_DIR_BASE, 'training_data')
-_FILEPATH_UQ = os.path.join(_DIR_REEFS, '{}/clean/reef_outline.shp')
-_FILEPATH_DATA_OUT = 'unep_statistics.json'
-_FILEPATH_FIG_OUT = 'unep_statistics.pdf'
+_DIR_CONFIG = os.path.join(_DIR_BASE, 'training_data_applied/{}/lwr')
+_FILEPATH_UQ_OUTLINE = os.path.join(_DIR_BASE, 'training_data/{}/clean/reef_outline.shp')
+_FILEPATH_ASU_OUTLINE = os.path.join(_DIR_CONFIG, '{}/reef_outline.shp')
+_FILEPATH_DATA_OUT = os.path.join(_DIR_CONFIG, 'asu_statistics.json')
+_FILEPATH_FIG_OUT = os.path.join(_DIR_CONFIG, 'asu_statistics.pdf')
 
 
-def calculate_unep_statistics(recalculate: bool = False) -> None:
-    _logger.info('Calculating UNEP statistics')
-    if os.path.exists(_FILEPATH_DATA_OUT) and not recalculate:
+def calculate_asu_statistics(config_name: str, recalculate: bool = False) -> None:
+    _logger.info('Set paths')
+    dir_config = _DIR_CONFIG.format(config_name)
+    filepath_data_out = _FILEPATH_DATA_OUT.format(config_name)
+
+    _logger.info('Preparing performance evaluation rasters')
+    subprocess.call(shlex.split('./create_asu_performance_evaluation_rasters.sh {}'.format(config_name)))
+
+    _logger.info('Calculating ASU statistics')
+    if os.path.exists(filepath_data_out) and not recalculate:
         _logger.debug('Loading existing statistics')
-        with open(_FILEPATH_DATA_OUT) as file_:
+        with open(filepath_data_out) as file_:
             statistics = json.load(file_)
     else:
         _logger.debug('Calculating statistics from scratch')
         statistics = dict()
-    reefs = os.listdir(_DIR_REEFS)
 
+    reefs = os.listdir(dir_config)
     for reef in reefs:
         if reef in statistics and not recalculate:
             _logger.debug('Skipping {}:  already calculated'.format(reef))
             continue
         _logger.info('Calculating statistics for {}'.format(reef))
-        statistics[reef] = _calculate_unep_statistics_for_reef(reef)
+        statistics[reef] = _calculate_asu_statistics_for_reef(reef, config_name)
         _logger.debug('Saving statistics'.format(reef))
-        with open(_FILEPATH_DATA_OUT, 'w') as file_:
+        with open(filepath_data_out, 'w') as file_:
             json.dump(statistics, file_)
     _logger.info('Calculations complete')
-    _generate_pdf_summary(statistics)
+    _generate_pdf_summary(statistics, config_name)
 
 
-def _calculate_unep_statistics_for_reef(reef: str) -> dict:
-    _logger.debug('Load UNEP and UQ reef features')
-    unep = fiona.open(_FILEPATH_UNEP)
-    uq = fiona.open(_FILEPATH_UQ.format(reef))
+def _calculate_asu_statistics_for_reef(reef: str, config_name: str) -> dict:
+    _logger.debug('Load ASU and UQ reef features')
+    asu = fiona.open(_FILEPATH_ASU_OUTLINE.format(config_name, reef))
+    uq = fiona.open(_FILEPATH_UQ_OUTLINE.format(reef))
 
     _logger.debug('Generate UQ reef multipolygon')
     uq_reef = _parse_multipolygon_from_features(uq)
@@ -65,32 +74,32 @@ def _calculate_unep_statistics_for_reef(reef: str) -> dict:
     x, y, w, z = uq_reef.bounds
     uq_bounds = shapely.geometry.Polygon([[x, y], [x, z], [w, z], [w, y]])
 
-    _logger.debug('Generate UNEP reef multipolygon nearby UQ reef bounds')
-    unep_reef = _parse_multipolygon_from_features(unep, uq_bounds)
+    _logger.debug('Generate ASU reef multipolygon nearby UQ reef bounds')
+    asu_reef = _parse_multipolygon_from_features(asu, uq_bounds)
 
     _logger.debug('Calculate reef area statistics')
-    # Note that the obvious calculation for the area of true negatives, i.e., the overlap between UQ and UNEP
+    # Note that the obvious calculation for the area of true negatives, i.e., the overlap between UQ and ASU
     # not-reef area, did not work during tests of certain reefs because there are self-intersection and invalid
     # polygon issues that cannot be resolved using buffer(0). Note that the "obvious calculation" is
-    # total_footprint.difference(unep_reef).
+    # total_footprint.difference(asu_reef).
     total_footprint = uq_reef.convex_hull
     uq_nonreef = total_footprint.difference(uq_reef)
     stats = dict()
     stats['total_area'] = _calculate_area_in_square_kilometers(total_footprint)
     stats['uq_reef_area'] = _calculate_area_in_square_kilometers(uq_reef)
     stats['uq_nonreef_area'] = _calculate_area_in_square_kilometers(uq_nonreef)
-    stats['unep_reef_area'] = _calculate_area_in_square_kilometers(unep_reef.intersection(total_footprint))
-    stats['unep_nonreef_area'] = stats['total_area'] - stats['unep_reef_area']
+    stats['asu_reef_area'] = _calculate_area_in_square_kilometers(asu_reef.intersection(total_footprint))
+    stats['asu_nonreef_area'] = stats['total_area'] - stats['asu_reef_area']
     stats['uq_reef_pct'] = stats['uq_reef_area'] / stats['total_area']
     stats['uq_nonreef_pct'] = stats['uq_nonreef_area'] / stats['total_area']
-    stats['unep_reef_pct'] = stats['unep_reef_area'] / stats['total_area']
-    stats['unep_nonreef_pct'] = stats['unep_nonreef_area'] / stats['total_area']
+    stats['asu_reef_pct'] = stats['asu_reef_area'] / stats['total_area']
+    stats['asu_nonreef_pct'] = stats['asu_nonreef_area'] / stats['total_area']
 
     _logger.debug('Calculate T/F P/N statistics')
-    stats['area_tp'] = _calculate_area_in_square_kilometers(uq_reef.intersection(unep_reef))  # UQ R x UNEP NR
-    stats['area_fn'] = stats['uq_reef_area'] - stats['area_tp']  # UQ R x UNEP NR
-    stats['area_fp'] = _calculate_area_in_square_kilometers(uq_nonreef.intersection(unep_reef))  # UQ NR x UNEP R
-    stats['area_tn'] = stats['total_area'] - stats['area_tp'] - stats['area_fp'] - stats['area_fn']  # UQ NR x UNEP NR
+    stats['area_tp'] = _calculate_area_in_square_kilometers(uq_reef.intersection(asu_reef))  # UQ R x ASU NR
+    stats['area_fn'] = stats['uq_reef_area'] - stats['area_tp']  # UQ R x ASU NR
+    stats['area_fp'] = _calculate_area_in_square_kilometers(uq_nonreef.intersection(asu_reef))  # UQ NR x ASU R
+    stats['area_tn'] = stats['total_area'] - stats['area_tp'] - stats['area_fp'] - stats['area_fn']  # UQ NR x ASU NR
     stats['pct_tp'] = stats['area_tp'] / stats['total_area']
     stats['pct_fn'] = stats['area_fn'] / stats['total_area']
     stats['pct_fp'] = stats['area_fp'] / stats['total_area']
@@ -139,8 +148,8 @@ def _calculate_area_in_square_kilometers(geometry: shapely.geometry.base.BaseGeo
     return transformed.area / 10 ** 6
 
 
-def _generate_pdf_summary(statistics: dict) -> None:
-    lines = ['UNEP Reef Performance Summary', '', '']
+def _generate_pdf_summary(statistics: dict, config_name: str) -> None:
+    lines = ['ASU Reef Performance Summary', '  Model ID:  {}'.format(config_name), '', '']
 
     for reef, stats in sorted(statistics.items()):
         reef_name = re.sub('_', ' ', reef).title()
@@ -156,8 +165,8 @@ def _generate_pdf_summary(statistics: dict) -> None:
         lines.append('')
         lines.append('  ACA reef:           {:8.1f} km2 | {:4.1f} %  of total area'.format(
             stats['uq_reef_area'], 100*stats['uq_reef_pct']))
-        lines.append('  UNEP reef:          {:8.1f} km2 | {:4.1f} %  of total area'.format(
-            stats['unep_reef_area'], 100*stats['unep_reef_pct']))
+        lines.append('  ASU reef:          {:8.1f} km2 | {:4.1f} %  of total area'.format(
+            stats['asu_reef_area'], 100*stats['asu_reef_pct']))
         lines.append('')
         lines.append('  Reef detections')
         lines.append('  True positives:     {:8.1f} km2 | {:4.1f} %  of reef area'.format(
@@ -167,8 +176,8 @@ def _generate_pdf_summary(statistics: dict) -> None:
         lines.append('')
         lines.append('  ACA non-reef:       {:8.1f} km2 | {:4.1f} %  of total area'.format(
             stats['uq_nonreef_area'], 100*stats['uq_nonreef_pct']))
-        lines.append('  UNEP non-reef:      {:8.1f} km2 | {:4.1f} %  of total area'.format(
-            stats['unep_nonreef_area'], 100*stats['unep_nonreef_pct']))
+        lines.append('  ASU non-reef:      {:8.1f} km2 | {:4.1f} %  of total area'.format(
+            stats['asu_nonreef_area'], 100*stats['asu_nonreef_pct']))
         lines.append('')
         lines.append('  Non-reef detections')
         lines.append('  True negatives:     {:8.1f} km2 | {:4.1f} % of non-reef area'.format(
@@ -181,11 +190,12 @@ def _generate_pdf_summary(statistics: dict) -> None:
     fig, ax = plt.subplots(figsize=(8.5, 2 + 3.25 * len(statistics)))
     ax.text(0, 0, '\n'.join(lines), **{'fontsize': 8, 'fontfamily': 'monospace'})
     ax.axis('off')
-    plt.savefig(_FILEPATH_FIG_OUT)
+    plt.savefig(_FILEPATH_FIG_OUT.format(config_name))
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('--config_name', required=True)
     parser.add_argument('-f', dest='recalculate', action='store_true')
     args = parser.parse_args()
-    calculate_unep_statistics(args.recalculate)
+    calculate_asu_statistics(args.config_name, args.recalculate)
