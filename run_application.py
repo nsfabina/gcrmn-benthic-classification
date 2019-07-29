@@ -21,6 +21,7 @@ _DIR_MOSAIC_IN = os.path.join(_DIR_APPLY_BASE, _SUBDIR_MOSAIC_IN)
 _SUBDIR_TRAINING_IN = 'training_data'
 _SUBDIR_TRAINING_OUT = 'training_data_applied/{}/{}'
 _DIR_TRAINING_IN = os.path.join(_DIR_APPLY_BASE, _SUBDIR_TRAINING_IN)
+_FILENAME_IN = 'features.vrt'
 
 _FILENAME_SUFFIX_OUT = '_applied.tif'
 
@@ -46,7 +47,7 @@ def run_application_to_training_data(config_name: str, response_mapping: str) ->
     experiment.build_or_load_model(data_container)
 
     # Apply model
-    filepaths_apply = _get_application_raster_filepaths_for_training_data(response_mapping, logger)
+    filepaths_apply = _get_application_raster_filepaths_for_training_data(logger)
     subdir_out = _SUBDIR_TRAINING_OUT.format(config_name, response_mapping)
     for idx_filepath, filepath_apply in enumerate(filepaths_apply):
         dir_out = os.path.dirname(os.path.dirname(re.sub(_SUBDIR_TRAINING_IN, subdir_out, filepath_apply)))
@@ -59,11 +60,11 @@ def run_application_to_training_data(config_name: str, response_mapping: str) ->
         _apply_to_raster(experiment, data_container, filepath_apply, filepath_out, logger)
 
 
-def _get_application_raster_filepaths_for_training_data(response_mapping: str, logger: Logger) -> List[str]:
+def _get_application_raster_filepaths_for_training_data(logger: Logger) -> List[str]:
     filepaths = list()
     for path, dirnames, filenames in os.walk(_DIR_TRAINING_IN):
         for filename in filenames:
-            if filename != 'responses_{}.tif'.format(response_mapping):
+            if filename != _FILENAME_IN:
                 continue
             filepaths.append(os.path.join(path, filename))
     logger.debug('Found {} rasters for application'.format(len(filepaths)))
