@@ -31,7 +31,8 @@ def run_application_to_training_data(config_name: str, response_mapping: str) ->
     config = shared_configs.build_dynamic_config(filepath_config, response_mapping)
 
     # Get paths and logger
-    log_out = os.path.join(_DIR_APPLY_BASE, _SUBDIR_TRAINING_OUT.format(config_name, response_mapping), 'log.out')
+    log_out = os.path.join(
+        _DIR_APPLY_BASE, os.path.dirname(_SUBDIR_TRAINING_OUT.format(config_name, response_mapping)), 'log.out')
     if not os.path.exists(os.path.dirname(log_out)):
         os.makedirs(os.path.dirname(log_out))
     logger = logging.get_root_logger(log_out)
@@ -81,7 +82,8 @@ def run_application_to_global_mosaic(config_name: str, response_mapping: str) ->
     config = shared_configs.build_dynamic_config(filepath_config, response_mapping)
 
     # Get paths and logger
-    log_out = os.path.join(_DIR_APPLY_BASE, _SUBDIR_MOSAIC_OUT.format(config_name, response_mapping), 'log.out')
+    log_out = os.path.join(
+        _DIR_APPLY_BASE, os.path.dirname(_SUBDIR_MOSAIC_OUT.format(config_name, response_mapping)), 'log.out')
     if not os.path.exists(os.path.dirname(log_out)):
         os.makedirs(os.path.dirname(log_out))
     logger = logging.get_root_logger(log_out)
