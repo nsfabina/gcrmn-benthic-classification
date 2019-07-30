@@ -24,9 +24,11 @@ _logger.addHandler(_handler)
 
 
 _DIR_BASE = '/scratch/nfabina/gcrmn-benthic-classification/'
-_DIR_CONFIG = os.path.join(_DIR_BASE, 'training_data_applied/{}/lwr')
+
 _FILEPATH_UQ_OUTLINE = os.path.join(_DIR_BASE, 'training_data/{}/clean/reef_outline.shp')
-_DIR_ASU_OUTLINE = os.path.join(_DIR_CONFIG, 'reefs/{}')
+
+_DIR_CONFIG = os.path.join(_DIR_BASE, 'training_data_applied/{}/lwr')
+_DIR_REEFS = os.path.join(_DIR_CONFIG, 'reefs')
 _FILENAME_SUFFIX_ASU_OUTLINE = 'reef_outline.shp'
 _FILEPATH_DATA_OUT = os.path.join(_DIR_CONFIG, 'asu_statistics.json')
 _FILEPATH_FIG_OUT = os.path.join(_DIR_CONFIG, 'asu_statistics.pdf')
@@ -34,7 +36,6 @@ _FILEPATH_FIG_OUT = os.path.join(_DIR_CONFIG, 'asu_statistics.pdf')
 
 def calculate_asu_statistics(config_name: str, recalculate: bool = False) -> None:
     _logger.info('Set paths')
-    dir_config = _DIR_CONFIG.format(config_name)
     filepath_data_out = _FILEPATH_DATA_OUT.format(config_name)
 
     _logger.info('Preparing performance evaluation rasters')
@@ -49,7 +50,7 @@ def calculate_asu_statistics(config_name: str, recalculate: bool = False) -> Non
         _logger.debug('Calculating statistics from scratch')
         statistics = dict()
 
-    reefs = sorted([dir_reef for dir_reef in os.listdir(dir_config)])
+    reefs = sorted([dir_reef for dir_reef in os.listdir(_DIR_REEFS.format(config_name))])
     for reef in reefs:
         if reef in statistics and not recalculate:
             _logger.debug('Skipping {}:  already calculated'.format(reef))
@@ -68,7 +69,7 @@ def _calculate_asu_statistics_for_reef(reef: str, config_name: str) -> dict:
     uq = fiona.open(_FILEPATH_UQ_OUTLINE.format(reef))
 
     _logger.debug('Load ASU reef features')
-    dir_asu_outline = _DIR_ASU_OUTLINE.format(config_name, reef)
+    dir_asu_outline = os.path.join(_DIR_REEFS.format(config_name), reef)
     filepaths = [os.path.join(dir_asu_outline, filename) for filename in os.listdir(dir_asu_outline)
                  if filename.endswith(_FILENAME_SUFFIX_ASU_OUTLINE)]
     individual_asu = [fiona.open(filepath) for filepath in filepaths]
