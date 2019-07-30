@@ -26,7 +26,8 @@ _logger.addHandler(_handler)
 _DIR_BASE = '/scratch/nfabina/gcrmn-benthic-classification/'
 _DIR_CONFIG = os.path.join(_DIR_BASE, 'training_data_applied/{}/lwr')
 _FILEPATH_UQ_OUTLINE = os.path.join(_DIR_BASE, 'training_data/{}/clean/reef_outline.shp')
-_FILEPATH_ASU_OUTLINE = os.path.join(_DIR_CONFIG, 'reefs/{}/reef_outline.shp')
+_DIR_ASU_OUTLINE = os.path.join(_DIR_CONFIG, 'reefs/{}')
+_FILENAME_SUFFIX_ASU_OUTLINE = 'reef_outline.shp'
 _FILEPATH_DATA_OUT = os.path.join(_DIR_CONFIG, 'asu_statistics.json')
 _FILEPATH_FIG_OUT = os.path.join(_DIR_CONFIG, 'asu_statistics.pdf')
 
@@ -37,7 +38,7 @@ def calculate_asu_statistics(config_name: str, recalculate: bool = False) -> Non
     filepath_data_out = _FILEPATH_DATA_OUT.format(config_name)
 
     _logger.info('Preparing performance evaluation rasters')
-    #subprocess.call(shlex.split('./create_asu_performance_evaluation_rasters.sh {}'.format(config_name)))
+    subprocess.call(shlex.split('./create_asu_performance_evaluation_rasters.sh {}'.format(config_name)))
 
     _logger.info('Calculating ASU statistics')
     if os.path.exists(filepath_data_out) and not recalculate:
@@ -63,9 +64,14 @@ def calculate_asu_statistics(config_name: str, recalculate: bool = False) -> Non
 
 
 def _calculate_asu_statistics_for_reef(reef: str, config_name: str) -> dict:
-    _logger.debug('Load ASU and UQ reef features')
-    asu = fiona.open(_FILEPATH_ASU_OUTLINE.format(config_name, reef))
+    _logger.debug('Load UQ reef features')
     uq = fiona.open(_FILEPATH_UQ_OUTLINE.format(reef))
+
+    _logger.debug('Load ASU reef features')
+    dir_asu_outline = _DIR_ASU_OUTLINE.format(config_name, reef)
+    filepaths = [os.path.join(dir_asu_outline, filename) for filename in os.listdir(dir_asu_outline)
+                 if filename.endswith(_FILENAME_SUFFIX_ASU_OUTLINE)]
+    individual_asu = [fiona.open(filepath) for filepath in filepaths]
 
     _logger.debug('Generate UQ reef multipolygon')
     uq_reef = _parse_multipolygon_from_features(uq)
@@ -74,8 +80,10 @@ def _calculate_asu_statistics_for_reef(reef: str, config_name: str) -> dict:
     x, y, w, z = uq_reef.bounds
     uq_bounds = shapely.geometry.Polygon([[x, y], [x, z], [w, z], [w, y]])
 
-    _logger.debug('Generate ASU reef multipolygon nearby UQ reef bounds')
-    asu_reef = _parse_multipolygon_from_features(asu, uq_bounds)
+    _logger.debug('Generate ASU reef multipolygons nearby UQ reef bounds')
+    individual_asu_reefs = [_parse_multipolygon_from_features(asu, uq_bounds) for asu in individual_asu]
+    asu_reef = shapely.ops.unary_union(individual_asu_reefs)
+    del individual_asu_reefs
 
     _logger.debug('Calculate reef area statistics')
     # Note that the obvious calculation for the area of true negatives, i.e., the overlap between UQ and ASU
