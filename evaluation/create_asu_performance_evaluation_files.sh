@@ -46,17 +46,17 @@ for REEF in `ls "${DIR_BASE}"`; do
         fi
 
         printf "Creating intermediate Reef/NoReef raster at: \n${FILEPATH_TMP_3}\n"
-        # Reefs more likely than land
+        echo "Create raster for reefs more likely than land"
         gdal_calc.py -A "${RASTER}" --A_band=3 -B "${RASTER}" --B_band=1 \
-            --outfile="${FILEPATH_TMP_1}" --NoDataValue=-9999 --type="Float32" --overwrite --quiet \
+            --outfile="${FILEPATH_TMP_1}" --NoDataValue=-9999 --type="Int16" --overwrite --quiet \
             --calc="A > B"
-        # Reefs more likely than water
+        echo "Create raster for reefs more likely than water"
         gdal_calc.py -A "${RASTER}" --A_band=3 -B "${RASTER}" --B_band=2 \
-            --outfile="${FILEPATH_TMP_2}" --NoDataValue=-9999 --type="Float32" --overwrite --quiet \
+            --outfile="${FILEPATH_TMP_2}" --NoDataValue=-9999 --type="Int16" --overwrite --quiet \
             --calc="A > B"
-        # Reefs more likely in both
-        gdal_calc.py -A "${FILEPATH_TMP_1}" "${FILEPATH_TMP_2}" \
-            --outfile="${FILEPATH_TMP_3}" --NoDataValue=-9999 --type="Float32" --overwrite --quiet \
+        echo "Create raster for rReefs more likely in both"
+        gdal_calc.py -A "${FILEPATH_TMP_1}" -B "${FILEPATH_TMP_2}" \
+            --outfile="${FILEPATH_TMP_3}" --NoDataValue=-9999 --type="Int16" --overwrite --quiet \
             --calc="numpy.logical_and(A, B)"
 
         printf "Creating final Reef/NoReef shapefile at: \n${FILEPATH_OUT_CLEAN}\n"
