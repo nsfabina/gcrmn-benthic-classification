@@ -47,9 +47,13 @@ def run_application_to_training_data(config_name: str, response_mapping: str) ->
     experiment = experiments.Experiment(config)
     experiment.build_or_load_model(data_container)
 
-    # Apply model
-    filepaths_apply = _get_application_raster_filepaths_for_training_data(logger)
+    # Get filepaths for application
+    filepaths_apply = sorted([
+        os.path.join(_DIR_TRAINING_IN, reef, 'clean', _FILENAME_VRT) for reef in os.listdir(_DIR_TRAINING_IN)
+    ])
     subdir_out = _SUBDIR_TRAINING_OUT.format(config_name, response_mapping)
+
+    # Apply model
     for idx_filepath, filepath_apply in enumerate(filepaths_apply):
         dir_out = os.path.dirname(os.path.dirname(re.sub(_SUBDIR_TRAINING_IN, subdir_out, filepath_apply)))
         filename_out = os.path.splitext(os.path.basename(filepath_apply))[0] + _FILENAME_SUFFIX_OUT
@@ -59,22 +63,6 @@ def run_application_to_training_data(config_name: str, response_mapping: str) ->
         logger.debug('Applying model to raster {} of {}; input and output filepaths are {} and {}'.format(
             idx_filepath+1, len(filepath_apply), filepath_apply, filepath_out))
         _apply_to_raster(experiment, data_container, filepath_apply, filepath_out, logger)
-
-
-def _get_application_raster_filepaths_for_training_data(logger: Logger) -> List[str]:
-    filepaths = list()
-    dirs_reefs = [os.path.join(_DIR_TRAINING_IN, reef, 'clean') for reef in os.listdir(_DIR_TRAINING_IN)]
-    for dir_reef in dirs_reefs:
-        has_quads = False
-        filenames = os.listdir(dir_reef)
-        for filename in filenames:
-            if filename.startswith('L15'):
-                has_quads = True
-                filepaths.append(os.path.join(dir_reef, filename))
-        if not has_quads:
-            filepaths.append(os.path.join(dir_reef, _FILENAME_VRT))
-    logger.debug('Found {} rasters for application'.format(len(filepaths)))
-    return sorted(filepaths)
 
 
 def run_application_to_global_mosaic(config_name: str, response_mapping: str) -> None:
