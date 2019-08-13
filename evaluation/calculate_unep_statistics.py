@@ -71,7 +71,7 @@ def _calculate_unep_statistics_for_reef(reef: str) -> dict:
         shape = shapely.geometry.shape(feature['geometry'])
         if shape.intersects(uq_bounds):
             unep_reef.append(shape)
-    unep_reef = shapely.geometry.MultiPolygon(unep_reef)
+    unep_reef = shapely.geometry.MultiPolygon(unep_reef).buffer(0)
 
     _logger.debug('Calculate reef area statistics')
     # Note that the obvious calculation for the area of true negatives, i.e., the overlap between UQ and UNEP
