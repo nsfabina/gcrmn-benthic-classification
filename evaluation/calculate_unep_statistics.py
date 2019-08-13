@@ -1,16 +1,15 @@
 import argparse
-import functools
 import json
 import logging
 import os
-import re
 import sys
 
 import fiona
-import matplotlib.pyplot as plt
-import pyproj
 import shapely.geometry
 import shapely.ops
+
+import shared_report
+import shared_statistics
 
 
 _logger = logging.getLogger(__name__)
@@ -50,7 +49,7 @@ def calculate_unep_statistics(recalculate: bool = False) -> None:
         with open(_FILEPATH_DATA_OUT, 'w') as file_:
             json.dump(statistics, file_)
     _logger.info('Calculations complete')
-    _generate_pdf_summary(statistics)
+    shared_report.generate_pdf_summary_report(statistics, 'UNEP', _FILEPATH_FIG_OUT)
 
 
 def _calculate_unep_statistics_for_reef(reef: str) -> dict:
@@ -73,116 +72,7 @@ def _calculate_unep_statistics_for_reef(reef: str) -> dict:
             unep_reef.append(shape)
     unep_reef = shapely.geometry.MultiPolygon(unep_reef).buffer(0)
 
-    _logger.debug('Calculate reef area statistics')
-    # Note that the obvious calculation for the area of true negatives, i.e., the overlap between UQ and UNEP
-    # not-reef area, did not work during tests of certain reefs because there are self-intersection and invalid
-    # polygon issues that cannot be resolved using buffer(0). Note that the "obvious calculation" is
-    # total_footprint.difference(unep_reef).
-    total_footprint = uq_reef.convex_hull
-    uq_nonreef = total_footprint.difference(uq_reef)
-    stats = dict()
-    stats['total_area'] = _calculate_area_in_square_kilometers(total_footprint)
-    stats['uq_reef_area'] = _calculate_area_in_square_kilometers(uq_reef)
-    stats['uq_nonreef_area'] = _calculate_area_in_square_kilometers(uq_nonreef)
-    stats['unep_reef_area'] = _calculate_area_in_square_kilometers(unep_reef.intersection(total_footprint))
-    stats['unep_nonreef_area'] = stats['total_area'] - stats['unep_reef_area']
-    stats['uq_reef_pct'] = stats['uq_reef_area'] / stats['total_area']
-    stats['uq_nonreef_pct'] = stats['uq_nonreef_area'] / stats['total_area']
-    stats['unep_reef_pct'] = stats['unep_reef_area'] / stats['total_area']
-    stats['unep_nonreef_pct'] = stats['unep_nonreef_area'] / stats['total_area']
-
-    _logger.debug('Calculate T/F P/N statistics')
-    stats['area_tp'] = _calculate_area_in_square_kilometers(uq_reef.intersection(unep_reef))  # UQ R x UNEP NR
-    stats['area_fn'] = stats['uq_reef_area'] - stats['area_tp']  # UQ R x UNEP NR
-    stats['area_fp'] = _calculate_area_in_square_kilometers(uq_nonreef.intersection(unep_reef))  # UQ NR x UNEP R
-    stats['area_tn'] = stats['total_area'] - stats['area_fn']  # UQ NR x UNEP NR
-    stats['pct_tp'] = stats['area_tp'] / stats['total_area']
-    stats['pct_fn'] = stats['area_fn'] / stats['total_area']
-    stats['pct_fp'] = stats['area_fp'] / stats['total_area']
-    stats['pct_tn'] = stats['area_tn'] / stats['total_area']
-
-    return stats
-
-
-def _calculate_area_in_square_kilometers(geometry: shapely.geometry.base.BaseGeometry) -> float:
-    """
-    Shamelessly borrowed from:
-        https://gis.stackexchange.com/questions/127607/area-in-km-from-polygon-of-coordinates
-    Trusted because the answer is from sgillies
-    """
-    if not geometry.bounds:
-        return 0.0
-    transformed = shapely.ops.transform(
-        functools.partial(
-            pyproj.transform,
-            pyproj.Proj(init='EPSG:4326'),
-            pyproj.Proj(proj='aea', lat1=geometry.bounds[1], lat2=geometry.bounds[3])
-        ),
-        geometry
-    )
-    return transformed.area / 10 ** 6
-
-
-def _generate_pdf_summary(statistics: dict) -> None:
-    lines = ['UNEP Reef Performance Summary', '', '']
-
-    for reef, stats in sorted(statistics.items()):
-        reef_name = re.sub('_', ' ', reef).title()
-        # Calculate precision and recall
-        denominator = stats['pct_tp'] + stats['pct_fn']
-        if denominator:
-            precision = stats['pct_tp'] / denominator
-        else:
-            precision = None
-        denominator = stats['pct_tp'] + stats['pct_fp']
-        if denominator:
-            recall = stats['pct_tp'] / denominator
-        else:
-            recall = None
-
-        lines.append('------------------------------------------------------------------------------------------------')
-        lines.append('')
-        lines.append(reef_name)
-        lines.append('')
-        if recall:
-            lines.append('  Recall:             {:8.1f} %  of actual reef area is detected'.format(100*recall))
-        else:
-            lines.append('  Recall:                  N/A')
-        if precision:
-            lines.append('  Precision:          {:8.1f} %  of reef detections are correct'.format(100*precision))
-        else:
-            lines.append('  Precision:                  N/A')
-        lines.append('')
-        lines.append('  Total area:         {:8.1f} km2  in convex hull around ACA reef'.format(stats['total_area']))
-        lines.append('')
-        lines.append('  ACA reef:           {:8.1f} km2 | {:4.1f} %  of total area'.format(
-            stats['uq_reef_area'], 100*stats['uq_reef_pct']))
-        lines.append('  UNEP reef:          {:8.1f} km2 | {:4.1f} %  of total area'.format(
-            stats['unep_reef_area'], 100*stats['unep_reef_pct']))
-        lines.append('')
-        lines.append('  Reef detections')
-        lines.append('  True positives:     {:8.1f} km2 | {:4.1f} %  of reef area'.format(
-            stats['area_tp'], 100*stats['area_tp']/stats['uq_reef_area']))
-        lines.append('  False positives:    {:8.1f} km2 | {:4.1f} %  of reef area'.format(
-            stats['area_fp'], 100*stats['area_fp']/stats['uq_reef_area']))
-        lines.append('')
-        lines.append('  ACA non-reef:       {:8.1f} km2 | {:4.1f} %  of total area'.format(
-            stats['uq_nonreef_area'], 100*stats['uq_nonreef_pct']))
-        lines.append('  UNEP non-reef:      {:8.1f} km2 | {:4.1f} %  of total area'.format(
-            stats['unep_nonreef_area'], 100*stats['unep_nonreef_pct']))
-        lines.append('')
-        lines.append('  Non-reef detections')
-        lines.append('  True negatives:     {:8.1f} km2 | {:4.1f} % of non-reef area'.format(
-            stats['area_tn'], 100*stats['area_tn']/stats['uq_nonreef_area']))
-        lines.append('  False negatives:    {:8.1f} km2 | {:4.1f} % of non-reef area'.format(
-            stats['area_fn'], 100*stats['area_fn']/stats['uq_nonreef_area']))
-        lines.append('')
-        lines.append('')
-
-    fig, ax = plt.subplots(figsize=(8.5, 2 + 3.25 * len(statistics)))
-    ax.text(0, 0, '\n'.join(lines), **{'fontsize': 8, 'fontfamily': 'monospace'})
-    ax.axis('off')
-    plt.savefig(_FILEPATH_FIG_OUT)
+    return shared_statistics.calculate_model_performance_statistics(unep_reef, uq_reef)
 
 
 if __name__ == '__main__':
