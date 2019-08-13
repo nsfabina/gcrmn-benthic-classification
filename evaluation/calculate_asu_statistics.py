@@ -38,9 +38,6 @@ def calculate_asu_statistics(config_name: str, recalculate: bool = False) -> Non
     _logger.info('Set paths')
     filepath_data_out = _FILEPATH_DATA_OUT.format(config_name)
 
-    _logger.info('Preparing performance evaluation rasters')
-    subprocess.call(shlex.split('./create_asu_performance_evaluation_rasters.sh {}'.format(config_name)))
-
     _logger.info('Calculating ASU statistics')
     if os.path.exists(filepath_data_out) and not recalculate:
         _logger.debug('Loading existing statistics')
