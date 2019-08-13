@@ -58,7 +58,7 @@ def _calculate_unep_statistics_for_reef(reef: str) -> dict:
     uq = fiona.open(_FILEPATH_UQ.format(reef))
 
     _logger.debug('Generate UQ reef multipolygon')
-    uq_reef = shapely.geometry.MultiPolygon([shapely.geometry.shape(feature['geometry']) for feature in uq])
+    uq_reef = shapely.ops.unary_union([shapely.geometry.shape(feature['geometry']) for feature in uq])
 
     _logger.debug('Generate UQ reef bounds')
     x, y, w, z = uq_reef.bounds
@@ -70,7 +70,7 @@ def _calculate_unep_statistics_for_reef(reef: str) -> dict:
         shape = shapely.geometry.shape(feature['geometry'])
         if shape.intersects(uq_bounds):
             unep_reef.append(shape)
-    unep_reef = shapely.geometry.MultiPolygon(unep_reef).buffer(0)
+    unep_reef = shapely.ops.unary_union(unep_reef)
 
     return shared_statistics.calculate_model_performance_statistics(unep_reef, uq_reef)
 

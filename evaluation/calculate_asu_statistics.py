@@ -70,7 +70,7 @@ def _calculate_asu_statistics_for_reef(reef: str, config_name: str) -> dict:
     individual_asu = [fiona.open(filepath) for filepath in filepaths]
 
     _logger.debug('Generate UQ reef multipolygon')
-    uq_reef = shapely.geometry.MultiPolygon([shapely.geometry.shape(feature['geometry']) for feature in uq])
+    uq_reef = shapely.ops.unary_union([shapely.geometry.shape(feature['geometry']) for feature in uq])
 
     _logger.debug('Generate UQ reef bounds')
     x, y, w, z = uq_reef.bounds
@@ -88,7 +88,7 @@ def _calculate_asu_statistics_for_reef(reef: str, config_name: str) -> dict:
             shape = shapely.geometry.shape(feature['geometry'])
             if shape.intersects(uq_bounds):
                 shapes.append(shape)
-        individual_asu_reefs.append(shapely.geometry.MultiPolygon(shapes).buffer(0))
+        individual_asu_reefs.append(shapely.ops.unary_union(shapes))
     asu_reef = shapely.ops.unary_union(individual_asu_reefs)
     del individual_asu_reefs
 
