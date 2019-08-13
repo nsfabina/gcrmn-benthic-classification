@@ -82,6 +82,10 @@ def _calculate_asu_statistics_for_reef(reef: str, config_name: str) -> dict:
     for asu in individual_asu:
         shapes = list()
         for feature in asu:
+            prediction = feature['properties']['DN']
+            assert prediction in (0, 1), 'Reef predictions should either be 0 or 1, but found {}'.format(prediction)
+            if prediction == 0:
+                continue  # Reef == 1, nonreef == 0
             shape = shapely.geometry.shape(feature['geometry'])
             if shape.intersects(uq_bounds):
                 shapes.append(shape)
