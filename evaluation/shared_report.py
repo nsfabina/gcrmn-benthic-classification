@@ -51,7 +51,7 @@ def generate_pdf_summary_report(statistics: dict, label: str, filepath_out: str)
             label, ' ' if len(label) == 3 else '', stats['model_nonreef_area'], 100*stats['model_nonreef_pct']))
         lines.append('')
         lines.append('  Non-reef detections')
-        lines.append('  True negatives:     {:8.1f} km2 | {:4.1f} % of no-reef area'.format(
+        lines.append('  True negatives:     {:8.1f} km2 | {:4.1f} % of non-reef area'.format(
             stats['area_tn'], 100*stats['area_tn']/stats['groundtruth_nonreef_area']))
         lines.append('  False negatives:    {:8.1f} km2 | {:4.1f} % of reef area'.format(
             stats['area_fn'], 100*stats['area_fn']/stats['groundtruth_reef_area']))
