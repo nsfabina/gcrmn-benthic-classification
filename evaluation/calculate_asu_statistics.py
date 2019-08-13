@@ -111,7 +111,7 @@ def _calculate_asu_statistics_for_reef(reef: str, config_name: str) -> dict:
     stats['area_tp'] = _calculate_area_in_square_kilometers(uq_reef.intersection(asu_reef))  # UQ R x ASU NR
     stats['area_fn'] = stats['uq_reef_area'] - stats['area_tp']  # UQ R x ASU NR
     stats['area_fp'] = _calculate_area_in_square_kilometers(uq_nonreef.intersection(asu_reef))  # UQ NR x ASU R
-    stats['area_tn'] = stats['total_area'] - stats['area_tp'] - stats['area_fp'] - stats['area_fn']  # UQ NR x ASU NR
+    stats['area_tn'] = stats['asu_nonreef_area'] - stats['area_fn']  # UQ NR x ASU NR
     stats['pct_tp'] = stats['area_tp'] / stats['total_area']
     stats['pct_fn'] = stats['area_fn'] / stats['total_area']
     stats['pct_fp'] = stats['area_fp'] / stats['total_area']
