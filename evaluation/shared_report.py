@@ -36,7 +36,7 @@ def generate_pdf_summary_report(statistics: dict, label: str, filepath_out: str)
         lines.append('')
         lines.append('  ACA reef:           {:8.1f} km2 | {:4.1f} %  of total area'.format(
             stats['groundtruth_reef_area'], 100*stats['groundtruth_reef_pct']))
-        lines.append('  {} reef:         {}{:8.1f} km2 | {:4.1f} %  of total area'.format(
+        lines.append('  {} reef:          {}{:8.1f} km2 | {:4.1f} %  of total area'.format(
             label, ' ' if len(label) == 3 else '', stats['model_reef_area'], 100*stats['model_reef_pct']))
         lines.append('')
         lines.append('  Reef detections')
