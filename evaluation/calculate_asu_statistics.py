@@ -80,9 +80,12 @@ def _calculate_asu_statistics_for_reef(reef: str, config_name: str) -> dict:
     _logger.debug('Generate ASU reef multipolygons nearby UQ reef bounds')
     individual_asu_reefs = list()
     for asu in individual_asu:
-        individual_asu_reefs.append(shapely.geometry.MultiPolygon([
-            shapely.geometry.shape(feature['geometry']) for feature in asu
-        ]))
+        shapes = list()
+        for feature in asu:
+            shape = shapely.geometry.shape(feature['geometry'])
+            if shape.intersects(uq_bounds):
+                shapes.append(shape)
+        individual_asu_reefs.append(shapely.geometry.MultiPolygon(shapes))
     asu_reef = shapely.ops.unary_union(individual_asu_reefs)
     del individual_asu_reefs
 
