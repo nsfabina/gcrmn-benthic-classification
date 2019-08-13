@@ -101,11 +101,6 @@ def _calculate_unep_statistics_for_reef(reef: str) -> dict:
     stats['pct_fp'] = stats['area_fp'] / stats['total_area']
     stats['pct_tn'] = stats['area_tn'] / stats['total_area']
 
-    _logger.debug('Calculate model recall/precision statistics')
-    stats['accuracy'] = stats['pct_tp'] + stats['pct_tn']
-    stats['precision'] = stats['pct_tp'] / (stats['pct_tp'] + stats['pct_fn'])
-    stats['recall'] = stats['pct_tp'] / (stats['pct_tp'] + stats['pct_fp'])
-
     return stats
 
 
@@ -133,13 +128,30 @@ def _generate_pdf_summary(statistics: dict) -> None:
 
     for reef, stats in sorted(statistics.items()):
         reef_name = re.sub('_', ' ', reef).title()
+        # Calculate precision and recall
+        denominator = stats['pct_tp'] + stats['pct_fn']
+        if denominator:
+            precision = stats['pct_tp'] / denominator
+        else:
+            precision = None
+        denominator = stats['pct_tp'] + stats['pct_fp']
+        if denominator:
+            recall = stats['pct_tp'] / denominator
+        else:
+            recall = None
 
         lines.append('------------------------------------------------------------------------------------------------')
         lines.append('')
         lines.append(reef_name)
         lines.append('')
-        lines.append('  Recall:             {:8.1f} %  of actual reef area is detected'.format(100*stats['recall']))
-        lines.append('  Precision:          {:8.1f} %  of reef detections are correct'.format(100*stats['precision']))
+        if recall:
+            lines.append('  Recall:             {:8.1f} %  of actual reef area is detected'.format(100*recall))
+        else:
+            lines.append('  Recall:                  N/A')
+        if precision:
+            lines.append('  Precision:          {:8.1f} %  of reef detections are correct'.format(100*precision))
+        else:
+            lines.append('  Precision:                  N/A')
         lines.append('')
         lines.append('  Total area:         {:8.1f} km2  in convex hull around ACA reef'.format(stats['total_area']))
         lines.append('')
