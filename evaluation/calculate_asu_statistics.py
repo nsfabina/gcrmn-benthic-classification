@@ -57,8 +57,9 @@ def calculate_asu_statistics(config_name: str, recalculate: bool = False) -> Non
         _logger.debug('Saving statistics'.format(reef))
         with open(filepath_data_out, 'w') as file_:
             json.dump(statistics, file_)
-    _logger.info('Calculations complete')
+    _logger.info('Calculations complete, generating report')
     _generate_pdf_summary(statistics, config_name)
+    _logger.info('Report generation complete')
 
 
 def _calculate_asu_statistics_for_reef(reef: str, config_name: str) -> dict:
