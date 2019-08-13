@@ -115,6 +115,8 @@ def _calculate_area_in_square_kilometers(geometry: shapely.geometry.base.BaseGeo
         https://gis.stackexchange.com/questions/127607/area-in-km-from-polygon-of-coordinates
     Trusted because the answer is from sgillies
     """
+    if not geometry.bounds:
+        return 0.0
     transformed = shapely.ops.transform(
         functools.partial(
             pyproj.transform,
