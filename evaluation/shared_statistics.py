@@ -23,7 +23,7 @@ def calculate_model_performance_statistics(
     stats['groundtruth_nonreef_area'] = _calculate_area_in_square_kilometers(groundtruth_nonreef)
     stats['model_reef_area'] = _calculate_area_in_square_kilometers(model_reef.intersection(total_footprint))
     stats['model_nonreef_area'] = stats['total_area'] - stats['model_reef_area']
-    stats['groundtruth_pct'] = stats['groundtruth_reef_area'] / stats['total_area']
+    stats['groundtruth_reef_pct'] = stats['groundtruth_reef_area'] / stats['total_area']
     stats['groundtruth_nonreef_pct'] = stats['groundtruth_nonreef_area'] / stats['total_area']
     stats['model_pct'] = stats['model_reef_area'] / stats['total_area']
     stats['model_nonreef_pct'] = stats['model_nonreef_area'] / stats['total_area']
