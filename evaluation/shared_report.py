@@ -8,12 +8,12 @@ def generate_pdf_summary_report(statistics: dict, label: str, filepath_out: str)
     for reef, stats in sorted(statistics.items()):
         reef_name = re.sub('_', ' ', reef).title()
         # Calculate precision and recall
-        denominator = stats['pct_tp'] + stats['pct_fn']
+        denominator = stats['pct_tp'] + stats['pct_fp']
         if denominator:
             precision = stats['pct_tp'] / denominator
         else:
             precision = None
-        denominator = stats['pct_tp'] + stats['pct_fp']
+        denominator = stats['pct_tp'] + stats['pct_fn']
         if denominator:
             recall = stats['pct_tp'] / denominator
         else:
