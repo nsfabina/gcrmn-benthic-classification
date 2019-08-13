@@ -151,39 +151,39 @@ def _generate_pdf_summary(statistics: dict, config_name: str) -> None:
         lines.append('')
         lines.append(reef_name)
         lines.append('')
-        lines.append('  Recall:             {:8.2f} %  of reef area is detected correctly'.format(100*stats['recall']))
-        lines.append('  Precision:          {:8.2f} %  of reef detections are correct'.format(100*stats['precision']))
+        lines.append('  Recall:             {:8.1f} %  of actual reef area is detected'.format(100*stats['recall']))
+        lines.append('  Precision:          {:8.1f} %  of reef detections are correct'.format(100*stats['precision']))
         lines.append('')
-        lines.append('  Total area:         {:8.2f} km2  in convex hull around ACA reef'.format(stats['total_area']))
+        lines.append('  Total area:         {:8.1f} km2  in convex hull around ACA reef'.format(stats['total_area']))
         lines.append('')
-        lines.append('  ACA reef:           {:8.2f} km2 | {:4.1f} %  of total area'.format(
+        lines.append('  ACA reef:           {:8.1f} km2 | {:4.1f} %  of total area'.format(
             stats['uq_reef_area'], 100*stats['uq_reef_pct']))
-        lines.append('  ASU reef:           {:8.2f} km2 | {:4.1f} %  of total area'.format(
+        lines.append('  ASU reef:           {:8.1f} km2 | {:4.1f} %  of total area'.format(
             stats['asu_reef_area'], 100*stats['asu_reef_pct']))
         lines.append('')
         lines.append('  Reef detections')
-        lines.append('  True positives:     {:8.2f} km2 | {:4.1f} %  of reef area'.format(
+        lines.append('  True positives:     {:8.1f} km2 | {:4.1f} %  of reef area'.format(
             stats['area_tp'], 100*stats['area_tp']/stats['uq_reef_area']))
-        lines.append('  False positives:    {:8.2f} km2 | {:4.1f} %  of reef area'.format(
+        lines.append('  False positives:    {:8.1f} km2 | {:4.1f} %  of reef area'.format(
             stats['area_fp'], 100*stats['area_fp']/stats['uq_reef_area']))
         lines.append('')
-        lines.append('  ACA non-reef:       {:8.2f} km2 | {:4.1f} %  of total area'.format(
+        lines.append('  ACA non-reef:       {:8.1f} km2 | {:4.1f} %  of total area'.format(
             stats['uq_nonreef_area'], 100*stats['uq_nonreef_pct']))
-        lines.append('  ASU non-reef:       {:8.2f} km2 | {:4.1f} %  of total area'.format(
+        lines.append('  ASU non-reef:       {:8.1f} km2 | {:4.1f} %  of total area'.format(
             stats['asu_nonreef_area'], 100*stats['asu_nonreef_pct']))
         lines.append('')
         lines.append('  Non-reef detections')
         if stats['uq_nonreef_area'] > 0:
-            line = '  True negatives:     {:8.2f} km2 | {:4.1f} % of non-reef area'.format(
+            line = '  True negatives:     {:8.1f} km2 | {:4.1f} % of non-reef area'.format(
                 stats['area_tn'], 100*stats['area_tn']/stats['uq_nonreef_area'])
         else:
-            line = '  True negatives:     {:8.2f} km2'.format(stats['area_tn'])
+            line = '  True negatives:     {:8.1f} km2'.format(stats['area_tn'])
         lines.append(line)
         if stats['uq_nonreef_area'] > 0:
-            line = '  False negatives:    {:8.2f} km2 | {:4.1f} % of non-reef area'.format(
+            line = '  False negatives:    {:8.1f} km2 | {:4.1f} % of non-reef area'.format(
                 stats['area_fn'], 100*stats['area_fn']/stats['uq_nonreef_area'])
         else:
-            line = '  False negatives:    {:8.2f} km2'.format(stats['area_fn'])
+            line = '  False negatives:    {:8.1f} km2'.format(stats['area_fn'])
         lines.append(line)
         lines.append('')
         lines.append('')

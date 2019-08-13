@@ -149,7 +149,7 @@ def _generate_pdf_summary(statistics: dict) -> None:
         lines.append('')
         lines.append(reef_name)
         lines.append('')
-        lines.append('  Recall:             {:8.1f} %  of reef area is detected correctly'.format(100*stats['recall']))
+        lines.append('  Recall:             {:8.1f} %  of actual reef area is detected'.format(100*stats['recall']))
         lines.append('  Precision:          {:8.1f} %  of reef detections are correct'.format(100*stats['precision']))
         lines.append('')
         lines.append('  Total area:         {:8.1f} km2  in convex hull around ACA reef'.format(stats['total_area']))
