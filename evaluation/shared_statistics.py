@@ -25,7 +25,7 @@ def calculate_model_performance_statistics(
     stats['model_nonreef_area'] = stats['total_area'] - stats['model_reef_area']
     stats['groundtruth_reef_pct'] = stats['groundtruth_reef_area'] / stats['total_area']
     stats['groundtruth_nonreef_pct'] = stats['groundtruth_nonreef_area'] / stats['total_area']
-    stats['model_pct'] = stats['model_reef_area'] / stats['total_area']
+    stats['model_reef_pct'] = stats['model_reef_area'] / stats['total_area']
     stats['model_nonreef_pct'] = stats['model_nonreef_area'] / stats['total_area']
 
     # True/false positives/negatives
