@@ -4,8 +4,6 @@ import json
 import logging
 import os
 import re
-import shlex
-import subprocess
 import sys
 
 import fiona
@@ -73,14 +71,18 @@ def _calculate_asu_statistics_for_reef(reef: str, config_name: str) -> dict:
     individual_asu = [fiona.open(filepath) for filepath in filepaths]
 
     _logger.debug('Generate UQ reef multipolygon')
-    uq_reef = _parse_multipolygon_from_features(uq)
+    uq_reef = shapely.geometry.MultiPolygon([shapely.geometry.shape(feature['geometry']) for feature in uq])
 
     _logger.debug('Generate UQ reef bounds')
     x, y, w, z = uq_reef.bounds
     uq_bounds = shapely.geometry.Polygon([[x, y], [x, z], [w, z], [w, y]])
 
     _logger.debug('Generate ASU reef multipolygons nearby UQ reef bounds')
-    individual_asu_reefs = [_parse_multipolygon_from_features(asu, uq_bounds) for asu in individual_asu]
+    individual_asu_reefs = list()
+    for asu in individual_asu:
+        individual_asu_reefs.append(shapely.geometry.MultiPolygon([
+            shapely.geometry.shape(feature['geometry']) for feature in asu
+        ]))
     asu_reef = shapely.ops.unary_union(individual_asu_reefs)
     del individual_asu_reefs
 
@@ -118,24 +120,6 @@ def _calculate_asu_statistics_for_reef(reef: str, config_name: str) -> dict:
     stats['recall'] = stats['pct_tp'] / (stats['pct_tp'] + stats['pct_fp'])
 
     return stats
-
-
-def _parse_multipolygon_from_features(features: fiona.Collection, bounds: shapely.geometry.Polygon = None) \
-        -> shapely.geometry.MultiPolygon:
-    polygons = list()
-    for feature in features:
-        geom_type = feature['geometry']['type']
-        assert geom_type in ('MultiPolygon', 'Polygon'), 'Type is {}'.format(geom_type)
-        shape = shapely.geometry.shape(feature['geometry'])
-        if bounds:
-            if not bounds.intersects(shape):
-                continue
-        if geom_type == 'Polygon':
-            polygons = [shape]
-        elif geom_type == 'MultiPolygon':
-            polygons = [polygon for polygon in shape]
-        polygons.extend(polygons)
-    return shapely.geometry.MultiPolygon(polygons).buffer(0)
 
 
 def _calculate_area_in_square_kilometers(geometry: shapely.geometry.base.BaseGeometry) -> float:
