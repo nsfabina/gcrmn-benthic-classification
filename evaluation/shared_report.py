@@ -26,7 +26,7 @@ def generate_pdf_summary_report(statistics: dict, label: str, filepath_out: str)
         if recall:
             lines.append('  Recall:             {:8.1f} %  of actual reef area is detected by model'.format(100*recall))
         else:
-            lines.append('  Recall:                  N/A')
+            lines.append('  Recall:                     N/A')
         if precision:
             lines.append('  Precision:          {:8.1f} %  of model detections are actually reef'.format(100*precision))
         else:
