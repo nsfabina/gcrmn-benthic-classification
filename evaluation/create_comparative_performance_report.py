@@ -172,7 +172,7 @@ def _get_precision_str(reef_statistics: dict) -> str:
 
 
 def _get_recall_str(reef_statistics: dict) -> str:
-    recall = -_calculate_recall(reef_statistics)
+    recall = _calculate_recall(reef_statistics)
     if recall:
         recall_str = '{:8.1f} %'.format(recall)
     else:
