@@ -54,7 +54,7 @@ for REEF in `ls "${DIR_BASE}"`; do
         gdal_calc.py -A "${RASTER}" --A_band=3 -B "${RASTER}" --B_band=2 \
             --outfile="${FILEPATH_TMP_2}" --NoDataValue=-9999 --type="Int16" --overwrite --quiet \
             --calc="A > B"
-        echo "Create raster for rReefs more likely in both"
+        echo "Create raster for reefs more likely in both"
         gdal_calc.py -A "${FILEPATH_TMP_1}" -B "${FILEPATH_TMP_2}" \
             --outfile="${FILEPATH_TMP_3}" --NoDataValue=-9999 --type="Int16" --overwrite --quiet \
             --calc="numpy.logical_and(A, B)"
