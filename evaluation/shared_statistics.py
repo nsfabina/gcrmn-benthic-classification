@@ -14,6 +14,11 @@ def calculate_model_performance_statistics(
     # polygon issues that cannot be resolved using buffer(0). Note that the "obvious calculation" is
     # total_footprint.difference(model_reef).
 
+    # Buffer geometries for validity and assert that areas are approximately equal
+    area_old = model_reef.area
+    model_reef = model_reef.buffer(0)
+    assert abs(area_old - model_reef.area) <= 0.01 * area_old, 'Buffering caused significant area changes'
+
     # Calculate absolute and percent areas
     total_footprint = groundtruth_reef.convex_hull
     groundtruth_nonreef = total_footprint.difference(groundtruth_reef).buffer(0)
