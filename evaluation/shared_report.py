@@ -2,8 +2,12 @@ import matplotlib.pyplot as plt
 import re
 
 
-def generate_pdf_summary_report(statistics: dict, label: str, filepath_out: str) -> None:
-    lines = ['{} Reef Performance Summary'.format(label), '', '']
+def generate_pdf_summary_report(statistics: dict, label: str, filepath_out: str, config_name: str = None) -> None:
+    if config_name:
+        subtitle = '  Model name:  {}'.format(config_name)
+    else:
+        subtitle = ''
+    lines = ['{} Reef Performance Summary'.format(label), subtitle, '', '']
 
     for reef, stats in sorted(statistics.items()):
         reef_name = re.sub('_', ' ', reef).title()

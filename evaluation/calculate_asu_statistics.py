@@ -55,7 +55,7 @@ def calculate_asu_statistics(config_name: str, recalculate: bool = False) -> Non
         with open(filepath_data_out, 'w') as file_:
             json.dump(statistics, file_)
     _logger.info('Calculations complete, generating report')
-    shared_report.generate_pdf_summary_report(statistics, 'ASU', _FILEPATH_FIG_OUT.format(config_name))
+    shared_report.generate_pdf_summary_report(statistics, 'ASU', _FILEPATH_FIG_OUT.format(config_name), config_name)
     _logger.info('Report generation complete')
 
 
