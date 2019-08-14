@@ -47,14 +47,14 @@ def create_comparative_performance_report() -> None:
     lines.append('')
     lines.append('          UNEP:               {}'.format(_get_recall_average_str(unep_statistics)))
     for config_name, stats in asu_statistics:
-        lines.append('      {:<20}{}'.format(config_name+':', _get_recall_average_str(stats)))
+        lines.append('          {:<20}{}'.format(config_name+':', _get_recall_average_str(stats)))
     lines.append('')
 
     lines.append('      Mean Precision:  model detections which are actually reef')
     lines.append('')
     lines.append('          UNEP:               {}'.format(_get_precision_average_str(unep_statistics)))
     for config_name, stats in asu_statistics:
-        lines.append('      {:<20}{}'.format(config_name+':', _get_precision_average_str(stats)))
+        lines.append('          {:<20}{}'.format(config_name+':', _get_precision_average_str(stats)))
     lines.append('')
     lines.append('')
 
@@ -189,8 +189,8 @@ def _get_precision_average_str(model_statistics: dict) -> str:
             continue
         precisions.append(precision)
         weights.append(reef_statistics['groundtruth_reef_area'])
-    unweighted = 100 * np.mean(precisions)
-    weighted = 100 * np.average(precisions, weights=weights)
+    unweighted = np.mean(precisions)
+    weighted = np.average(precisions, weights=weights)
     return '{:4.1f} %  |  {:4.1f} %  weighted by area'.format(unweighted, weighted)
 
 
@@ -203,8 +203,8 @@ def _get_recall_average_str(model_statistics: dict) -> str:
             continue
         recalls.append(recall)
         weights.append(reef_statistics['groundtruth_reef_area'])
-    unweighted = 100 * np.mean(recalls)
-    weighted = 100 * np.average(recalls, weights=weights)
+    unweighted = np.mean(recalls)
+    weighted = np.average(recalls, weights=weights)
     return '{:4.1f} %  |  {:4.1f} %  weighted by area'.format(unweighted, weighted)
 
 
