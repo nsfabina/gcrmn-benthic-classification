@@ -45,16 +45,16 @@ def create_comparative_performance_report() -> None:
     lines.append('')
     lines.append('      Mean Recall:  actual reef area which is detected by the model')
     lines.append('')
-    lines.append('          UNEP:               {}'.format(_get_recall_average_str(unep_statistics)))
+    lines.append('          {:<24}{}'.format('UNEP:', _get_recall_average_str(unep_statistics)))
     for config_name, stats in asu_statistics:
-        lines.append('          {:<20}{}'.format(config_name+':', _get_recall_average_str(stats)))
+        lines.append('          {:<24}{}'.format(config_name+':', _get_recall_average_str(stats)))
     lines.append('')
 
     lines.append('      Mean Precision:  model detections which are actually reef')
     lines.append('')
-    lines.append('          UNEP:               {}'.format(_get_precision_average_str(unep_statistics)))
+    lines.append('          {:<24}{}'.format('UNEP:', _get_precision_average_str(unep_statistics)))
     for config_name, stats in asu_statistics:
-        lines.append('          {:<20}{}'.format(config_name+':', _get_precision_average_str(stats)))
+        lines.append('          {:<24}{}'.format(config_name+':', _get_precision_average_str(stats)))
     lines.append('')
     lines.append('')
 
@@ -73,16 +73,16 @@ def create_comparative_performance_report() -> None:
         # Recall and precision
         lines.append('  Recall:  actual reef area which is detected by the model')
         lines.append('')
-        lines.append('      UNEP:               {}'.format(_get_recall_str(unep_stats)))
+        lines.append('      {:<24}{}'.format('UNEP:', _get_recall_str(unep_stats)))
         for config_name, stats in asu_reef_stats:
-            lines.append('      {:<20}{}'.format(config_name+':', _get_recall_str(stats)))
+            lines.append('      {:<24}{}'.format(config_name+':', _get_recall_str(stats)))
         lines.append('')
 
         lines.append('  Precision:  model detections which are actually reef')
         lines.append('')
-        lines.append('      UNEP:               {}'.format(_get_precision_str(unep_stats)))
+        lines.append('      {:<24}{}'.format('UNEP:', _get_precision_str(unep_stats)))
         for config_name, stats in asu_reef_stats:
-            lines.append('      {:<20}{}'.format(config_name+':', _get_precision_str(stats)))
+            lines.append('      {:<24}{}'.format(config_name+':', _get_precision_str(stats)))
         lines.append('')
         lines.append('')
 
@@ -95,30 +95,30 @@ def create_comparative_performance_report() -> None:
         # Reef area and detections
         lines.append('  Reef area')
         lines.append('')
-        lines.append('      ACA:                {:8.1f} km2 | {:4.1f} %  of total area'.format(
-            unep_stats['groundtruth_reef_area'], 100*unep_stats['groundtruth_reef_pct']))
-        lines.append('      UNEP:               {:8.1f} km2 | {:4.1f} %  of total area'.format(
-            unep_stats['model_reef_area'], 100*unep_stats['model_reef_pct']))
+        lines.append('      {:<24}{:8.1f} km2 | {:4.1f} %  of total area'.format(
+            'ACA:', unep_stats['groundtruth_reef_area'], 100*unep_stats['groundtruth_reef_pct']))
+        lines.append('      {:<24}{:8.1f} km2 | {:4.1f} %  of total area'.format(
+            'UNEP:', unep_stats['model_reef_area'], 100*unep_stats['model_reef_pct']))
         for config_name, stats in asu_reef_stats:
-            lines.append('      {:<20}{:8.1f} km2 | {:4.1f} %  of total area'.format(
+            lines.append('      {:<24}{:8.1f} km2 | {:4.1f} %  of total area'.format(
                 config_name+':', stats['model_reef_area'], 100*stats['model_reef_pct']))
         lines.append('')
 
         lines.append('  Reef detections')
         lines.append('')
         lines.append('      True positives')
-        lines.append('          UNEP:               {:8.1f} km2 | {:4.1f} %  of reef area'.format(
-            unep_stats['area_tp'], 100*unep_stats['area_tp']/unep_stats['groundtruth_reef_area']))
+        lines.append('          {:<24}{:8.1f} km2 | {:4.1f} %  of reef area'.format(
+            'UNEP:', unep_stats['area_tp'], 100*unep_stats['area_tp']/unep_stats['groundtruth_reef_area']))
         for config_name, stats in asu_reef_stats:
-            lines.append('          {:<20}{:8.1f} km2 | {:4.1f} %  of reef area'.format(
+            lines.append('          {:<24}{:8.1f} km2 | {:4.1f} %  of reef area'.format(
                 config_name+':', stats['area_tp'], 100*stats['area_tp']/stats['groundtruth_reef_area']))
         lines.append('')
 
         lines.append('      False positives')
-        lines.append('          UNEP:               {:8.1f} km2 | {:4.1f} %  of non-reef area'.format(
-            unep_stats['area_fp'], 100*unep_stats['area_fp']/unep_stats['groundtruth_nonreef_area']))
+        lines.append('          {:<24}{:8.1f} km2 | {:4.1f} %  of non-reef area'.format(
+            'UNEP:', unep_stats['area_fp'], 100*unep_stats['area_fp']/unep_stats['groundtruth_nonreef_area']))
         for config_name, stats in asu_reef_stats:
-            lines.append('          {:<20}{:8.1f} km2 | {:4.1f} %  of non-reef area'.format(
+            lines.append('          {:<24}{:8.1f} km2 | {:4.1f} %  of non-reef area'.format(
                 config_name+':', stats['area_fp'], 100*stats['area_fp']/stats['groundtruth_nonreef_area']))
         lines.append('')
         lines.append('')
@@ -126,30 +126,30 @@ def create_comparative_performance_report() -> None:
         # Non-reef area and detections
         lines.append('  Non-reef area')
         lines.append('')
-        lines.append('      ACA:                {:8.1f} km2 | {:4.1f} %  of total area'.format(
-            unep_stats['groundtruth_nonreef_area'], 100*unep_stats['groundtruth_nonreef_pct']))
-        lines.append('      UNEP:               {:8.1f} km2 | {:4.1f} %  of total area'.format(
-            unep_stats['model_nonreef_area'], 100*unep_stats['model_nonreef_pct']))
+        lines.append('      {:<24}{:8.1f} km2 | {:4.1f} %  of total area'.format(
+            'ACA:', unep_stats['groundtruth_nonreef_area'], 100*unep_stats['groundtruth_nonreef_pct']))
+        lines.append('      {:<24}{:8.1f} km2 | {:4.1f} %  of total area'.format(
+            'UNEP:', unep_stats['model_nonreef_area'], 100*unep_stats['model_nonreef_pct']))
         for config_name, stats in asu_reef_stats:
-            lines.append('      {:<20}{:8.1f} km2 | {:4.1f} %  of total area'.format(
+            lines.append('      {:<24}{:8.1f} km2 | {:4.1f} %  of total area'.format(
                 config_name+':', stats['model_nonreef_area'], 100*stats['model_nonreef_pct']))
         lines.append('')
 
         lines.append('  Non-reef detections')
         lines.append('')
         lines.append('      True negatives')
-        lines.append('          UNEP:               {:8.1f} km2 | {:4.1f} %  of reef area'.format(
-            unep_stats['area_tn'], 100*unep_stats['area_tn']/unep_stats['groundtruth_nonreef_area']))
+        lines.append('          {:<24}{:8.1f} km2 | {:4.1f} %  of reef area'.format(
+            'UNEP:', unep_stats['area_tn'], 100*unep_stats['area_tn']/unep_stats['groundtruth_nonreef_area']))
         for config_name, stats in asu_reef_stats:
-            lines.append('          {:<20}{:8.1f} km2 | {:4.1f} %  of reef area'.format(
+            lines.append('          {:<24}{:8.1f} km2 | {:4.1f} %  of reef area'.format(
                 config_name+':', stats['area_tn'], 100*stats['area_tn']/stats['groundtruth_nonreef_area']))
         lines.append('')
 
         lines.append('      False negatives')
-        lines.append('          UNEP:               {:8.1f} km2 | {:4.1f} %  of reef area'.format(
-            unep_stats['area_fn'], 100*unep_stats['area_fn']/unep_stats['groundtruth_reef_area']))
+        lines.append('          {:<24}{:8.1f} km2 | {:4.1f} %  of reef area'.format(
+            'UNEP:', unep_stats['area_fn'], 100*unep_stats['area_fn']/unep_stats['groundtruth_reef_area']))
         for config_name, stats in asu_reef_stats:
-            lines.append('          {:<20}{:8.1f} km2 | {:4.1f} %  of reef area'.format(
+            lines.append('          {:<24}{:8.1f} km2 | {:4.1f} %  of reef area'.format(
                 config_name+':', stats['area_fn'], 100*stats['area_fn']/stats['groundtruth_reef_area']))
         lines.append('')
         lines.append('')
