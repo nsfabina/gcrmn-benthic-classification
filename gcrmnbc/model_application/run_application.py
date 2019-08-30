@@ -4,26 +4,106 @@ import os
 import re
 from typing import List
 
+from bfgn.configuration import configs
 from bfgn.data_management import apply_model_to_data, data_core
 from bfgn.experiments import experiments
 from bfgn.utils import logging
 
-import shared_configs
+from gcrmnbc.model_application import data_bucket
+from gcrmnbc.utils import shared_configs
 
 
-_DIR_CONFIGS = 'configs'
-_DIR_APPLY_BASE = '/scratch/nfabina/gcrmn-benthic-classification'
+_DIR_CONFIGS = '../configs'
+_FILEPATH_LOGS = '/scratch/nfabina/gcrmn-benthic-classification/logs/{}/{}/log.out'
+#_DIR_APPLY_BASE = '/scratch/nfabina/gcrmn-benthic-classification'
 
-_SUBDIR_MOSAIC_IN = 'visual_mosaic_v1'
-_SUBDIR_MOSAIC_OUT = 'visual_mosaic_v1_applied/{}/{}/reefs'
-_DIR_MOSAIC_IN = os.path.join(_DIR_APPLY_BASE, _SUBDIR_MOSAIC_IN)
+#_SUBDIR_MOSAIC_IN = 'visual_mosaic_v1'
+#_SUBDIR_MOSAIC_OUT = 'visual_mosaic_v1_applied/{}/{}/reefs'
+#_DIR_MOSAIC_IN = os.path.join(_DIR_APPLY_BASE, _SUBDIR_MOSAIC_IN)
 
-_SUBDIR_TRAINING_IN = 'training_data'
-_SUBDIR_TRAINING_OUT = 'training_data_applied/{}/{}/reefs'
-_DIR_TRAINING_IN = os.path.join(_DIR_APPLY_BASE, _SUBDIR_TRAINING_IN)
-_FILENAME_VRT = 'features.vrt'
+#_SUBDIR_TRAINING_IN = 'training_data'
+#_SUBDIR_TRAINING_OUT = 'training_data_applied/{}/{}/reefs'
+#_DIR_TRAINING_IN = os.path.join(_DIR_APPLY_BASE, _SUBDIR_TRAINING_IN)
+#_FILENAME_VRT = 'features.vrt'
 
-_FILENAME_SUFFIX_OUT = '_applied.tif'
+#_FILENAME_SUFFIX_OUT = '_applied.tif'
+
+
+# TODO:  handle quads already processed / applied, different versions
+
+
+def run_application(config_name: str, response_mapping: str) -> None:
+    filepath_config = os.path.join(_DIR_CONFIGS, config_name + '.yaml')
+    config = shared_configs.build_dynamic_config(filepath_config, response_mapping)
+
+    # Get paths and logger
+    log_out = _FILEPATH_LOGS.format(config_name, response_mapping)
+    if not os.path.exists(os.path.dirname(log_out)):
+        os.makedirs(os.path.dirname(log_out))
+    logger = logging.get_root_logger(log_out)
+
+    # Get data and model objects
+    data_container = _load_dataset(config)
+    experiment = _load_experiment(config, data_container)
+    quads = data_bucket.get_quad_paths()
+
+
+
+
+
+def _load_dataset(config: configs.Config) -> data_core.DataContainer:
+    data_container = data_core.DataContainer(config)
+    data_container.build_or_load_rawfile_data()
+    data_container.build_or_load_scalers()
+    data_container.load_sequences()
+    return data_container
+
+
+def _load_experiment(config: configs.Config, data_container: data_core.DataContainer) -> experiments.Experiment:
+    experiment = experiments.Experiment(config)
+    experiment.build_or_load_model(data_container)
+    return experiment
+
+
+
+
+
+
+
+if __name__ == '__main__':
+    parser = ArgumentParser()
+    parser.add_argument('--target', required=True)
+    parser.add_argument('--config_name', required=True)
+    parser.add_argument('--response_mapping', required=True)
+    args = parser.parse_args()
+    if args.target == 'training_data':
+        run_application_to_training_data(args.config_name, args.response_mapping)
+    elif args.target == 'global_mosaic':
+        run_application_to_global_mosaic(args.config_name, args.response_mapping)
+    else:
+        raise AssertionError('target must be either training or mosaic')
+
+
+
+
+
+
+
+dir_quad = os.path.join(_DIR_SCRATCH_TMP)
+
+# Return early if another process won the race condition to starting the quad
+if os.path.exists(dir_quad):
+    return
+if os.path.exists
+
+if not os.path.exists(dir_quad):
+    try:
+        os.makedirs(dir_quad)
+    except FileExistsError:
+        # Another process won the race condition and has started on this quad
+        return
+
+
 
 
 def run_application_to_training_data(config_name: str, response_mapping: str) -> None:
