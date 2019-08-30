@@ -7,7 +7,7 @@ set -e
 # pie chart icon, and clicking 'Download Layers and Stats'. It was subsequently uploaded to nsfabina's GDrive.
 
 
-DIR_DEST=/scratch/nfabina/gcrmn-benthic-classification/training_data
+DIR_DEST="/scratch/nfabina/gcrmn-benthic-classification/training_data"
 
 
 for REEF in belize hawaii heron karimunjawa moorea; do

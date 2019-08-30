@@ -1,5 +1,6 @@
-import matplotlib.pyplot as plt
 import re
+
+import matplotlib.pyplot as plt
 
 
 def generate_pdf_summary_report(statistics: dict, label: str, filepath_out: str, config_name: str = None) -> None:

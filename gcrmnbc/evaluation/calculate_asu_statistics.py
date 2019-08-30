@@ -8,8 +8,7 @@ import fiona
 import shapely.geometry
 import shapely.ops
 
-import shared_report
-import shared_statistics
+from gcrmnbc.evaluation import shared_report, shared_statistics
 
 
 _logger = logging.getLogger(__name__)
