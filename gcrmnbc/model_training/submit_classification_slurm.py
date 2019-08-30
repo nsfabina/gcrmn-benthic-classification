@@ -2,9 +2,11 @@ import argparse
 import os
 import subprocess
 
-from shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS
+from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS
 
 
+DIR_CONFIGS = '../configs'
+DIR_MODELS = '../models'
 SLURM_COMMAND_WRAP = '--wrap "python run_classification.py --config_name={} --response_mapping={} {}"'
 
 
@@ -26,12 +28,12 @@ if __name__ == '__main__':
 
     # Get relevant configs, only get one config per window radius if building
     if args.build_only:
-        filename_configs = [filename for filename in os.listdir('configs') if filename.startswith('build_only')]
+        filename_configs = [filename for filename in os.listdir(DIR_CONFIGS) if filename.startswith('build_only')]
     elif args.config_names:
         filename_configs = [os.path.basename(filepath) for filepath in args.config_names.split(',')]
     else:
         filename_configs = [
-            filename for filename in os.listdir('configs') if filename.endswith('yaml')
+            filename for filename in os.listdir(DIR_CONFIGS) if filename.endswith('yaml')
             and filename != 'config_template.yaml' and not filename.startswith('build_only')
         ]
 
@@ -42,7 +44,7 @@ if __name__ == '__main__':
             job_name = 'classify_' + config_name + '_' + response_mapping
 
             # Create model directory
-            dir_model = os.path.join('models', config_name, response_mapping)
+            dir_model = os.path.join(DIR_MODELS, config_name, response_mapping)
             if not os.path.exists(dir_model):
                 os.makedirs(dir_model)
 

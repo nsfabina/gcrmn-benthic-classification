@@ -3,7 +3,7 @@ import os
 from bfgn.reporting import comparisons
 
 
-_DIR_MODELS = 'models'
+_DIR_MODELS = '../models'
 _RESPONSE_MAPPING = 'lwr'
 
 

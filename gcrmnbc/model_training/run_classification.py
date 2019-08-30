@@ -5,10 +5,10 @@ from bfgn.data_management import data_core
 from bfgn.reporting import reports
 from bfgn.experiments import experiments
 
-import shared_configs
+from gcrmnbc.utils import shared_configs
 
 
-_DIR_CONFIGS = 'configs'
+_DIR_CONFIGS = '../configs'
 _FILENAME_LOCK = 'classify.lock'
 _FILENAME_SUCCESS = 'classify.complete'
 

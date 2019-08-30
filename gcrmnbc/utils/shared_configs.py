@@ -3,7 +3,7 @@ import os
 from bfgn.configuration import configs
 
 
-_DIR_MODELS = 'models'
+_DIR_MODELS = '../models'
 
 _DIR_DATA_BASE = '/scratch/nfabina/gcrmn-benthic-classification'
 _DIR_DATA_REEF = os.path.join(_DIR_DATA_BASE, 'training_data')
