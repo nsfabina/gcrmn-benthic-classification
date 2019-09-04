@@ -2,7 +2,7 @@ import argparse
 import os
 import subprocess
 
-from shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS
+from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS
 
 
 SLURM_COMMAND_WRAP = '--wrap "python run_application.py --target={} --config_name={} --response_mapping={} "'
