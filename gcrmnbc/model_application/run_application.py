@@ -1,11 +1,8 @@
 from argparse import ArgumentParser
-from logging import Logger
 import os
-import re
-from typing import List
 
 from bfgn.configuration import configs
-from bfgn.data_management import apply_model_to_data, data_core
+from bfgn.data_management import data_core
 from bfgn.experiments import experiments
 from bfgn.utils import logging
 
@@ -15,21 +12,6 @@ from gcrmnbc.utils import shared_configs
 
 _DIR_CONFIGS = '../configs'
 _FILEPATH_LOGS = '/scratch/nfabina/gcrmn-benthic-classification/logs/{}/{}/log.out'
-#_DIR_APPLY_BASE = '/scratch/nfabina/gcrmn-benthic-classification'
-
-#_SUBDIR_MOSAIC_IN = 'visual_mosaic_v1'
-#_SUBDIR_MOSAIC_OUT = 'visual_mosaic_v1_applied/{}/{}/reefs'
-#_DIR_MOSAIC_IN = os.path.join(_DIR_APPLY_BASE, _SUBDIR_MOSAIC_IN)
-
-#_SUBDIR_TRAINING_IN = 'training_data'
-#_SUBDIR_TRAINING_OUT = 'training_data_applied/{}/{}/reefs'
-#_DIR_TRAINING_IN = os.path.join(_DIR_APPLY_BASE, _SUBDIR_TRAINING_IN)
-#_FILENAME_VRT = 'features.vrt'
-
-#_FILENAME_SUFFIX_OUT = '_applied.tif'
-
-
-# TODO:  handle quads already processed / applied, different versions
 
 
 def run_application(config_name: str, response_mapping: str, version_map: str) -> None:
