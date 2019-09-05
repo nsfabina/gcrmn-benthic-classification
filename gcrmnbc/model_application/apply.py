@@ -62,7 +62,8 @@ def apply_model_to_quad(
         data_bucket.download_source_data_for_quad_blob(quad_paths.dir_quad, quad_blob)
 
         _logger.debug('Create feature VRT')
-        _create_feature_vrt(quad_paths)
+        buffer = int(2 * experiment.config.data_build.window_radius - experiment.config.data_build.loss_window_radius)
+        _create_feature_vrt(quad_paths, buffer)
 
         _logger.info('Generate class probabilities from model')
         _generate_class_probabilities_raster(quad_paths, data_container, experiment)
@@ -71,7 +72,7 @@ def apply_model_to_quad(
         _generate_class_mle_raster(quad_paths, data_container)
 
         _logger.info('Crop rasters to focal quad extent')
-        _crop_class_rasters_to_focal_extent(quad_paths)
+        _crop_and_scale_class_rasters(quad_paths)
 
         _logger.info('Uploading classifications and probabilities')
         data_bucket.upload_model_class_probabilities_for_quad_blob(quad_paths.filepath_prob, quad_blob, version_map)
@@ -96,8 +97,24 @@ def _create_temporary_directory_for_data(quad_paths: QuadPaths) -> None:
     os.makedirs(quad_paths.dir_quad)
 
 
-def _create_feature_vrt(quad_paths: QuadPaths) -> None:
-    # TODO?:  crop vrt extent to focal raster + some buffer, will save lots of time, but necessary?
+def _create_feature_vrt(quad_paths: QuadPaths, buffer: int) -> None:
+    # Get raster parameters for building VRT
+    focal_raster = gdal.Open(quad_paths.filepath_focal_quad)
+    cols = focal_raster.RasterXSize
+    rows = focal_raster.RasterYSize
+    llx, xres, _, y0, _, yres = focal_raster.GetGeoTransform()
+    urx = llx + cols * xres
+    y1 = y0 + rows * yres
+    lly = min([y0, y1])
+    ury = max([y0, y1])
+
+    # Modify raster parameters to build in buffer
+    llx -= buffer * xres
+    urx += buffer * xres
+    lly -= buffer * yres
+    ury += buffer * yres
+
+    # Build VRT
     focal_raster = gdal.Open(quad_paths.filepath_focal_quad)
     focal_srs = osr.SpatialReference(wkt=focal_raster.GetProjection())
     filepaths_quads = [
@@ -105,8 +122,8 @@ def _create_feature_vrt(quad_paths: QuadPaths) -> None:
         if filename.endswith(data_bucket.FILENAME_SUFFIX_FOCAL)
         or filename.endswith(data_bucket.FILENAME_SUFFIX_CONTEXT)
     ]
-    vrt_options = gdal.BuildVRTOptions(outputSRS=focal_srs, VRTNodata=-9999)
-    gdal.BuildVRT(quad_paths.filepath_features, filepaths_quads, options=vrt_options)
+    options_buildvrt = gdal.BuildVRTOptions(outputSRS=focal_srs, VRTNodata=-9999)
+    gdal.BuildVRT(quad_paths.filepath_features, filepaths_quads, options=options_buildvrt)
 
 
 def _generate_class_probabilities_raster(
@@ -128,9 +145,8 @@ def _generate_class_mle_raster(
         quad_paths.filepath_prob, data_container, basename_mle, creation_options=['TILED=YES', 'COMPRESS=DEFLATE'])
 
 
-def _crop_class_rasters_to_focal_extent(quad_paths: QuadPaths) -> None:
-    # TODO?:  convert probabilities, multiply by 100 and store as integers? only needed to save space, potentially
-    # Get raster parameters
+def _crop_and_scale_class_rasters(quad_paths: QuadPaths) -> None:
+    # Get raster parameters for crop and scale
     focal_raster = gdal.Open(quad_paths.filepath_focal_quad)
     focal_srs = osr.SpatialReference(wkt=focal_raster.GetProjection())
     cols = focal_raster.RasterXSize
@@ -140,12 +156,14 @@ def _crop_class_rasters_to_focal_extent(quad_paths: QuadPaths) -> None:
     y1 = y0 + rows * yres
     lly = min([y0, y1])
     ury = max([y0, y1])
-    warp_options = gdal.WarpOptions(
-        outputBounds=(llx, lly, urx, ury), srcSRS=focal_srs, dstSRS=focal_srs, outputType=gdal.GDT_Float32,
-        creationOptions=['TILED=YES', 'COMPRESS=DEFLATE'], srcNodata=-9999, dstNodata=-9999,
+
+    # Apply translation
+    options_translate = gdal.TranslateOptions(
+        outputType=gdal.GDT_Int16, projWin=(llx, ury, urx, lly), projWinSRS=focal_srs, scaleParams=(0, 1, 0, 100),
+        outputSRS=focal_srs, noData=-9999, creationOptions=['TILED=YES', 'COMPRESS=DEFLATE'],
     )
-    gdal.Warp(quad_paths.filepath_prob, quad_paths.filepath_prob, options=warp_options)
-    gdal.Warp(quad_paths.filepath_mle, quad_paths.filepath_mle, options=warp_options)
+    gdal.Translate(quad_paths.filepath_prob, quad_paths.filepath_prob, options=options_translate)
+    gdal.Translate(quad_paths.filepath_mle, quad_paths.filepath_mle, options=options_translate)
 
 
 def _get_quad_paths(quad_blob: data_bucket.QuadBlob, version_map: str) -> QuadPaths:
