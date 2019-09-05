@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 import shutil
 from typing import NamedTuple
 
@@ -147,7 +148,7 @@ def _generate_class_mle_raster(
 
 
 def _crop_and_scale_class_rasters(quad_paths: QuadPaths) -> None:
-    # Get raster parameters for crop and scale
+    # Get raster parameters for crop
     focal_raster = gdal.Open(quad_paths.filepath_focal_quad)
     focal_srs = osr.SpatialReference(wkt=focal_raster.GetProjection())
     cols = focal_raster.RasterXSize
@@ -157,14 +158,22 @@ def _crop_and_scale_class_rasters(quad_paths: QuadPaths) -> None:
     y1 = y0 + rows * yres
     lly = min([y0, y1])
     ury = max([y0, y1])
-
-    # Apply translation
+    # Apply translation to probabilities
     options_translate = gdal.TranslateOptions(
-        outputType=gdal.GDT_Int16, projWin=(llx, ury, urx, lly), projWinSRS=focal_srs, scaleParams=(0, 1, 0, 100),
-        outputSRS=focal_srs, noData=-9999, creationOptions=['TILED=YES', 'COMPRESS=DEFLATE'],
+        projWin=(llx, ury, urx, lly), projWinSRS=focal_srs, outputSRS=focal_srs, noData=-9999,
+        creationOptions=['TILED=YES', 'COMPRESS=DEFLATE'],
     )
-    gdal.Translate(quad_paths.filepath_prob, quad_paths.filepath_prob, options=options_translate)
-    gdal.Translate(quad_paths.filepath_mle, quad_paths.filepath_mle, options=options_translate)
+    tmp_filepath = re.sub('.tif', '_tmp.tif', quad_paths.filepath_prob)
+    gdal.Translate(tmp_filepath, quad_paths.filepath_prob, options=options_translate)
+    os.rename(tmp_filepath, quad_paths.filepath_prob)
+    # Apply translation to MLE
+    options_translate = gdal.TranslateOptions(
+        outputType=gdal.GDT_Int16, projWin=(llx, ury, urx, lly), projWinSRS=focal_srs, outputSRS=focal_srs,
+        noData=-9999, creationOptions=['TILED=YES', 'COMPRESS=DEFLATE'],
+    )
+    tmp_filepath = re.sub('.tif', '_tmp.tif', quad_paths.filepath_mle)
+    gdal.Translate(tmp_filepath, quad_paths.filepath_mle, options=options_translate)
+    os.rename(tmp_filepath, quad_paths.filepath_mle)
 
 
 def _get_quad_paths(quad_blob: data_bucket.QuadBlob, version_map: str) -> QuadPaths:
