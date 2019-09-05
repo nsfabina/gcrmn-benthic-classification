@@ -36,6 +36,11 @@ def apply_model_to_quad(
     _logger.info('Apply model to quad {}'.format(quad_blob.quad_focal))
     _logger.debug('Acquire file lock')
     quad_paths = _get_quad_paths(quad_blob, version_map)
+    if not os.path.exists(_DIR_SCRATCH_TMP):
+        try:
+            os.makedirs(_DIR_SCRATCH_TMP)
+        except FileExistsError:
+            pass
     try:
         file_lock = open(quad_paths.filepath_lock, 'x')
     except OSError:
@@ -92,12 +97,16 @@ def _create_temporary_directory_for_data(quad_paths: QuadPaths) -> None:
 
 
 def _create_feature_vrt(quad_paths: QuadPaths) -> None:
-    # TODO:  test manually
     # TODO?:  crop vrt extent to focal raster + some buffer, will save lots of time, but necessary?
     focal_raster = gdal.Open(quad_paths.filepath_focal_quad)
     focal_srs = osr.SpatialReference(wkt=focal_raster.GetProjection())
+    filepaths_quads = [
+        os.path.join(quad_paths.dir_quad, filename) for filename in os.listdir(quad_paths.dir_quad)
+        if filename.endswith(data_bucket.FILENAME_SUFFIX_FOCAL)
+        or filename.endswith(data_bucket.FILENAME_SUFFIX_CONTEXT)
+    ]
     vrt_options = gdal.BuildVRTOptions(outputSRS=focal_srs, VRTNodata=-9999)
-    gdal.BuildVRT(quad_paths.filepath_features, quad_paths.filepaths_quads, options=vrt_options)
+    gdal.BuildVRT(quad_paths.filepath_features, filepaths_quads, options=vrt_options)
 
 
 def _generate_class_probabilities_raster(
@@ -120,7 +129,6 @@ def _generate_class_mle_raster(
 
 
 def _crop_class_rasters_to_focal_extent(quad_paths: QuadPaths) -> None:
-    # TODO:  test manually
     # TODO?:  convert probabilities, multiply by 100 and store as integers? only needed to save space, potentially
     # Get raster parameters
     focal_raster = gdal.Open(quad_paths.filepath_focal_quad)
@@ -144,16 +152,10 @@ def _get_quad_paths(quad_blob: data_bucket.QuadBlob, version_map: str) -> QuadPa
     dir_quad = os.path.join(_DIR_SCRATCH_TMP, quad_blob.quad_focal)
     filepath_lock = os.path.join(_DIR_SCRATCH_TMP, '{}.lock'.format(quad_blob.quad_focal))
     filepath_features = os.path.join(dir_quad, _FILENAME_FEATURES_VRT)
-    filepaths_quads = [
-        os.path.join(dir_quad, filename) for filename in os.listdir(dir_quad)
-        if filename.endswith(data_bucket.FILENAME_SUFFIX_FOCAL)
-        or filename.endswith(data_bucket.FILENAME_SUFFIX_CONTEXT)
-    ]
-    filepath_focal = [fp for fp in filepaths_quads if fp.endswith(data_bucket.FILENAME_SUFFIX_FOCAL)][0]
+    filepath_focal = os.path.join(dir_quad, quad_blob.quad_focal + data_bucket.FILENAME_SUFFIX_FOCAL)
     filepath_prob = os.path.join(dir_quad, quad_blob.quad_focal + data_bucket.FILENAME_SUFFIX_PROB.format(version_map))
     filepath_mle = os.path.join(dir_quad, quad_blob.quad_focal + data_bucket.FILENAME_SUFFIX_MLE.format(version_map))
     return QuadPaths(
         dir_quad=dir_quad, filepath_lock=filepath_lock, filepath_features=filepath_features,
-        filepaths_quads=filepaths_quads, filepath_focal_quad=filepath_focal, filepath_prob=filepath_prob,
-        filepath_mle=filepath_mle,
+        filepath_focal_quad=filepath_focal, filepath_prob=filepath_prob, filepath_mle=filepath_mle,
     )
