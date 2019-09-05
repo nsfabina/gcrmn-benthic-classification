@@ -17,12 +17,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Prep for calling jobs
-    dir_model = os.path.join('models', args.config_name, args.response_mapping)
+    dir_model = os.path.join('../models', args.config_name, args.response_mapping)
     slurm_command = SLURM_COMMAND + SLURM_GPUS
-    slurm_python_wrap = SLURM_COMMAND_WRAP.format(args.target, args.config_name, args.response_mapping)
+    slurm_python_wrap = SLURM_COMMAND_WRAP.format(args.config_name, args.response_mapping, args.version_map)
 
     for idx_job in range(args.num_jobs):
-        job_name = 'apply_' + args.config_name + '_' + args.response_mapping + '_' + idx_job
+        job_name = 'apply_' + args.config_name + '_' + args.response_mapping + '_' + str(idx_job)
         slurm_args_dynamic = ' '.join([
             '--job-name={}'.format(job_name),
             '--output={}/slurm.apply.%j.%t.OUT'.format(dir_model),
