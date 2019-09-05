@@ -109,6 +109,15 @@ def _update_contextual_blobs(quad_blobs: List[QuadBlob]) -> List[QuadBlob]:
     return updated
 
 
+def _prune_completed_quad_blobs(quad_blobs: List[QuadBlob], version_map: str) -> List[QuadBlob]:
+    pruned = list()
+    for quad_blob in quad_blobs:
+        is_complete = check_is_quad_application_complete(quad_blob, version_map)
+        if not is_complete:
+            pruned.append(quad_blob)
+    return pruned
+
+
 def check_is_quad_application_complete(quad_blob: QuadBlob, version_map: str) -> bool:
     # Check if probability raster exists, if not, quad must be processed and we don't need to check MLE raster
     blob_prob = _get_model_class_probabilities_blob(quad_blob, version_map)

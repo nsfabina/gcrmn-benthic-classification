@@ -1,7 +1,7 @@
 import logging
 import os
 import shutil
-from typing import List, NamedTuple
+from typing import NamedTuple
 
 from bfgn.data_management import data_core
 from bfgn.experiments import experiments
@@ -21,7 +21,6 @@ class QuadPaths(NamedTuple):
     dir_quad: str
     filepath_lock: str
     filepath_features: str
-    filepaths_quads: List[str]
     filepath_focal_quad: str
     filepath_prob: str
     filepath_mle: str
@@ -111,8 +110,8 @@ def _create_feature_vrt(quad_paths: QuadPaths, buffer: int) -> None:
     # Modify raster parameters to build in buffer
     llx -= buffer * xres
     urx += buffer * xres
-    lly -= buffer * yres
-    ury += buffer * yres
+    lly += buffer * yres
+    ury -= buffer * yres
 
     # Build VRT
     focal_raster = gdal.Open(quad_paths.filepath_focal_quad)
@@ -122,7 +121,9 @@ def _create_feature_vrt(quad_paths: QuadPaths, buffer: int) -> None:
         if filename.endswith(data_bucket.FILENAME_SUFFIX_FOCAL)
         or filename.endswith(data_bucket.FILENAME_SUFFIX_CONTEXT)
     ]
-    options_buildvrt = gdal.BuildVRTOptions(outputSRS=focal_srs, VRTNodata=-9999)
+    options_buildvrt = gdal.BuildVRTOptions(
+        bandList=[1, 2, 3], outputBounds=(llx, lly, urx, ury), outputSRS=focal_srs, VRTNodata=-9999
+    )
     gdal.BuildVRT(quad_paths.filepath_features, filepaths_quads, options=options_buildvrt)
 
 
