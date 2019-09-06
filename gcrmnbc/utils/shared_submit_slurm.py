@@ -1,4 +1,4 @@
-SLURM_COMMAND = 'sbatch --mail-type=FAIL --mail-user=nsfabina@asu.edu --time=4:00:00 ' + \
+SLURM_COMMAND = 'sbatch --mail-type=FAIL --mail-user=nsfabina@asu.edu ' + \
                 '--nodes=1 --cpus-per-task=1 --mem-per-cpu=20000 --ntasks=1 ' + \
                 '--partition gpu --gres=gpu:1 --qos=wildfire '
 SLURM_GPUS_LARGE = '--constraint="V100_32" '

@@ -7,7 +7,8 @@ from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS
 
 DIR_CONFIGS = '../configs'
 DIR_MODELS = '../models'
-SLURM_COMMAND_WRAP = '--wrap "python run_classification.py --config_name={} --response_mapping={} {}"'
+SLURM_COMMAND_CLASSIFY = \
+    '--time=4:00:00 --wrap "python run_classification.py --config_name={} --response_mapping={} {}"'
 
 
 if __name__ == '__main__':
@@ -56,7 +57,7 @@ if __name__ == '__main__':
             ])
 
             # Set dynamic python arguments
-            slurm_python_wrap = SLURM_COMMAND_WRAP.format(
+            slurm_python_wrap = SLURM_COMMAND_CLASSIFY.format(
                 config_name, response_mapping, '--build_only' if args.build_only else '')
 
             print('Submitting job {}'.format(job_name))

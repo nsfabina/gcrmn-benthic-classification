@@ -5,7 +5,8 @@ import subprocess
 from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS
 
 
-SLURM_COMMAND_WRAP = '--wrap "python run_application.py --config_name={} --response_mapping={} --version_map={} "'
+SLURM_COMMAND_APPLY = \
+    '--time=24:00:00 --wrap "python run_application.py --config_name={} --response_mapping={} --version_map={} "'
 
 
 if __name__ == '__main__':
@@ -19,7 +20,7 @@ if __name__ == '__main__':
     # Prep for calling jobs
     dir_model = os.path.join('../models', args.config_name, args.response_mapping)
     slurm_command = SLURM_COMMAND + SLURM_GPUS
-    slurm_python_wrap = SLURM_COMMAND_WRAP.format(args.config_name, args.response_mapping, args.version_map)
+    slurm_python_wrap = SLURM_COMMAND_APPLY.format(args.config_name, args.response_mapping, args.version_map)
 
     for idx_job in range(args.num_jobs):
         job_name = 'apply_' + args.config_name + '_' + args.response_mapping + '_' + str(idx_job)
