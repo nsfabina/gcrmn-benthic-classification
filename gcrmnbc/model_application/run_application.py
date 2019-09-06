@@ -1,10 +1,10 @@
 from argparse import ArgumentParser
+import logging
 import os
 
 from bfgn.configuration import configs
 from bfgn.data_management import data_core
 from bfgn.experiments import experiments
-from bfgn.utils import logging
 
 from gcrmnbc.model_application import apply, data_bucket
 from gcrmnbc.utils import shared_configs
@@ -22,7 +22,12 @@ def run_application(config_name: str, response_mapping: str, version_map: str) -
     log_out = _FILEPATH_LOGS.format(config_name, response_mapping)
     if not os.path.exists(os.path.dirname(log_out)):
         os.makedirs(os.path.dirname(log_out))
-    logger = logging.get_root_logger(log_out)
+    logger = logging.getLogger('model_application')
+    logger.setLevel('DEBUG')
+    _formatter = logging.Formatter(fmt='%(asctime)s - %(processName)s - %(name)s - %(levelname)s - %(message)s')
+    _handler = logging.FileHandler(log_out)
+    _handler.setFormatter(_formatter)
+    logger.addHandler(_handler)
 
     # Get data and model objects
     logger.info('Create data and model objects')

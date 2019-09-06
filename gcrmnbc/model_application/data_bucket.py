@@ -6,7 +6,8 @@ from typing import Dict, List, NamedTuple, Tuple
 from google.cloud import storage
 
 
-_logger = logging.getLogger(__name__)
+_logger = logging.getLogger('model_application.data_bucket')
+_logger.setLevel('DEBUG')
 
 _DATA_PROJECT = 'coral-atlas'
 _DATA_BUCKET = 'coral-atlas-data-share'

@@ -12,7 +12,8 @@ from osgeo import gdal, osr
 from gcrmnbc.model_application import data_bucket
 
 
-_logger = logging.getLogger(__name__)
+_logger = logging.getLogger('model_application.apply')
+_logger.setLevel('DEBUG')
 
 _DIR_SCRATCH_TMP = '/scratch/nfabina/gcrmn-benthic-classification/tmp_application'
 _FILENAME_FEATURES_VRT = 'features.vrt'
