@@ -75,7 +75,7 @@ def apply_model_to_quad(
         _crop_and_scale_class_rasters(quad_paths)
 
         _logger.info('Uploading classifications and probabilities')
-        data_bucket.upload_model_class_probabilities_for_quad_blob(quad_paths.filepath_prob, quad_blob, version_map)
+        # data_bucket.upload_model_class_probabilities_for_quad_blob(quad_paths.filepath_prob, quad_blob, version_map)
         data_bucket.upload_model_class_mle_for_quad_blob(quad_paths.filepath_prob, quad_blob, version_map)
         _logger.info('Application success for quad {}'.format(quad_blob.quad_focal))
 
@@ -168,8 +168,8 @@ def _crop_and_scale_class_rasters(quad_paths: QuadPaths) -> None:
     os.rename(tmp_filepath, quad_paths.filepath_prob)
     # Apply translation to MLE
     options_translate = gdal.TranslateOptions(
-        outputType=gdal.GDT_Int16, projWin=(llx, ury, urx, lly), projWinSRS=focal_srs, outputSRS=focal_srs,
-        noData=-9999, creationOptions=['TILED=YES', 'COMPRESS=DEFLATE'],
+        outputType=gdal.GDT_Byte, projWin=(llx, ury, urx, lly), projWinSRS=focal_srs, outputSRS=focal_srs,
+        noData=255, creationOptions=['TILED=YES', 'COMPRESS=DEFLATE'],
     )
     tmp_filepath = re.sub('.tif', '_tmp.tif', quad_paths.filepath_mle)
     gdal.Translate(tmp_filepath, quad_paths.filepath_mle, options=options_translate)
