@@ -57,7 +57,7 @@ class QuadBlob(NamedTuple):
     blobs_context: List[storage.Blob]
 
 
-def get_quad_blobs(version_map: str) -> List[QuadBlob]:
+def get_quad_blobs() -> List[QuadBlob]:
     _logger.debug('Get quad blobs from bucket')
     raw_blobs = [blob for blob in GCS.bucket.list_blobs(prefix=_DATA_PATH_SOURCE)]
     _logger.debug('Found {} total blobs'.format(len(raw_blobs)))

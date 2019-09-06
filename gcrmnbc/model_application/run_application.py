@@ -34,7 +34,7 @@ def run_application(config_name: str, response_mapping: str, version_map: str) -
     data_container = _load_dataset(config)
     experiment = _load_experiment(config, data_container)
     logger.info('Get quad blobs')
-    quad_blobs = data_bucket.get_quad_blobs(version_map)
+    quad_blobs = data_bucket.get_quad_blobs()
     logger.info('Apply model to quads')
     for idx_quad, quad_blob in enumerate(quad_blobs):
         logger.info('Apply model to quad blob {} of {}'.format(1+idx_quad, len(quad_blobs)))
