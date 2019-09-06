@@ -16,8 +16,6 @@ _DATA_PATH_DEST = 'gcrmn-global-map/'
 
 FILENAME_SUFFIX_FOCAL = '_focal.tif'
 FILENAME_SUFFIX_CONTEXT = '_context.tif'
-FILENAME_SUFFIX_PROB = '_prob_{}.tif'
-FILENAME_SUFFIX_MLE = '_mle_{}.tif'
 
 
 class _GCS(object):
@@ -120,15 +118,8 @@ def _prune_completed_quad_blobs(quad_blobs: List[QuadBlob], version_map: str) ->
 
 
 def check_is_quad_application_complete(quad_blob: QuadBlob, version_map: str) -> bool:
-    # Check if probability raster exists, if not, quad must be processed and we don't need to check MLE raster
-    blob_prob = _get_model_class_probabilities_blob(quad_blob, version_map)
-    if not blob_prob.exists():
-        return False
-    # Check if MLE raster exists, if not, quad must be processed, even if probability raster exists
-    blob_mle = _get_model_class_mle_blob(quad_blob, version_map)
-    if not blob_mle.exists():
-        return False
-    return True
+    blob_complete = _get_application_complete_blob(quad_blob, version_map)
+    return blob_complete.exists()
 
 
 def download_source_data_for_quad_blob(dir_dest: str, quad_blob: QuadBlob) -> None:
@@ -145,16 +136,27 @@ def download_source_data_for_quad_blob(dir_dest: str, quad_blob: QuadBlob) -> No
         blob_context.download_to_filename(filepath_context)
 
 
-def upload_model_class_probabilities_for_quad_blob(filepath: str, quad_blob: QuadBlob, version_map: str) -> None:
-    _logger.debug('Upload model class probablities for quad blob {}'.format(quad_blob.quad_focal))
-    blob_upload = _get_model_class_probabilities_blob(quad_blob, version_map)
-    blob_upload.upload_from_filename(filepath)
+def upload_model_results_for_quad_blob(dir_results: str, quad_blob: QuadBlob, version_map: str) -> None:
+    _logger.debug('Upload model results for quad blob {}'.format(quad_blob.quad_focal))
+    blob_name_application = _get_application_path_for_model_results(quad_blob, version_map)
+    for filename in os.listdir(dir_results):
+        filepath = os.path.join(dir_results, filename)
+        blob_name = os.path.join(blob_name_application, filename)
+        blob = storage.Blob(blob_name, GCS.bucket)
+        blob.upload_from_filename(filepath)
+    blob_complete = _get_application_complete_blob(quad_blob, version_map)
+    blob_complete.upload_from_string('')
 
 
-def upload_model_class_mle_for_quad_blob(filepath: str, quad_blob: QuadBlob, version_map: str) -> None:
-    _logger.debug('Upload model class MLE for quad blob {}'.format(quad_blob.quad_focal))
-    blob_upload = _get_model_class_mle_blob(quad_blob, version_map)
-    blob_upload.upload_from_filename(filepath)
+def delete_model_results_for_other_versions(quad_blob: QuadBlob, current_version_map: str) -> None:
+    # TODO:  test when we need to remove data, wait until then for examples to work on
+    raise AssertionError('remove_model_results needs to be tested')
+    application_path_quad = _get_application_path_for_quad(quad_blob) + '/'
+    for blob in GCS.bucket.list_blobs(prefix=application_path_quad):
+        with_prefix_removed = re.sub(application_path_quad, '', blob.name)
+        is_other_version = not with_prefix_removed.startswith(current_version_map)
+        if is_other_version:
+            blob.delete()
 
 
 def _get_region_data_path_from_blob_name(blob_name: str) -> str:
@@ -175,16 +177,21 @@ def _get_x_and_y_from_blob_name(blob_name: str) -> Tuple[str, str]:
     return x, y
 
 
-def _get_model_class_probabilities_blob(quad_blob: QuadBlob, version_map: str) -> storage.Blob:
+def _get_application_path_for_quad(quad_blob: QuadBlob) -> str:
     original_name = quad_blob.blob.name
     with_new_path_prefix = re.sub(_DATA_PATH_SOURCE, _DATA_PATH_DEST, original_name)
-    with_version_map_suffix = re.sub(r'\.tif', FILENAME_SUFFIX_PROB.format(version_map), with_new_path_prefix)
-    return storage.Blob(with_version_map_suffix, GCS.bucket)
+    without_tif_extension = re.sub(r'\.tif', '', with_new_path_prefix)
+    return without_tif_extension
 
 
-def _get_model_class_mle_blob(quad_blob: QuadBlob, version_map: str) -> storage.Blob:
-    original_name = quad_blob.blob.name
-    with_new_path_prefix = re.sub(_DATA_PATH_SOURCE, _DATA_PATH_DEST, original_name)
-    with_version_map_suffix = re.sub(r'\.tif', FILENAME_SUFFIX_MLE.format(version_map), with_new_path_prefix)
-    return storage.Blob(with_version_map_suffix, GCS.bucket)
+def _get_application_path_for_model_results(quad_blob: QuadBlob, version_map: str) -> str:
+    application_path_quad = _get_application_path_for_quad(quad_blob)
+    with_version_map_suffix = os.path.join(application_path_quad, version_map)
+    return with_version_map_suffix
 
+
+def _get_application_complete_blob(quad_blob: QuadBlob, version_map: str) -> storage.Blob:
+    application_blob_name = _get_application_path_for_model_results(quad_blob, version_map)
+    filename_complete = 'application_complete'
+    application_complete_name = os.path.join(application_blob_name, filename_complete)
+    return storage.Blob(application_complete_name, GCS.bucket)

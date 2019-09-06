@@ -1,7 +1,9 @@
 import logging
 import os
 import re
+import shlex
 import shutil
+import subprocess
 from typing import NamedTuple
 
 from bfgn.data_management import data_core
@@ -16,16 +18,17 @@ _logger = logging.getLogger('model_application.apply')
 _logger.setLevel('DEBUG')
 
 _DIR_SCRATCH_TMP = '/scratch/nfabina/gcrmn-benthic-classification/tmp_application'
-_FILENAME_FEATURES_VRT = 'features.vrt'
 
 
 class QuadPaths(NamedTuple):
     dir_quad: str
+    dir_for_upload: str
     filepath_lock: str
-    filepath_features: str
     filepath_focal_quad: str
+    filepath_features: str
     filepath_prob: str
     filepath_mle: str
+    filepath_shapefile: str
 
 
 def apply_model_to_quad(
@@ -36,7 +39,7 @@ def apply_model_to_quad(
 ) -> None:
     _logger.info('Apply model to quad {}'.format(quad_blob.quad_focal))
     _logger.debug('Acquire file lock')
-    quad_paths = _get_quad_paths(quad_blob, version_map)
+    quad_paths = _get_quad_paths(quad_blob)
     if not os.path.exists(_DIR_SCRATCH_TMP):
         try:
             os.makedirs(_DIR_SCRATCH_TMP)
@@ -54,6 +57,10 @@ def apply_model_to_quad(
         _logger.debug('Skipping application, is already complete')
         return
 
+    _logger.debug('Delete model results from other versions')
+    # TODO:  test when we need this
+    # data_bucket.delete_model_results_for_other_versions(quad_blob, version_map)
+
     _logger.debug('Create temporary directory for data')
     _create_temporary_directory_for_data(quad_paths)
 
@@ -66,18 +73,26 @@ def apply_model_to_quad(
         buffer = int(2 * experiment.config.data_build.window_radius - experiment.config.data_build.loss_window_radius)
         _create_feature_vrt(quad_paths, buffer)
 
-        _logger.info('Generate class probabilities from model')
-        _generate_class_probabilities_raster(quad_paths, data_container, experiment)
+        _logger.info('Generate model probabilities')
+        _generate_model_probabilities_raster(quad_paths, data_container, experiment)
 
-        _logger.info('Generating classification from class probabilities')
-        _generate_class_mle_raster(quad_paths, data_container)
+        _logger.info('Format model probabilities')
+        _crop_model_probabilities_raster(quad_paths)
+        _mask_model_probabilities_raster(quad_paths)
 
-        _logger.info('Crop rasters to focal quad extent')
-        _crop_and_scale_class_rasters(quad_paths)
+        _logger.info('Generating model classifications')
+        _generate_model_classifications_raster(quad_paths, data_container)
 
-        _logger.info('Uploading classifications and probabilities')
-        # data_bucket.upload_model_class_probabilities_for_quad_blob(quad_paths.filepath_prob, quad_blob, version_map)
-        data_bucket.upload_model_class_mle_for_quad_blob(quad_paths.filepath_prob, quad_blob, version_map)
+        _logger.info('Generating shapefile from classifications')
+        _generate_model_classification_shapefile(quad_paths)
+
+        _logger.info('Compress model probabilities and classifications')
+        _scale_model_probabilities_raster(quad_paths)
+        _scale_model_classifications_raster(quad_paths)
+
+        _logger.info('Uploading model results')
+        data_bucket.upload_model_results_for_quad_blob(quad_paths.dir_for_upload, quad_blob, version_map)
+
         _logger.info('Application success for quad {}'.format(quad_blob.quad_focal))
 
     except Exception as error_:
@@ -95,7 +110,7 @@ def apply_model_to_quad(
 def _create_temporary_directory_for_data(quad_paths: QuadPaths) -> None:
     if os.path.exists(quad_paths.dir_quad):
         shutil.rmtree(quad_paths.dir_quad)  # Remove directory if it already exists, to start from scratch
-    os.makedirs(quad_paths.dir_quad)
+    os.makedirs(quad_paths.dir_for_upload)
 
 
 def _create_feature_vrt(quad_paths: QuadPaths, buffer: int) -> None:
@@ -108,13 +123,11 @@ def _create_feature_vrt(quad_paths: QuadPaths, buffer: int) -> None:
     y1 = y0 + rows * yres
     lly = min([y0, y1])
     ury = max([y0, y1])
-
     # Modify raster parameters to build in buffer
     llx -= buffer * xres
     urx += buffer * xres
     lly += buffer * yres
     ury -= buffer * yres
-
     # Build VRT
     focal_raster = gdal.Open(quad_paths.filepath_focal_quad)
     focal_srs = osr.SpatialReference(wkt=focal_raster.GetProjection())
@@ -129,7 +142,7 @@ def _create_feature_vrt(quad_paths: QuadPaths, buffer: int) -> None:
     gdal.BuildVRT(quad_paths.filepath_features, filepaths_quads, options=options_buildvrt)
 
 
-def _generate_class_probabilities_raster(
+def _generate_model_probabilities_raster(
         quad_paths: QuadPaths,
         data_container: data_core.DataContainer,
         experiment: experiments.Experiment,
@@ -139,16 +152,7 @@ def _generate_class_probabilities_raster(
         experiment.model, data_container, [quad_paths.filepath_features], basename_prob, exclude_feature_nodata=True)
 
 
-def _generate_class_mle_raster(
-        quad_paths: QuadPaths,
-        data_container: data_core.DataContainer,
-) -> None:
-    basename_mle = os.path.splitext(quad_paths.filepath_mle)[0]
-    apply_model_to_data.maximum_likelihood_classification(
-        quad_paths.filepath_prob, data_container, basename_mle, creation_options=['TILED=YES', 'COMPRESS=DEFLATE'])
-
-
-def _crop_and_scale_class_rasters(quad_paths: QuadPaths) -> None:
+def _crop_model_probabilities_raster(quad_paths: QuadPaths) -> None:
     # Get raster parameters for crop
     focal_raster = gdal.Open(quad_paths.filepath_focal_quad)
     focal_srs = osr.SpatialReference(wkt=focal_raster.GetProjection())
@@ -159,32 +163,72 @@ def _crop_and_scale_class_rasters(quad_paths: QuadPaths) -> None:
     y1 = y0 + rows * yres
     lly = min([y0, y1])
     ury = max([y0, y1])
-    # Apply translation to probabilities
+    # Apply cropping - note that we can't overwrite so we need to create and then overwrite
     options_translate = gdal.TranslateOptions(
-        projWin=(llx, ury, urx, lly), projWinSRS=focal_srs, outputSRS=focal_srs, noData=-9999,
+        projWin=(llx, ury, urx, lly), projWinSRS=focal_srs, outputSRS=focal_srs,
         creationOptions=['TILED=YES', 'COMPRESS=DEFLATE'],
     )
     tmp_filepath = re.sub('.tif', '_tmp.tif', quad_paths.filepath_prob)
     gdal.Translate(tmp_filepath, quad_paths.filepath_prob, options=options_translate)
     os.rename(tmp_filepath, quad_paths.filepath_prob)
-    # Apply translation to MLE
+
+
+def _mask_model_probabilities_raster(quad_paths: QuadPaths) -> None:
+    command = 'gdal_calc.py -A {filepath_focal} --A_band=4 -B {filepath_prob} --B_band=1 --allBands=B ' + \
+              '--outfile {outfile} --NoDataValue=-9999 --overwrite --quiet --calc="B * (A == 255) + -9999 * (A == 0)"'
+    command = command.format(filepath_focal=quad_paths.filepath_focal_quad, filepath_prob=quad_paths.filepath_prob,
+                             outfile=quad_paths.filepath_prob)
+    subprocess.run(shlex.split(command))
+
+
+def _generate_model_classifications_raster(
+        quad_paths: QuadPaths,
+        data_container: data_core.DataContainer,
+) -> None:
+    basename_mle = os.path.splitext(quad_paths.filepath_mle)[0]
+    apply_model_to_data.maximum_likelihood_classification(
+        quad_paths.filepath_prob, data_container, basename_mle, creation_options=['TILED=YES', 'COMPRESS=DEFLATE'])
+
+
+def _generate_model_classification_shapefile(quad_paths: QuadPaths) -> None:
+    command = 'gdal_polygonize.py {filepath_mle} {filepath_shapefile} -q'.format(
+        filepath_mle=quad_paths.filepath_mle, filepath_shapefile=quad_paths.filepath_shapefile)
+    subprocess.run(shlex.split(command))
+
+
+def _scale_model_probabilities_raster(quad_paths: QuadPaths) -> None:
     options_translate = gdal.TranslateOptions(
-        outputType=gdal.GDT_Byte, projWin=(llx, ury, urx, lly), projWinSRS=focal_srs, outputSRS=focal_srs,
-        noData=255, creationOptions=['TILED=YES', 'COMPRESS=DEFLATE'],
+        outputType=gdal.GDT_Byte, creationOptions=['TILED=YES', 'COMPRESS=DEFLATE'], scaleParams=[[0, 1, 0, 100]],
+        noData=255,
+    )
+    tmp_filepath = re.sub('.tif', '_tmp.tif', quad_paths.filepath_prob)
+    gdal.Translate(tmp_filepath, quad_paths.filepath_prob, options=options_translate)
+    os.rename(tmp_filepath, quad_paths.filepath_prob)
+
+
+def _scale_model_classifications_raster(quad_paths: QuadPaths) -> None:
+    options_translate = gdal.TranslateOptions(
+        outputType=gdal.GDT_Byte, creationOptions=['TILED=YES', 'COMPRESS=DEFLATE'], noData=255
     )
     tmp_filepath = re.sub('.tif', '_tmp.tif', quad_paths.filepath_mle)
     gdal.Translate(tmp_filepath, quad_paths.filepath_mle, options=options_translate)
     os.rename(tmp_filepath, quad_paths.filepath_mle)
 
 
-def _get_quad_paths(quad_blob: data_bucket.QuadBlob, version_map: str) -> QuadPaths:
+def _get_quad_paths(quad_blob: data_bucket.QuadBlob) -> QuadPaths:
+    # Directories
     dir_quad = os.path.join(_DIR_SCRATCH_TMP, quad_blob.quad_focal)
+    dir_for_upload = os.path.join(dir_quad, 'for_upload')
+    # Filepaths - for input files
     filepath_lock = os.path.join(_DIR_SCRATCH_TMP, '{}.lock'.format(quad_blob.quad_focal))
-    filepath_features = os.path.join(dir_quad, _FILENAME_FEATURES_VRT)
-    filepath_focal = os.path.join(dir_quad, quad_blob.quad_focal + data_bucket.FILENAME_SUFFIX_FOCAL)
-    filepath_prob = os.path.join(dir_quad, quad_blob.quad_focal + data_bucket.FILENAME_SUFFIX_PROB.format(version_map))
-    filepath_mle = os.path.join(dir_quad, quad_blob.quad_focal + data_bucket.FILENAME_SUFFIX_MLE.format(version_map))
+    filepath_focal_quad = os.path.join(dir_quad, quad_blob.quad_focal + data_bucket.FILENAME_SUFFIX_FOCAL)
+    filepath_features = os.path.join(dir_quad, 'features.vrt')
+    # Filepaths - for output files which are uploaded
+    filepath_prob = os.path.join(dir_for_upload, 'model_probabilities.tif')
+    filepath_mle = os.path.join(dir_for_upload, 'model_classifications.tif')
+    filepath_shapefile = os.path.join(dir_for_upload, 'model_classification.shp')
     return QuadPaths(
-        dir_quad=dir_quad, filepath_lock=filepath_lock, filepath_features=filepath_features,
-        filepath_focal_quad=filepath_focal, filepath_prob=filepath_prob, filepath_mle=filepath_mle,
+        dir_quad=dir_quad, dir_for_upload=dir_for_upload, filepath_lock=filepath_lock,
+        filepath_focal_quad=filepath_focal_quad, filepath_features=filepath_features, filepath_prob=filepath_prob,
+        filepath_mle=filepath_mle, filepath_shapefile=filepath_shapefile,
     )
