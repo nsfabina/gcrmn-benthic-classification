@@ -82,6 +82,7 @@ def apply_model_to_quad(
 
         _logger.info('Generating model classifications')
         _generate_model_classifications_raster(quad_paths, data_container)
+        _mask_model_classifications_raster(quad_paths)
 
         _logger.info('Generating shapefile from classifications')
         _generate_model_classification_shapefile(quad_paths)
@@ -190,6 +191,14 @@ def _generate_model_classifications_raster(
         quad_paths.filepath_prob, data_container, basename_mle, creation_options=['TILED=YES', 'COMPRESS=DEFLATE'])
 
 
+def _mask_model_classifications_raster(quad_paths: QuadPaths) -> None:
+    command = 'gdal_calc.py -A {filepath_focal} --A_band=4 -B {filepath_mle} --B_band=1 --allBands=B ' + \
+              '--outfile {outfile} --NoDataValue=-9999 --overwrite --quiet --calc="B * (A == 255) + -9999 * (A == 0)"'
+    command = command.format(filepath_focal=quad_paths.filepath_focal_quad, filepath_prob=quad_paths.filepath_mle,
+                             outfile=quad_paths.filepath_mle)
+    subprocess.run(shlex.split(command))
+
+
 def _generate_model_classification_shapefile(quad_paths: QuadPaths) -> None:
     command = 'gdal_polygonize.py {filepath_mle} {filepath_shapefile} -q'.format(
         filepath_mle=quad_paths.filepath_mle, filepath_shapefile=quad_paths.filepath_shapefile)
@@ -226,7 +235,7 @@ def _get_quad_paths(quad_blob: data_bucket.QuadBlob) -> QuadPaths:
     # Filepaths - for output files which are uploaded
     filepath_prob = os.path.join(dir_for_upload, 'model_probabilities.tif')
     filepath_mle = os.path.join(dir_for_upload, 'model_classifications.tif')
-    filepath_shapefile = os.path.join(dir_for_upload, 'model_classification.shp')
+    filepath_shapefile = os.path.join(dir_for_upload, 'model_classifications.shp')
     return QuadPaths(
         dir_quad=dir_quad, dir_for_upload=dir_for_upload, filepath_lock=filepath_lock,
         filepath_focal_quad=filepath_focal_quad, filepath_features=filepath_features, filepath_prob=filepath_prob,
