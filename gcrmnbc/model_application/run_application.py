@@ -33,6 +33,9 @@ def run_application(config_name: str, response_mapping: str, version_map: str) -
     logger.info('Create data and model objects')
     data_container = _load_dataset(config)
     experiment = _load_experiment(config, data_container)
+    logging.getLogger('bfgn').setLevel(logging.WARNING)  # Turn down BFGN logging
+
+    # Get quad blobs and apply model
     logger.info('Get quad blobs')
     quad_blobs = data_bucket.get_quad_blobs()
     logger.info('Apply model to quads')

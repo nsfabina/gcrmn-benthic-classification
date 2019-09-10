@@ -37,24 +37,26 @@ def apply_model_to_quad(
         experiment: experiments.Experiment,
         version_map: str
 ) -> None:
-    _logger.info('Apply model to quad {}'.format(quad_blob.quad_focal))
-    _logger.debug('Acquire file lock')
-    quad_paths = _get_quad_paths(quad_blob, version_map)
     if not os.path.exists(_DIR_SCRATCH_TMP):
         try:
             os.makedirs(_DIR_SCRATCH_TMP)
         except FileExistsError:
             pass
-    try:
-        file_lock = open(quad_paths.filepath_lock, 'x')
-    except OSError:
-        _logger.debug('Skipping application, already in progress')
-        return
+
+    _logger.info('Apply model to quad {}'.format(quad_blob.quad_focal))
+    quad_paths = _get_quad_paths(quad_blob, version_map)
 
     _logger.debug('Check if application is already complete')
     is_complete = data_bucket.check_is_quad_application_complete(quad_blob, version_map)
     if is_complete:
         _logger.debug('Skipping application, is already complete')
+        return
+
+    _logger.debug('Acquire file lock')
+    try:
+        file_lock = open(quad_paths.filepath_lock, 'x')
+    except OSError:
+        _logger.debug('Skipping application, already in progress')
         return
 
     _logger.debug('Delete model results from other versions')
