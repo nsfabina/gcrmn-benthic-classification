@@ -9,6 +9,7 @@ from typing import NamedTuple
 from bfgn.data_management import data_core
 from bfgn.experiments import experiments
 from bfgn.data_management import apply_model_to_data
+import numpy as np
 from osgeo import gdal, osr
 
 from gcrmnbc.model_global_application import data_bucket
@@ -85,6 +86,11 @@ def apply_model_to_quad(
         _logger.info('Generating model classifications')
         _generate_model_classifications_raster(quad_paths, data_container)
         _mask_model_classifications_raster(quad_paths)
+        includes_reef = _check_model_classifications_include_reef(quad_paths)
+
+        if not includes_reef:
+            data_bucket.upload_no_apply_notification_for_quad_blob(quad_blob)
+            return
 
         _logger.info('Generating shapefile from classifications')
         _generate_model_classification_shapefile(quad_paths)
@@ -199,6 +205,13 @@ def _mask_model_classifications_raster(quad_paths: QuadPaths) -> None:
     command = command.format(filepath_focal=quad_paths.filepath_focal_quad, filepath_prob=quad_paths.filepath_mle,
                              outfile=quad_paths.filepath_mle)
     subprocess.run(shlex.split(command))
+
+
+def _check_model_classifications_include_reef(quad_paths: QuadPaths) -> bool:
+    raster = gdal.Open(quad_paths.filepath_mle)
+    band = raster.GetRasterBand(1)
+    classes = band.ReadAsArray()
+    return np.any(classes == 3)
 
 
 def _generate_model_classification_shapefile(quad_paths: QuadPaths) -> None:

@@ -119,7 +119,8 @@ def _prune_completed_quad_blobs(quad_blobs: List[QuadBlob], version_map: str) ->
 
 def check_is_quad_application_complete(quad_blob: QuadBlob, version_map: str) -> bool:
     blob_complete = _get_application_complete_blob(quad_blob, version_map)
-    return blob_complete.exists()
+    blob_no_apply = _get_no_apply_blob(quad_blob)
+    return blob_complete.exists() or blob_no_apply.exists()
 
 
 def download_source_data_for_quad_blob(dir_dest: str, quad_blob: QuadBlob) -> None:
@@ -146,6 +147,12 @@ def upload_model_results_for_quad_blob(dir_results: str, quad_blob: QuadBlob, ve
         blob.upload_from_filename(filepath)
     blob_complete = _get_application_complete_blob(quad_blob, version_map)
     blob_complete.upload_from_string('')
+
+
+def upload_no_apply_notification_for_quad_blob(quad_blob: QuadBlob) -> None:
+    _logger.debug('Upload no apply notification for quad blob {}'.format(quad_blob.quad_focal))
+    no_apply_blob = _get_no_apply_blob(quad_blob)
+    no_apply_blob.upload_from_string('')
 
 
 def delete_model_results_for_other_versions(quad_blob: QuadBlob, current_version_map: str) -> None:
@@ -195,3 +202,10 @@ def _get_application_complete_blob(quad_blob: QuadBlob, version_map: str) -> sto
     filename_complete = 'application_complete'
     application_complete_name = os.path.join(application_blob_name, filename_complete)
     return storage.Blob(application_complete_name, GCS.bucket)
+
+
+def _get_no_apply_blob(quad_blob: QuadBlob) -> storage.Blob:
+    application_path_quad = _get_application_path_for_quad(quad_blob)
+    filename_no_apply = 'no_apply'
+    no_apply_name = os.path.join(application_path_quad, filename_no_apply)
+    return storage.Blob(no_apply_name, GCS.bucket)
