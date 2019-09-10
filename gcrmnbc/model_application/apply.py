@@ -39,7 +39,7 @@ def apply_model_to_quad(
 ) -> None:
     _logger.info('Apply model to quad {}'.format(quad_blob.quad_focal))
     _logger.debug('Acquire file lock')
-    quad_paths = _get_quad_paths(quad_blob)
+    quad_paths = _get_quad_paths(quad_blob, version_map)
     if not os.path.exists(_DIR_SCRATCH_TMP):
         try:
             os.makedirs(_DIR_SCRATCH_TMP)
@@ -224,7 +224,7 @@ def _scale_model_classifications_raster(quad_paths: QuadPaths) -> None:
     os.rename(tmp_filepath, quad_paths.filepath_mle)
 
 
-def _get_quad_paths(quad_blob: data_bucket.QuadBlob) -> QuadPaths:
+def _get_quad_paths(quad_blob: data_bucket.QuadBlob, version_map: str) -> QuadPaths:
     # Directories
     dir_quad = os.path.join(_DIR_SCRATCH_TMP, quad_blob.quad_focal)
     dir_for_upload = os.path.join(dir_quad, 'for_upload')
@@ -233,9 +233,9 @@ def _get_quad_paths(quad_blob: data_bucket.QuadBlob) -> QuadPaths:
     filepath_focal_quad = os.path.join(dir_quad, quad_blob.quad_focal + data_bucket.FILENAME_SUFFIX_FOCAL)
     filepath_features = os.path.join(dir_quad, 'features.vrt')
     # Filepaths - for output files which are uploaded
-    filepath_prob = os.path.join(dir_for_upload, 'model_probabilities.tif')
-    filepath_mle = os.path.join(dir_for_upload, 'model_classifications.tif')
-    filepath_shapefile = os.path.join(dir_for_upload, 'model_classifications.shp')
+    filepath_prob = os.path.join(dir_for_upload, '{}_model_probs_{}.tif'.format(quad_blob.quad_focal, version_map))
+    filepath_mle = os.path.join(dir_for_upload, '{}_model_class_{}.tif'.format(quad_blob.quad_focal, version_map))
+    filepath_shapefile = os.path.join(dir_for_upload, '{}_model_class_{}.shp'.format(quad_blob.quad_focal, version_map))
     return QuadPaths(
         dir_quad=dir_quad, dir_for_upload=dir_for_upload, filepath_lock=filepath_lock,
         filepath_focal_quad=filepath_focal_quad, filepath_features=filepath_features, filepath_prob=filepath_prob,
