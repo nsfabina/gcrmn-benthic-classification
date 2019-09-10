@@ -11,10 +11,10 @@ from bfgn.experiments import experiments
 from bfgn.data_management import apply_model_to_data
 from osgeo import gdal, osr
 
-from gcrmnbc.model_application import data_bucket
+from gcrmnbc.model_global_application import data_bucket
 
 
-_logger = logging.getLogger('model_application.apply')
+_logger = logging.getLogger('model_global_application.apply')
 _logger.setLevel('DEBUG')
 
 _DIR_SCRATCH_TMP = '/scratch/nfabina/gcrmn-benthic-classification/tmp_application'

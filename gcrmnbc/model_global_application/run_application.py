@@ -6,12 +6,12 @@ from bfgn.configuration import configs
 from bfgn.data_management import data_core
 from bfgn.experiments import experiments
 
-from gcrmnbc.model_application import apply, data_bucket
+from gcrmnbc.model_global_application import apply, data_bucket
 from gcrmnbc.utils import shared_configs
 
 
 _DIR_CONFIGS = '../configs'
-_FILEPATH_LOGS = '/scratch/nfabina/gcrmn-benthic-classification/logs/{}/{}/log.out'
+_FILEPATH_LOGS = '/scratch/nfabina/gcrmn-benthic-classification/logs/{}/{}/log_model_global_application.out'
 
 
 def run_application(config_name: str, response_mapping: str, version_map: str) -> None:
@@ -22,7 +22,7 @@ def run_application(config_name: str, response_mapping: str, version_map: str) -
     log_out = _FILEPATH_LOGS.format(config_name, response_mapping)
     if not os.path.exists(os.path.dirname(log_out)):
         os.makedirs(os.path.dirname(log_out))
-    logger = logging.getLogger('model_application')
+    logger = logging.getLogger('model_global_application')
     logger.setLevel('DEBUG')
     _formatter = logging.Formatter(fmt='%(asctime)s - %(processName)s - %(name)s - %(levelname)s - %(message)s')
     _handler = logging.FileHandler(log_out)

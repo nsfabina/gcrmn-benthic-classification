@@ -26,8 +26,8 @@ if __name__ == '__main__':
         job_name = 'apply_' + args.config_name + '_' + args.response_mapping + '_' + str(idx_job)
         slurm_args_dynamic = ' '.join([
             '--job-name={}'.format(job_name),
-            '--output={}/slurm.apply.%j.%t.OUT'.format(dir_model),
-            '--error={}/slurm.apply.%j.%t.ERROR'.format(dir_model),
+            '--output={}/slurm.global_apply.%j.%t.OUT'.format(dir_model),
+            '--error={}/slurm.global_apply.%j.%t.ERROR'.format(dir_model),
         ])
 
         print('Submitting job {}'.format(job_name))
