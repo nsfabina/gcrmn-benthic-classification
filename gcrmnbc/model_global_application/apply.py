@@ -60,10 +60,6 @@ def apply_model_to_quad(
         _logger.debug('Skipping application, already in progress')
         return
 
-    _logger.debug('Delete model results from other versions')
-    # TODO:  test when we need this
-    # data_bucket.delete_model_results_for_other_versions(quad_blob, version_map)
-
     _logger.debug('Create temporary directory for data')
     _create_temporary_directory_for_data(quad_paths)
 
@@ -77,7 +73,12 @@ def apply_model_to_quad(
         _create_feature_vrt(quad_paths, buffer)
 
         _logger.info('Generate model probabilities')
-        _generate_model_probabilities_raster(quad_paths, data_container, experiment)
+        try:
+            _generate_model_probabilities_raster(quad_paths, data_container, experiment)
+        except AttributeError:
+            _logger.debug('Application unsuccessful, corrupt data found')
+            data_bucket.upload_corrupt_data_notification_for_quad_blob(quad_blob)
+            return
 
         _logger.info('Format model probabilities')
         _crop_model_probabilities_raster(quad_paths)
@@ -89,6 +90,7 @@ def apply_model_to_quad(
         includes_reef = _check_model_classifications_include_reef(quad_paths)
 
         if not includes_reef:
+            _logger.debug('Application stopped early, no reef area found')
             data_bucket.upload_no_apply_notification_for_quad_blob(quad_blob)
             return
 
@@ -103,6 +105,9 @@ def apply_model_to_quad(
         data_bucket.upload_model_results_for_quad_blob(quad_paths.dir_for_upload, quad_blob, version_map)
 
         _logger.info('Application success for quad {}'.format(quad_blob.quad_focal))
+        _logger.debug('Delete model results from other versions and any outdated notifications')
+        data_bucket.delete_model_results_for_other_versions(quad_blob, version_map)
+        data_bucket.delete_corrupt_data_norification_if_exists(quad_blob)
 
     except Exception as error_:
         raise error_

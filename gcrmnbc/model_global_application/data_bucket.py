@@ -155,6 +155,19 @@ def upload_no_apply_notification_for_quad_blob(quad_blob: QuadBlob) -> None:
     no_apply_blob.upload_from_string('')
 
 
+def upload_corrupt_data_notification_for_quad_blob(quad_blob: QuadBlob) -> None:
+    _logger.debug('Upload corrupt data notification for quad blob {}'.format(quad_blob.quad_focal))
+    corrupt_blob = _get_corrupt_data_blob(quad_blob)
+    corrupt_blob.upload_from_string('')
+
+
+def delete_corrupt_data_norification_if_exists(quad_blob: QuadBlob) -> None:
+    corrupt_blob = _get_corrupt_data_blob(quad_blob)
+    if corrupt_blob.exists():
+        _logger.debug('Delete corrupt data notification for quad blob {}'.format(quad_blob.quad_focal))
+        corrupt_blob.delete()
+
+
 def delete_model_results_for_other_versions(quad_blob: QuadBlob, current_version_map: str) -> None:
     # TODO:  test when we need to remove data, wait until then for examples to work on
     raise AssertionError('remove_model_results needs to be tested')
@@ -209,3 +222,10 @@ def _get_no_apply_blob(quad_blob: QuadBlob) -> storage.Blob:
     filename_no_apply = 'no_apply'
     no_apply_name = os.path.join(application_path_quad, filename_no_apply)
     return storage.Blob(no_apply_name, GCS.bucket)
+
+
+def _get_corrupt_data_blob(quad_blob: QuadBlob) -> storage.Blob:
+    application_path_quad = _get_application_path_for_quad(quad_blob)
+    filename_corrupt = 'data_corrupt'
+    corrupt_name = os.path.join(application_path_quad, filename_corrupt)
+    return storage.Blob(corrupt_name, GCS.bucket)
