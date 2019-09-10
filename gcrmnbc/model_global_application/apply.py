@@ -17,7 +17,7 @@ from gcrmnbc.model_global_application import data_bucket
 _logger = logging.getLogger('model_global_application.apply')
 _logger.setLevel('DEBUG')
 
-_DIR_SCRATCH_TMP = '/scratch/nfabina/gcrmn-benthic-classification/tmp_application'
+_DIR_SCRATCH_TMP = '/scratch/nfabina/gcrmn-benthic-classification/tmp_global_application'
 
 
 class QuadPaths(NamedTuple):
