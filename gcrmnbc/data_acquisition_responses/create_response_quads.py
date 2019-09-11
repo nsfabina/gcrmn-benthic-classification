@@ -46,7 +46,7 @@ def create_response_quads() -> None:
     _logger.info('Create response quads')
     features = _yield_features()
     idx_feature = 0
-    for feature in next(features):
+    for feature in features:
         idx_feature += 1
         _logger.debug('Processing feature {}'.format(idx_feature))
         quads = _determine_quads(feature['geometry'])
