@@ -122,3 +122,8 @@ def _write_feature_to_file(feature, quad) -> None:
         crs = fiona.crs.from_epsg(3857)
         with fiona.open(filepath, 'w', driver=SHAPEFILE_DRIVER, crs=crs, schema=SHAPEFILE_SCHEMA) as file_:
             file_.write(feature)
+
+
+if __name__ == '__main__':
+    create_response_quads()
+
