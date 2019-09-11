@@ -21,7 +21,7 @@ _logger.addHandler(_handler)
 
 DIR_TRAINING_DATA = '/scratch/nfabina/gcrmn-benthic-classification/training_data/'
 FILEPATH_RESPONSE_SOURCE = os.path.join(DIR_TRAINING_DATA, 'raw/lwr_3857.geojson')
-FILEPATH_RESPONSE_QUAD = os.path.join(DIR_TRAINING_DATA, 'clean/{}_responses.shp')
+FILEPATH_RESPONSE_QUAD = os.path.join(DIR_TRAINING_DATA, 'tmp/{}_responses.shp')
 
 ENCODINGS = {
     'Land': 1,
@@ -113,6 +113,8 @@ def _determine_quads(geometry: dict) -> List[str]:
 def _write_feature_to_file(feature, quad) -> None:
     # Get response quad filepath and determine whether we're writing a new file or appending to an existing file
     filepath = FILEPATH_RESPONSE_QUAD.format(quad)
+    if not os.path.exists(os.path.dirname(filepath)):
+        os.makedirs(os.path.dirname(filepath))
     if os.path.exists(filepath):
         _logger.debug('Append to existing shapefile at {}'.format(filepath))
         with fiona.open(filepath, 'a') as file_:
@@ -126,4 +128,3 @@ def _write_feature_to_file(feature, quad) -> None:
 
 if __name__ == '__main__':
     create_response_quads()
-
