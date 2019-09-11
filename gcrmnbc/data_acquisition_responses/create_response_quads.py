@@ -1,0 +1,124 @@
+from collections import OrderedDict
+import json
+import logging
+import os
+import re
+from typing import List
+
+import fiona.crs
+import numpy as np
+import rasterio as rio
+from rasterio.features import geometry_mask
+import shapely.geometry
+
+
+_logger = logging.getLogger(__name__)
+_logger.setLevel('DEBUG')
+_formatter = logging.Formatter(fmt='%(asctime)s - %(processName)s - %(name)s - %(levelname)s - %(message)s')
+_handler = logging.FileHandler('create_response_quads.log')
+_handler.setFormatter(_formatter)
+_logger.addHandler(_handler)
+
+DIR_TRAINING_DATA = '/scratch/nfabina/gcrmn-benthic-classification/training_data/'
+FILEPATH_RESPONSE_SOURCE = os.path.join(DIR_TRAINING_DATA, 'raw/lwr_3857.geojson')
+FILEPATH_RESPONSE_QUAD = os.path.join(DIR_TRAINING_DATA, 'clean/{}_responses.shp')
+
+ENCODINGS = {
+    'Land': 1,
+    'Deep Reef Water 10m+': 2,
+    'Reef Top': 3,
+    'Not Reef Top': 4,
+    'Cloud-Shade': 5,
+    'Unknown': 6,
+}
+
+SHAPEFILE_DRIVER = 'ESRI Shapefile'
+SHAPEFILE_EPSG = 3857
+SHAPEFILE_SCHEMA = {
+    'geometry': 'Polygon',
+    'properties': OrderedDict([
+        ('class_code', 'int'),
+    ])
+}
+
+
+def create_response_quads() -> None:
+    _logger.info('Create response quads')
+    features = _yield_features()
+    idx_feature = 0
+    for feature in next(features):
+        idx_feature += 1
+        _logger.debug('Processing feature {}'.format(idx_feature))
+        quads = _determine_quads(feature['geometry'])
+        if not quads:
+            _logger.warning('No quads found for feature {}:  {}'.format(idx_feature, feature))
+            continue
+        for quad in quads:
+            _write_feature_to_file(feature, quad)
+
+
+def _yield_features() -> dict:
+    # The geojson is enormous, so we step through each line looking for geometries
+    with open(FILEPATH_RESPONSE_SOURCE) as file_:
+        content = ''
+        for idx_line, line in enumerate(file_):
+            content += line
+            # Determine whether the next content chunk includes a full geometry
+            match = re.search(r'(?<="geometry": ){[^}]*}', content)
+            if not match:
+                continue
+            # Confirm we did not miss a geometry in the preceding content chunk
+            content_preceding_geometry = content[:match.start()]
+            if re.match('"coordinates"', content_preceding_geometry):
+                _logger.warning('Found "coordinates" in unused content chunk on or near line {}:  {}'.format(
+                    idx_line, content_preceding_geometry))
+            # Update the content chunk to include only content after the geometry
+            content = content[1 + match.end():]
+            # Parse the geometry and class and generate the feature
+            geometry = json.loads(match.group())
+            properties_match = re.search('{ "class_name[^}]*}', content_preceding_geometry)
+            if not properties_match:
+                _logger.warning('No properties found for geometry on or near line {}:  {}'.format(
+                    idx_line, content_preceding_geometry))
+                continue
+            properties = json.loads(properties_match.group())
+            class_code = ENCODINGS[properties['class_name']]
+            feature = {
+                'properties': OrderedDict([('class_code', class_code)]),
+                'geometry': geometry,
+            }
+            yield feature
+
+
+def _determine_quads(geometry: dict) -> List[str]:
+    # Parameters
+    MOSAIC_LEVEL = 15
+    MOSAIC_TILE_SIZE = 4096
+    WEBM_EARTH_RADIUS = 6378137.0
+    WEBM_ORIGIN = -np.pi * WEBM_EARTH_RADIUS
+    width = MOSAIC_TILE_SIZE * 2 * abs(WEBM_ORIGIN) / (2**MOSAIC_LEVEL * 256)
+    num_tiles = int(2.0**MOSAIC_LEVEL * 256 / MOSAIC_TILE_SIZE)
+    # Generate a grid where values are True if the geometry is present and False otherwise
+    transform = rio.transform.from_origin(WEBM_ORIGIN, -WEBM_ORIGIN, width, width)
+    shape = shapely.geometry.shape(geometry)
+    grid = np.flipud(geometry_mask([shape], (num_tiles, num_tiles), transform, all_touched=True, invert=True))
+    # Get quad labels
+    quads = list()
+    norths, easts = np.where(grid)
+    for north, east in zip(norths, easts):
+        quads.append('L15-{:04d}E-{:04d}N'.format(east, north))
+    return quads
+
+
+def _write_feature_to_file(feature, quad) -> None:
+    # Get response quad filepath and determine whether we're writing a new file or appending to an existing file
+    filepath = FILEPATH_RESPONSE_QUAD.format(quad)
+    if os.path.exists(filepath):
+        _logger.debug('Append to existing shapefile at {}'.format(filepath))
+        with fiona.open(filepath, 'a') as file_:
+            file_.write(feature)
+    else:
+        _logger.debug('Create new shapefile at {}'.format(filepath))
+        crs = fiona.crs.from_epsg(3857)
+        with fiona.open(filepath, 'w', driver=SHAPEFILE_DRIVER, crs=crs, schema=SHAPEFILE_SCHEMA) as file_:
+            file_.write(feature)
