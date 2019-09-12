@@ -31,7 +31,7 @@ ENCODINGS = {
     'Cloud-Shade': 5,
     'Unknown': 6,
 }
-FEATURE_BUFFER = 1000
+
 SHAPEFILE_DRIVER = 'ESRI Shapefile'
 SHAPEFILE_EPSG = 3857
 SHAPEFILE_SCHEMA = {
@@ -41,10 +41,37 @@ SHAPEFILE_SCHEMA = {
     ])
 }
 
+WRITE_FEATURE_BUFFER = 1000
+WRITE_IDX_BUFFER = 10000
+
+
+class QuadFeatures(object):
+    _features_by_quad = None
+    _last_updated_by_quad = None
+
+    def __init__(self):
+        self._features_by_quad = dict()
+        self._last_updated_by_quad = dict()
+
+    def add_feature_to_quad(self, feature, quad, idx_feature):
+        self._features_by_quad.setdefault(quad, list()).append(feature)
+        self._last_updated_by_quad.setdefault(quad, idx_feature)
+
+    def write_quad_shapefiles(self, idx_feature, force_write=None):
+        for quad, last_updated in self._last_updated_by_quad.items():
+            features = self._features_by_quad[quad]
+            too_many_features = len(features) > WRITE_FEATURE_BUFFER
+            too_many_indexes = (idx_feature - last_updated) > WRITE_IDX_BUFFER
+            if not force_write and not too_many_features and not too_many_indexes:
+                continue
+            _write_features_to_quad_shapefile(features, quad)
+            self._features_by_quad.pop(quad)
+            self._last_updated_by_quad.pop(quad)
+
 
 def create_response_quads() -> None:
     _logger.info('Create response quads')
-    features_by_quad: Dict[str, List[dict]] = dict()
+    quad_features = QuadFeatures()
     idx_feature = 0
     for feature in _yield_features():
         idx_feature += 1
@@ -54,10 +81,9 @@ def create_response_quads() -> None:
             _logger.warning('No quads found for feature {}:  {}'.format(idx_feature, feature))
             continue
         for quad in quads:
-            features_by_quad.setdefault(quad, list()).append(feature)
-        if sum([len(features) for features in features_by_quad.values()]) > FEATURE_BUFFER:
-            for quad, features in features_by_quad.items():
-                _write_features_to_quad_shapefile(features, quad)
+            quad_features.add_feature_to_quad(feature, quad, idx_feature)
+            quad_features.write_quad_shapefiles(idx_feature, force_write=False)
+    quad_features.write_quad_shapefiles(idx_feature, force_write=True)
 
 
 def _yield_features() -> dict:
