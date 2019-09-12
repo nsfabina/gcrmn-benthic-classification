@@ -55,7 +55,7 @@ class QuadFeatures(object):
 
     def add_feature_to_quad(self, feature, quad, idx_feature):
         self._features_by_quad.setdefault(quad, list()).append(feature)
-        self._last_updated_by_quad.setdefault(quad, idx_feature)
+        self._last_updated_by_quad[quad] = idx_feature
 
     def write_quad_shapefiles(self, idx_feature, force_write=None):
         for quad, last_updated in self._last_updated_by_quad.items():
