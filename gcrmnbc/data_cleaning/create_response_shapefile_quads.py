@@ -3,7 +3,7 @@ import json
 import logging
 import os
 import re
-from typing import List
+from typing import Dict, List
 
 import fiona.crs
 import numpy as np
@@ -31,7 +31,7 @@ ENCODINGS = {
     'Cloud-Shade': 5,
     'Unknown': 6,
 }
-
+FEATURE_BUFFER = 1000
 SHAPEFILE_DRIVER = 'ESRI Shapefile'
 SHAPEFILE_EPSG = 3857
 SHAPEFILE_SCHEMA = {
@@ -44,9 +44,9 @@ SHAPEFILE_SCHEMA = {
 
 def create_response_quads() -> None:
     _logger.info('Create response quads')
-    features = _yield_features()
+    features_by_quad: Dict[str, List[dict]] = dict()
     idx_feature = 0
-    for feature in features:
+    for feature in _yield_features():
         idx_feature += 1
         _logger.debug('Processing feature {}'.format(idx_feature))
         quads = _determine_quads(feature['geometry'])
@@ -54,7 +54,10 @@ def create_response_quads() -> None:
             _logger.warning('No quads found for feature {}:  {}'.format(idx_feature, feature))
             continue
         for quad in quads:
-            _write_feature_to_file(feature, quad)
+            features_by_quad.setdefault(quad, list()).append(feature)
+        if sum([len(features) for features in features_by_quad.values()]) > FEATURE_BUFFER:
+            for quad, features in features_by_quad.items():
+                _write_features_to_quad_shapefile(features, quad)
 
 
 def _yield_features() -> dict:
@@ -110,7 +113,7 @@ def _determine_quads(geometry: dict) -> List[str]:
     return quads
 
 
-def _write_feature_to_file(feature, quad) -> None:
+def _write_features_to_quad_shapefile(features: List[dict], quad: str) -> None:
     # Get response quad filepath and determine whether we're writing a new file or appending to an existing file
     filepath = FILEPATH_RESPONSE_QUAD.format(quad)
     if not os.path.exists(os.path.dirname(filepath)):
@@ -118,12 +121,14 @@ def _write_feature_to_file(feature, quad) -> None:
     if os.path.exists(filepath):
         _logger.debug('Append to existing shapefile at {}'.format(filepath))
         with fiona.open(filepath, 'a') as file_:
-            file_.write(feature)
+            for feature in features:
+                file_.write(feature)
     else:
         _logger.debug('Create new shapefile at {}'.format(filepath))
         crs = fiona.crs.from_epsg(3857)
         with fiona.open(filepath, 'w', driver=SHAPEFILE_DRIVER, crs=crs, schema=SHAPEFILE_SCHEMA) as file_:
-            file_.write(feature)
+            for feature in features:
+                file_.write(feature)
 
 
 if __name__ == '__main__':
