@@ -12,7 +12,7 @@ from bfgn.data_management import apply_model_to_data
 import numpy as np
 from osgeo import gdal, osr
 
-from gcrmnbc.model_global_application import data_bucket
+from gcrmnbc.utils import data_bucket
 
 
 _logger = logging.getLogger('model_global_application.apply')
@@ -48,7 +48,7 @@ def apply_model_to_quad(
     quad_paths = _get_quad_paths(quad_blob, version_map)
 
     _logger.debug('Check if application is already complete')
-    is_complete = data_bucket.check_is_quad_application_complete(quad_blob, version_map)
+    is_complete = data_bucket.check_is_quad_model_application_complete(quad_blob, version_map)
     if is_complete:
         _logger.debug('Skipping application, is already complete')
         return
@@ -66,7 +66,7 @@ def apply_model_to_quad(
     # Want to clean up if any of the following fail
     try:
         _logger.debug('Download source data')
-        data_bucket.download_source_data_for_quad_blob(quad_paths.dir_quad, quad_blob)
+        data_bucket.download_model_application_input_data_for_quad_blob(quad_paths.dir_quad, quad_blob)
 
         _logger.debug('Create feature VRT')
         buffer = int(2 * experiment.config.data_build.window_radius - experiment.config.data_build.loss_window_radius)
@@ -77,7 +77,7 @@ def apply_model_to_quad(
             _generate_model_probabilities_raster(quad_paths, data_container, experiment)
         except AttributeError:
             _logger.debug('Application unsuccessful, corrupt data found')
-            data_bucket.upload_corrupt_data_notification_for_quad_blob(quad_blob)
+            data_bucket.upload_model_corrupt_data_notification_for_quad_blob(quad_blob)
             return
 
         _logger.info('Format model probabilities')
@@ -91,7 +91,7 @@ def apply_model_to_quad(
 
         if not includes_reef:
             _logger.debug('Application stopped early, no reef area found')
-            data_bucket.upload_no_apply_notification_for_quad_blob(quad_blob)
+            data_bucket.upload_model_no_apply_notification_for_quad_blob(quad_blob)
             return
 
         _logger.info('Generating shapefile from classifications')
@@ -102,12 +102,12 @@ def apply_model_to_quad(
         _scale_model_classifications_raster(quad_paths)
 
         _logger.info('Uploading model results')
-        data_bucket.upload_model_results_for_quad_blob(quad_paths.dir_for_upload, quad_blob, version_map)
+        data_bucket.upload_model_application_results_for_quad_blob(quad_paths.dir_for_upload, quad_blob, version_map)
 
         _logger.info('Application success for quad {}'.format(quad_blob.quad_focal))
         _logger.debug('Delete model results from other versions and any outdated notifications')
-        data_bucket.delete_model_results_for_other_versions(quad_blob, version_map)
-        data_bucket.delete_corrupt_data_norification_if_exists(quad_blob)
+        data_bucket.delete_model_application_results_for_other_versions(quad_blob, version_map)
+        data_bucket.delete_model_corrupt_data_notification_if_exists(quad_blob)
 
     except Exception as error_:
         raise error_

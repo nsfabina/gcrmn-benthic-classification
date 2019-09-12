@@ -55,7 +55,7 @@ class QuadBlob(NamedTuple):
     blobs_context: List[storage.Blob]
 
 
-def get_quad_blobs() -> List[QuadBlob]:
+def get_imagery_quad_blobs() -> List[QuadBlob]:
     _logger.debug('Get quad blobs from bucket')
     raw_blobs = [blob for blob in GCS.bucket.list_blobs(prefix=_DATA_PATH_SOURCE)]
     _logger.debug('Found {} total blobs'.format(len(raw_blobs)))
@@ -111,19 +111,26 @@ def _update_contextual_blobs(quad_blobs: List[QuadBlob]) -> List[QuadBlob]:
 def _prune_completed_quad_blobs(quad_blobs: List[QuadBlob], version_map: str) -> List[QuadBlob]:
     pruned = list()
     for quad_blob in quad_blobs:
-        is_complete = check_is_quad_application_complete(quad_blob, version_map)
+        is_complete = check_is_quad_model_application_complete(quad_blob, version_map)
         if not is_complete:
             pruned.append(quad_blob)
     return pruned
 
 
-def check_is_quad_application_complete(quad_blob: QuadBlob, version_map: str) -> bool:
+def check_is_quad_model_application_complete(quad_blob: QuadBlob, version_map: str) -> bool:
     blob_complete = _get_application_complete_blob(quad_blob, version_map)
     blob_no_apply = _get_no_apply_blob(quad_blob)
     return blob_complete.exists() or blob_no_apply.exists()
 
 
-def download_source_data_for_quad_blob(dir_dest: str, quad_blob: QuadBlob) -> None:
+def download_model_training_input_data_for_quad_blob(dir_dest: str, quad_blob: QuadBlob) -> None:
+    _logger.debug('Download source data for quad blob')
+    filepath_focal = os.path.join(dir_dest, quad_blob.quad_focal + '.tif')
+    _logger.debug('Download focal quad to {}'.format(filepath_focal))
+    quad_blob.blob.download_to_filename(filepath_focal)
+
+
+def download_model_application_input_data_for_quad_blob(dir_dest: str, quad_blob: QuadBlob) -> None:
     _logger.debug('Download source data for quad blob')
     filepath_focal = os.path.join(dir_dest, quad_blob.quad_focal + FILENAME_SUFFIX_FOCAL)
     _logger.debug('Download focal quad to {}'.format(filepath_focal))
@@ -137,7 +144,7 @@ def download_source_data_for_quad_blob(dir_dest: str, quad_blob: QuadBlob) -> No
         blob_context.download_to_filename(filepath_context)
 
 
-def upload_model_results_for_quad_blob(dir_results: str, quad_blob: QuadBlob, version_map: str) -> None:
+def upload_model_application_results_for_quad_blob(dir_results: str, quad_blob: QuadBlob, version_map: str) -> None:
     _logger.debug('Upload model results for quad blob {}'.format(quad_blob.quad_focal))
     blob_name_application = _get_application_path_for_model_results(quad_blob, version_map)
     for filename in os.listdir(dir_results):
@@ -149,26 +156,26 @@ def upload_model_results_for_quad_blob(dir_results: str, quad_blob: QuadBlob, ve
     blob_complete.upload_from_string('')
 
 
-def upload_no_apply_notification_for_quad_blob(quad_blob: QuadBlob) -> None:
+def upload_model_no_apply_notification_for_quad_blob(quad_blob: QuadBlob) -> None:
     _logger.debug('Upload no apply notification for quad blob {}'.format(quad_blob.quad_focal))
     no_apply_blob = _get_no_apply_blob(quad_blob)
     no_apply_blob.upload_from_string('')
 
 
-def upload_corrupt_data_notification_for_quad_blob(quad_blob: QuadBlob) -> None:
+def upload_model_corrupt_data_notification_for_quad_blob(quad_blob: QuadBlob) -> None:
     _logger.debug('Upload corrupt data notification for quad blob {}'.format(quad_blob.quad_focal))
     corrupt_blob = _get_corrupt_data_blob(quad_blob)
     corrupt_blob.upload_from_string('')
 
 
-def delete_corrupt_data_norification_if_exists(quad_blob: QuadBlob) -> None:
+def delete_model_corrupt_data_notification_if_exists(quad_blob: QuadBlob) -> None:
     corrupt_blob = _get_corrupt_data_blob(quad_blob)
     if corrupt_blob.exists():
         _logger.debug('Delete corrupt data notification for quad blob {}'.format(quad_blob.quad_focal))
         corrupt_blob.delete()
 
 
-def delete_model_results_for_other_versions(quad_blob: QuadBlob, current_version_map: str) -> None:
+def delete_model_application_results_for_other_versions(quad_blob: QuadBlob, current_version_map: str) -> None:
     # TODO:  test when we need to remove data, wait until then for examples to work on
     raise AssertionError('remove_model_results needs to be tested')
     application_path_quad = _get_application_path_for_quad(quad_blob) + '/'

@@ -6,8 +6,8 @@ from bfgn.configuration import configs
 from bfgn.data_management import data_core
 from bfgn.experiments import experiments
 
-from gcrmnbc.model_global_application import apply, data_bucket
-from gcrmnbc.utils import shared_configs
+from gcrmnbc.model_global_application import apply
+from gcrmnbc.utils import data_bucket, shared_configs
 
 
 _DIR_CONFIGS = '../configs'

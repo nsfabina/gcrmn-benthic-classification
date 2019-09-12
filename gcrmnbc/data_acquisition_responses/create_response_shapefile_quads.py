@@ -76,7 +76,7 @@ def _yield_features() -> dict:
             content = content[1 + match.end():]
             # Parse the geometry and class and generate the feature
             geometry = json.loads(match.group())
-            properties_match = re.search('{ "class_name[^}]*}', content_preceding_geometry)
+            properties_match = re.search(r'{ "class_name[^}]*}', content_preceding_geometry)
             if not properties_match:
                 _logger.warning('No properties found for geometry on or near line {}:  {}'.format(
                     idx_line, content_preceding_geometry))
