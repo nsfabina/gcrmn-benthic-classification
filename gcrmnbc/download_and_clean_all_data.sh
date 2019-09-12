@@ -17,5 +17,5 @@ echo "Download feature quads"
 echo "Rasterize response shapefiles according to feature extents"
 ./data_cleaning/rasterize_response_quads.py
 
-
-
+echo "Download UNEP evaluation data"
+./data_acquisition_evaluation/download_unep_from_fabina_gdrive.sh
