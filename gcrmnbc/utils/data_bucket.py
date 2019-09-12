@@ -14,6 +14,8 @@ _DATA_BUCKET = 'coral-atlas-data-share'
 _DATA_PATH_SOURCE = 'coral_reefs_2018_visual_v1_mosaic/'
 _DATA_PATH_DEST = 'gcrmn-global-map/'
 
+FILENAME_SUFFIX_FEATURES = '_features.tif'
+
 FILENAME_SUFFIX_FOCAL = '_focal.tif'
 FILENAME_SUFFIX_CONTEXT = '_context.tif'
 
@@ -125,7 +127,7 @@ def check_is_quad_model_application_complete(quad_blob: QuadBlob, version_map: s
 
 def download_model_training_input_data_for_quad_blob(dir_dest: str, quad_blob: QuadBlob) -> None:
     _logger.debug('Download source data for quad blob')
-    filepath_focal = os.path.join(dir_dest, quad_blob.quad_focal + '.tif')
+    filepath_focal = os.path.join(dir_dest, quad_blob.quad_focal + FILENAME_SUFFIX_FEATURES)
     if os.path.exists(filepath_focal):
         _logger.debug('Quad already downloaded for {}'.format(filepath_focal))
         return
