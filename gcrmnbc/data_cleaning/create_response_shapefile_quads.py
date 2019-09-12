@@ -3,7 +3,7 @@ import json
 import logging
 import os
 import re
-from typing import Dict, List
+from typing import List
 
 import fiona.crs
 import numpy as np

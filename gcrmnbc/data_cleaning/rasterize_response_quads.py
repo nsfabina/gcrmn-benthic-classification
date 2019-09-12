@@ -28,7 +28,7 @@ def rasterize_response_quads() -> None:
         quad = re.search(r'L15-\d{4}E-\d{4}N', filename).group()
         filepath_features = os.path.join(DIR_DATA_CLEAN, quad + data_bucket.FILENAME_SUFFIX_FEATURES)
         filepath_source_responses = os.path.join(DIR_DATA_TMP, filename)
-        filepath_dest_responses = re.sub('features', 'responses', filepath_features)
+        filepath_dest_responses = re.sub('feature', 'response', filepath_features)
         assert os.path.exists(filepath_features), 'Download all feature quads before rasterizing response quads'
         # Get rasterize parameters
         raster_features = gdal.Open(filepath_features)
