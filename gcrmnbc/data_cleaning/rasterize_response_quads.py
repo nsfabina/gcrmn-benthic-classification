@@ -51,7 +51,8 @@ def rasterize_response_quads() -> None:
         )
         raster_out = gdal.Rasterize(filepath_dest_responses, filepath_source_responses, options=options_rasterize)
         del raster_out
-        # Remove cloud-shade and unknown classes
+        # Remove cloud-shade and unknown classes. Unknown classes could be anything from water to reef to clouds, while
+        # cloud-shade is not reliable as the map was created with the analytical mosaic rather than the visual mosaic.
         min_nodata = min(encodings.MAPPINGS[encodings.CLOUD_SHADE], encodings.MAPPINGS[encodings.UNKNOWN])
         command = 'gdal_calc.py -A {filepath} --outfile {filepath} --NoDataValue=-9999 --overwrite --quiet ' + \
                   '--calc="A * (A < {min_nodata}) + -9999 * (A >= {min_nodata)"'
