@@ -16,7 +16,7 @@ def download_feature_quads() -> None:
     quad_blobs = [quad_blob for quad_blob in data_bucket.get_imagery_quad_blobs() if quad_blob.quad_focal in quads]
     for idx_blob, quad_blob in enumerate(quad_blobs):
         print('\rDownloading blob {} of {}'.format(1+idx_blob, len(quad_blobs)), end='')
-        data_bucket.download_model_training_input_data_for_quad_blob(DIR_TRAINING_DATA, quad_blob)
+        data_bucket.download_model_training_input_data_for_quad_blob(DIR_CLEAN, quad_blob)
 
 
 if __name__ == '__main__':
