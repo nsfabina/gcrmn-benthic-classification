@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import re
+import sys
 from typing import List
 
 import fiona.crs
@@ -16,6 +17,9 @@ _logger = logging.getLogger(__name__)
 _logger.setLevel('DEBUG')
 _formatter = logging.Formatter(fmt='%(asctime)s - %(processName)s - %(name)s - %(levelname)s - %(message)s')
 _handler = logging.FileHandler('create_response_shapefile_quads.log')
+_handler.setFormatter(_formatter)
+_logger.addHandler(_handler)
+_handler = logging.StreamHandler(sys.stdout)
 _handler.setFormatter(_formatter)
 _logger.addHandler(_handler)
 
@@ -58,8 +62,10 @@ class QuadFeatures(object):
         self._last_updated_by_quad[quad] = idx_feature
 
     def write_quad_shapefiles(self, idx_feature, force_write=None):
-        for quad, last_updated in self._last_updated_by_quad.items():
+        quads = sorted(list(self._features_by_quad.keys()))
+        for quad in quads:
             features = self._features_by_quad[quad]
+            last_updated = self._last_updated_by_quad[quad]
             too_many_features = len(features) > WRITE_FEATURE_BUFFER
             too_many_indexes = (idx_feature - last_updated) > WRITE_IDX_BUFFER
             if not force_write and not too_many_features and not too_many_indexes:
@@ -75,6 +81,8 @@ def create_response_quads() -> None:
     idx_feature = 0
     for feature in _yield_features():
         idx_feature += 1
+        if idx_feature < 3044264:
+            continue
         _logger.debug('Processing feature {}'.format(idx_feature))
         quads = _determine_quads(feature['geometry'])
         if not quads:
@@ -84,6 +92,8 @@ def create_response_quads() -> None:
             quad_features.add_feature_to_quad(feature, quad, idx_feature)
             quad_features.write_quad_shapefiles(idx_feature, force_write=False)
     quad_features.write_quad_shapefiles(idx_feature, force_write=True)
+    remaining_features = sum([len(f) for f in quad_features._features_by_quad.values()])
+    _logger.debug('Remaining features:  {}'.format(remaining_features))
 
 
 def _yield_features() -> dict:
