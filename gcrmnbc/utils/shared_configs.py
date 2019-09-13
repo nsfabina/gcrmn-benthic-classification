@@ -15,7 +15,7 @@ _SUFFIX_RESPONSES = 'responses.tif'
 _SUFFIX_BOUNDARIES = 'boundaries.shp'
 
 _RESPONSE_MAPPINGS = ('lwr', )
-_RESPONSE_MAPPING_CLASSES = {'lwr': 6, }
+_RESPONSE_MAPPING_CLASSES = {'lwr': 4, }
 
 
 def build_dynamic_config(filepath_config: str, response_mapping: str) -> configs.Config:

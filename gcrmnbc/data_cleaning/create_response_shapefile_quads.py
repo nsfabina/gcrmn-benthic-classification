@@ -12,6 +12,8 @@ import rasterio as rio
 from rasterio.features import geometry_mask
 import shapely.geometry
 
+from gcrmnbc.utils import encodings
+
 
 _logger = logging.getLogger(__name__)
 _logger.setLevel('DEBUG')
@@ -26,15 +28,6 @@ _logger.addHandler(_handler)
 DIR_TRAINING_DATA = '/scratch/nfabina/gcrmn-benthic-classification/training_data/'
 FILEPATH_RESPONSE_SOURCE = os.path.join(DIR_TRAINING_DATA, 'raw/lwr_3857.geojson')
 FILEPATH_RESPONSE_QUAD = os.path.join(DIR_TRAINING_DATA, 'tmp/{}_responses.shp')
-
-ENCODINGS = {
-    'Land': 1,
-    'Deep Reef Water 10m+': 2,
-    'Reef Top': 3,
-    'Not Reef Top': 4,
-    'Cloud-Shade': 5,
-    'Unknown': 6,
-}
 
 SHAPEFILE_DRIVER = 'ESRI Shapefile'
 SHAPEFILE_EPSG = 3857
@@ -121,7 +114,7 @@ def _yield_features() -> dict:
                     idx_line, content_preceding_geometry))
                 continue
             properties = json.loads(properties_match.group())
-            class_code = ENCODINGS[properties['class_name']]
+            class_code = encodings.MAPPINGS[properties['class_name']]
             feature = {
                 'properties': OrderedDict([('class_code', class_code)]),
                 'geometry': geometry,

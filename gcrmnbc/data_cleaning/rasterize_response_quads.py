@@ -1,11 +1,13 @@
 import logging
 import os
 import re
+import shlex
+import subprocess
 
 import gdal
 import osr
 
-from gcrmnbc.utils import data_bucket
+from gcrmnbc.utils import data_bucket, encodings
 
 
 _logger = logging.getLogger(__name__)
@@ -21,6 +23,7 @@ DIR_DATA_CLEAN = os.path.join(DIR_DATA, 'clean')
 
 
 def rasterize_response_quads() -> None:
+    _assert_encoding_assumptions_hold()
     filenames = [filename for filename in os.listdir(DIR_DATA_TMP) if filename.endswith('.shp')]
     for idx_filename, filename in enumerate(filenames):
         print('\rRasterizing shapefile {} of {}'.format(1+idx_filename, len(filenames)))
@@ -48,3 +51,26 @@ def rasterize_response_quads() -> None:
         )
         raster_out = gdal.Rasterize(filepath_dest_responses, filepath_source_responses, options=options_rasterize)
         del raster_out
+        # Remove cloud-shade and unknown classes
+        min_nodata = min(encodings.MAPPINGS[encodings.CLOUD_SHADE], encodings.MAPPINGS[encodings.UNKNOWN])
+        command = 'gdal_calc.py -A {filepath} --outfile {filepath} --NoDataValue=-9999 --overwrite --quiet ' + \
+                  '--calc="A * (A < {min_nodata}) + -9999 * (A >= {min_nodata)"'
+        command = command.format(filepath=filepath_dest_responses, min_nodata=min_nodata)
+        subprocess.run(shlex.split(command))
+
+
+def _assert_encoding_assumptions_hold():
+    """
+    We remove cloud-shade and unknown classes using the gdal_calc command within the rasterize operation. Currently,
+    cloud-shade and unknown are both encoded as greater values than any other class, so we do a simple check to see if
+    the raster values exceed a threshold. i.e., cloud-shade is 5 and unknown is 6 at the time of this writing, while
+    land, water, and reef are all 1 through 4. If this changes, the gdal_calc command will fail.
+
+    I'd put this function in the rasterize function, but I only want to check once and I want to keep this in an
+    obvious place, rather than buried in a large function.
+    """
+    cloudshade = encodings.MAPPINGS[encodings.CLOUD_SHADE]
+    unknown = encodings.MAPPINGS[encodings.UNKNOWN]
+    max_other = max([value for key, value in encodings.MAPPINGS.items()
+                     if key not in (encodings.CLOUD_SHADE, encodings.UNKNOWN)])
+    assert cloudshade > max_other and unknown > max_other, 'Please see _assert_encoding_assumptions_hold for details'
