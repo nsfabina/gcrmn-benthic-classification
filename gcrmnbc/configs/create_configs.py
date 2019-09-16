@@ -2,6 +2,9 @@ from bfgn.configuration import configs
 
 
 _FILEPATH_TEMPLATE = 'config_template.yaml'
+_BEST_CONFIGS = [
+    'dense_unet_128_23_16', 'dense_unet_128_24_12', 'dense_unet_128_24_8', 'dense_unet_128_43_4', 'unet_128_24_12'
+]
 
 
 def create_configs() -> None:
@@ -22,6 +25,8 @@ def create_configs() -> None:
                     # Save config to file
                     basename = '{}_{}_{}{}_{}'.format(
                         architecture_name, window_radius, block_structure[0], len(block_structure), filters)
+                    if basename not in _BEST_CONFIGS:
+                        continue
                     filepath = basename + '.yaml'
                     configs.save_config_to_file(config_template, filepath)
 
