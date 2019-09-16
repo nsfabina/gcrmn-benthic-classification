@@ -13,7 +13,7 @@ select yn in "Yes" "No"; do
 done
 
 echo "Download response geojson"
-./data_acquisition_responses/download_response_geojson_from_vulcan.sh
+./data_acquisition/download_response_geojson_from_vulcan.sh
 
 echo "Create shapefile 'quads' for responses to determine which feature quads are needed"
 python ./data_cleaning/create_response_shapefile_quads.py
@@ -22,7 +22,7 @@ echo "Remove response quads with no reef area"
 python ./data_cleaning/remove_quad_files_with_no_reef.py
 
 echo "Download feature quads"
-python ./data_acquisition_features/download_feature_quads.py
+python ./data_acquisition/download_feature_quads.py
 
 echo "Rasterize response shapefiles according to feature extents"
 python ./data_cleaning/rasterize_response_quads.py
@@ -31,4 +31,4 @@ echo "Create shapefile boundaries for training data sampling"
 python ./data_cleaning/create_sampling_boundary_shapefiles.py
 
 echo "Download UNEP evaluation data"
-./data_acquisition_evaluation/download_unep_from_fabina_gdrive.sh
+./data_acquisition/download_unep_from_fabina_gdrive.sh
