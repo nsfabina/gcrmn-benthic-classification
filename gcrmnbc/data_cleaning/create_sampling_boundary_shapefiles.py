@@ -74,3 +74,7 @@ def _assert_encoding_assumptions_hold():
     max_other = max(encodings.LAND, encodings.WATER)
     assert encodings.REEF_TOP > max_other and encodings.NOT_REEF_TOP > max_other, \
         'Please see _assert_encoding_assumptions_hold for details'
+
+
+if __name__ == '__main__':
+    create_sampling_boundary_shapefiles()

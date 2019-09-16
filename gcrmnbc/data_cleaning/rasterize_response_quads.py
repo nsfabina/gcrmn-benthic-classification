@@ -79,3 +79,7 @@ def _assert_encoding_assumptions_hold():
     max_other = max([value for key, value in encodings.MAPPINGS.items()
                      if key not in (encodings.CLOUD_SHADE, encodings.UNKNOWN)])
     assert cloudshade > max_other and unknown > max_other, 'Please see _assert_encoding_assumptions_hold for details'
+
+
+if __name__ == '__main__':
+    rasterize_response_quads()
