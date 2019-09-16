@@ -10,11 +10,11 @@ raw_files:
   ignore_projections: True
 data_build:
   dir_out:
-  log_level: DEBUG
+  log_level: INFO
   filename_prefix_out: ''
   network_category: FCN
   random_seed: 1
-  max_samples: 10000
+  max_samples: 20000
   max_built_data_gb: 50.0
   number_folds: 10
   validation_fold: 0
@@ -22,7 +22,9 @@ data_build:
   loss_window_radius:
   feature_mean_centering: false
   feature_nodata_maximum_fraction: 0.25
+  response_nodata_maximum_fraction: 0.25
   response_background_values: [0, 1]
+  sparse_read: True
 data_samples:
   apply_random_transformations: true
   batch_size: 32
@@ -31,7 +33,7 @@ data_samples:
   feature_nodata_encoding: -10.0
 model_training:
   dir_out:
-  log_level: DEBUG
+  log_level: INFO
   assert_gpu: true
   architecture_name: 'unet'
   loss_metric: 'cc'
