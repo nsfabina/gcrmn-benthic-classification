@@ -55,7 +55,7 @@ def rasterize_response_quads() -> None:
         # cloud-shade is not reliable as the map was created with the analytical mosaic rather than the visual mosaic.
         min_nodata = min(encodings.MAPPINGS[encodings.CLOUD_SHADE], encodings.MAPPINGS[encodings.UNKNOWN])
         command = 'gdal_calc.py -A {filepath} --outfile {filepath} --NoDataValue=-9999 --overwrite --quiet ' + \
-                  '--calc="A * (A < {min_nodata}) + -9999 * (A >= {min_nodata)"'
+                  '--calc="A * (A < {min_nodata}) + -9999 * (A >= {min_nodata})"'
         command = command.format(filepath=filepath_dest_responses, min_nodata=min_nodata)
         subprocess.run(shlex.split(command))
 

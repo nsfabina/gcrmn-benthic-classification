@@ -37,7 +37,7 @@ def create_sampling_boundary_shapefiles() -> None:
         command = command.format(filepath_responses=filepath_responses, filepath_reef=filepath_reef_raster)
         subprocess.run(shlex.split(command))
         # Get shapefile of reef outline
-        command = 'gdal_polygonize.py {} {}'.format(filepath_reef_raster, filepath_reef_outline)
+        command = 'gdal_polygonize.py -q {} {}'.format(filepath_reef_raster, filepath_reef_outline)
         subprocess.run(shlex.split(command))
         # Get shapefile of sampling boundaries by buffering reef outline
         command = 'ogr2ogr -f "ESRI Shapefile" {filepath_boundary} {filepath_outline} -dialect sqlite ' + \
