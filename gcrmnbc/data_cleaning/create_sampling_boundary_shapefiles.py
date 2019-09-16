@@ -37,7 +37,7 @@ def create_sampling_boundary_shapefiles() -> None:
         filepath_boundary = re.sub('responses.tif', 'boundaries.shp', filepath_responses)
         # Get raster of only reef areas
         command = 'gdal_calc.py -A {filepath_responses} --outfile={filepath_reef} --NoDataValue=-9999 ' + \
-                  '--calc="1*(A>2) + -9999*(A<=2)" -quit'
+                  '--calc="1*(A>2) + -9999*(A<=2)" --quiet'
         command = command.format(filepath_responses=filepath_responses, filepath_reef=filepath_reef_raster)
         subprocess.run(shlex.split(command))
         # Get shapefile of reef outline
@@ -45,8 +45,11 @@ def create_sampling_boundary_shapefiles() -> None:
         subprocess.run(shlex.split(command))
         # Get shapefile of sampling boundaries by buffering reef outline
         command = 'ogr2ogr -f "ESRI Shapefile" {filepath_boundary} {filepath_outline} -dialect sqlite ' + \
-                  '-sql "select ST_buffer(geometry, 200) as geometry from test_outline"'
-        command = command.format(filepath_boundary=filepath_boundary, filepath_outline=filepath_reef_outline)
+                  '-sql "select ST_buffer(geometry, 200) as geometry from {basename_outline}"'
+        command = command.format(
+            filepath_boundary=filepath_boundary, filepath_outline=filepath_reef_outline, 
+            basename_outline=basename_reef_outline
+        )
         subprocess.run(shlex.split(command))
         # Clean up
         os.remove(filepath_reef_raster)

@@ -21,14 +21,15 @@ _RESPONSE_MAPPING_CLASSES = {'lwr': 4, }
 def build_dynamic_config(filepath_config: str, response_mapping: str) -> configs.Config:
     assert response_mapping in _RESPONSE_MAPPINGS, \
         'response_mapping is {} but must be one of:  {}'.format(response_mapping, _RESPONSE_MAPPINGS)
-
     # Get all feature, response, and boundary files
-    filepaths_features = [os.path.join(_DIR_DATA_CLEAN, filename) for filename in os.listdir(_DIR_DATA_CLEAN)
+    filepaths_features = [[os.path.join(_DIR_DATA_CLEAN, filename)] for filename in os.listdir(_DIR_DATA_CLEAN)
                           if filename.endswith(_SUFFIX_FEATURES)]
-    filepaths_responses = [re.sub(_SUFFIX_FEATURES, _SUFFIX_RESPONSES, filepath) for filepath in filepaths_features]
-    filepaths_boundaries = [re.sub(_SUFFIX_FEATURES, _SUFFIX_BOUNDARIES, filepath) for filepath in filepaths_features]
-    assert all([os.path.exists(filepath) for filepath in filepaths_responses]), 'Not all response files are present'
-    assert all([os.path.exists(filepath) for filepath in filepaths_responses]), 'Not all boundary files are present'
+    filepaths_responses = [[re.sub(_SUFFIX_FEATURES, _SUFFIX_RESPONSES, filepath[0])] for filepath in filepaths_features]
+    filepaths_boundaries = [re.sub(_SUFFIX_FEATURES, _SUFFIX_BOUNDARIES, filepath[0]) for filepath in filepaths_features]
+    missing_features = [filepath[0] for filepath in filepaths_responses if not os.path.exists(filepath[0])]
+    missing_boundaries = [filepath for filepath in filepaths_boundaries if not os.path.exists(filepath)]
+    assert not missing_features, 'Not all response files are present: {}'.format(missing_features)
+    assert not missing_boundaries, 'Not all boundary files are present: {}'.format(missing_boundaries)
 
     # Parse config
     config = configs.create_config_from_file(filepath_config)
