@@ -18,6 +18,9 @@ echo "Download response geojson"
 echo "Create shapefile 'quads' for responses to determine which feature quads are needed"
 python ./data_cleaning/create_response_shapefile_quads.py
 
+echo "Remove response quads with no reef area"
+python ./data_cleaning/remove_quad_files_with_no_reef.py
+
 echo "Download feature quads"
 python ./data_acquisition_features/download_feature_quads.py
 
