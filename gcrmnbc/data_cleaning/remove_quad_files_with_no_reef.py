@@ -25,14 +25,13 @@ def remove_response_shapefiles_with_no_reef() -> None:
                  if filename.endswith('responses.shp')]
     for idx_filepath, filepath in enumerate(filepaths):
         _logger.debug('Reviewing shapefile {} of {}'.format(1+idx_filepath, len(filepaths)))
-        classes = set()
+        reef_classes = (encodings.MAPPINGS[encodings.REEF_TOP], encodings.MAPPINGS[encodings.NOT_REEF_TOP])
         with fiona.open(filepath) as features:
             for feature in features:
-                classes.add(feature['properties']['class_code'])
-            if encodings.MAPPINGS[encodings.REEF_TOP] in classes or \
-                    encodings.MAPPINGS[encodings.NOT_REEF_TOP] in classes:
-                _logger.debug('Found reef classes in {}'.format(filepath))
-                continue
+                class_code = feature['properties']['class_code']
+                if class_code in reef_classes:
+                    _logger.debug('Found reef classes in {}'.format(filepath))
+                    continue
             _logger.debug('Removing associated files, found NO reef classes in {}'.format(filepath))
             basename = os.path.splitext(os.path.basename(filepath))[0]
             for filename in os.listdir(DIR_DATA):
