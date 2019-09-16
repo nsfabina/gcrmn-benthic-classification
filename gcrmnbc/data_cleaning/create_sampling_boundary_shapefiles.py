@@ -36,8 +36,8 @@ def create_sampling_boundary_shapefiles() -> None:
         _logger.debug('Creating boundaries for response file {} of {}'.format(idx_responses, len(filepaths_responses)))
         filepath_boundary = re.sub('responses.tif', 'boundaries.shp', filepath_responses)
         # Get raster of only reef areas
-        command = 'gdal_calc.py - A {filepath_responses} -outfile={filepath_reef} -NoDataValue=-9999 ' + \
-                  '-calc="1*(A>2) + -9999*(A<=2)" -quit'
+        command = 'gdal_calc.py -A {filepath_responses} --outfile={filepath_reef} --NoDataValue=-9999 ' + \
+                  '--calc="1*(A>2) + -9999*(A<=2)" -quit'
         command = command.format(filepath_responses=filepath_responses, filepath_reef=filepath_reef_raster)
         subprocess.run(shlex.split(command))
         # Get shapefile of reef outline
