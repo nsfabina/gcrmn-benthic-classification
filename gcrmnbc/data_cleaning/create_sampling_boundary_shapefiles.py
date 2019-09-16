@@ -11,7 +11,7 @@ from gcrmnbc.utils import encodings
 _logger = logging.getLogger(__name__)
 _logger.setLevel('DEBUG')
 _formatter = logging.Formatter(fmt='%(asctime)s - %(processName)s - %(name)s - %(levelname)s - %(message)s')
-_handler = logging.FileHandler('rasterize_response_quads.log')
+_handler = logging.FileHandler('create_sampling_boundary_shapefiles.log')
 _handler.setFormatter(_formatter)
 _logger.addHandler(_handler)
 _handler = logging.StreamHandler(sys.stdout)
@@ -25,6 +25,7 @@ DIR_DATA_CLEAN = os.path.join(DIR_DATA, 'clean')
 
 
 def create_sampling_boundary_shapefiles() -> None:
+    _logger.info('Creating sampling boundary shapefiles')
     _assert_encoding_assumptions_hold()
     # Get list of completed responses rasters
     filepath_reef_raster = os.path.join(DIR_DATA_TMP, 'tmp_reef_only.tif')
@@ -36,8 +37,11 @@ def create_sampling_boundary_shapefiles() -> None:
         _logger.debug('Creating boundaries for response file {} of {}'.format(idx_responses, len(filepaths_responses)))
         filepath_boundary = re.sub('responses.tif', 'boundaries.shp', filepath_responses)
         if os.path.exists(filepath_boundary):
+            _logger.debug('Boundary file already exists at:  {}'.format(filepath_boundary))
             continue
+        _logger.debug('Creating boundary file at:  {}'.format(filepath_boundary))
         # Get raster of only reef areas
+        _logger.debug('Creating reef-only raster')
         command = 'gdal_calc.py -A {filepath_responses} --outfile={filepath_reef} --NoDataValue=-9999 ' + \
                   '--calc="1*(A>2) + -9999*(A<=2)" --quiet'
         command = command.format(filepath_responses=filepath_responses, filepath_reef=filepath_reef_raster)
@@ -47,6 +51,7 @@ def create_sampling_boundary_shapefiles() -> None:
             _logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
             raise AssertionError('Unknown error in reef raster generation, see above log lines')
         # Get shapefile of reef outline
+        _logger.debug('Creating reef outline shapefile')
         command = 'gdal_polygonize.py -q {} {}'.format(filepath_reef_raster, filepath_reef_outline)
         completed = subprocess.run(shlex.split(command))
         if completed.stderr:
@@ -54,6 +59,7 @@ def create_sampling_boundary_shapefiles() -> None:
             _logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
             raise AssertionError('Unknown error in reef outline generation, see above log lines')
         # Get shapefile of sampling boundaries by buffering reef outline
+        _logger.debug('Creating buffered outline for boundary file')
         command = 'ogr2ogr -f "ESRI Shapefile" {filepath_boundary} {filepath_outline} -dialect sqlite ' + \
                   '-sql "select ST_buffer(geometry, 200) as geometry from {basename_outline}"'
         command = command.format(
@@ -66,6 +72,7 @@ def create_sampling_boundary_shapefiles() -> None:
             _logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
             raise AssertionError('Unknown error in outline buffering, see above log lines')
         # Clean up
+        _logger.debug('Remove temporary files')
         os.remove(filepath_reef_raster)
         for filename_outline in os.listdir(DIR_DATA_TMP):
             if not re.search(basename_reef_outline, filename_outline):
