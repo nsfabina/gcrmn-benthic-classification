@@ -29,7 +29,8 @@ def remove_response_shapefiles_with_no_reef() -> None:
         with fiona.open(filepath) as features:
             for feature in features:
                 classes.add(feature['properties']['class_code'])
-            if encodings.REEF_TOP in classes or encodings.NOT_REEF_TOP in classes:
+            if encodings.MAPPINGS[encodings.REEF_TOP] in classes or \
+                    encodings.MAPPINGS[encodings.NOT_REEF_TOP] in classes:
                 _logger.debug('Found reef classes in {}'.format(filepath))
                 continue
             _logger.debug('Removing associated files, found NO reef classes in {}'.format(filepath))

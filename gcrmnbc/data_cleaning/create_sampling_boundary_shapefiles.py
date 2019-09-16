@@ -95,9 +95,10 @@ def _assert_encoding_assumptions_hold():
     Here, we just assert that reef top and not reef top are still the classes with the greatest numbered labels after
     removing cloud-shade and unknown. The gdal_calc commands depend on this assumption.
     """
-    max_other = max(encodings.LAND, encodings.WATER)
-    assert encodings.REEF_TOP > max_other and encodings.NOT_REEF_TOP > max_other, \
-        'Please see _assert_encoding_assumptions_hold for details'
+    max_other = max(encodings.MAPPINGS[encodings.LAND], encodings.MAPPINGS[encodings.WATER])
+    reef_top = encodings.MAPPINGS[encodings.REEF_TOP]
+    not_reef_top = encodings.MAPPINGS[encodings.NOT_REEF_TOP]
+    assert reef_top > max_other and not_reef_top > max_other, 'Please see _assert_encoding_assumptions_hold for details'
 
 
 if __name__ == '__main__':
