@@ -3,6 +3,7 @@ import os
 import re
 import shlex
 import subprocess
+import sys
 
 from gcrmnbc.utils import encodings
 
@@ -11,6 +12,9 @@ _logger = logging.getLogger(__name__)
 _logger.setLevel('DEBUG')
 _formatter = logging.Formatter(fmt='%(asctime)s - %(processName)s - %(name)s - %(levelname)s - %(message)s')
 _handler = logging.FileHandler('rasterize_response_quads.log')
+_handler.setFormatter(_formatter)
+_logger.addHandler(_handler)
+_handler = logging.StreamHandler(sys.stdout)
 _handler.setFormatter(_formatter)
 _logger.addHandler(_handler)
 
