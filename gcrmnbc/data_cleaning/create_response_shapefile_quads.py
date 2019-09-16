@@ -68,14 +68,28 @@ class QuadFeatures(object):
             self._last_updated_by_quad.pop(quad)
 
 
+def _raise() -> None:
+    raise AssertionError(
+        "So... you're running create_response_shapefile_quads again, huh? That's a bummer. You know this takes a " 
+        "long time to run, right? Well, the reason I'm raising this error is because I want to remind you how long "
+        "it takes to run AND to recommend that you write up something to parse the data more quickly. You should "
+        "think about how to make this parsing work in parallel. First, you'll need to implement some sort of "
+        "thread-safe generator for the raw geojson or divide the file up based on raw number of lines. Second, "
+        "you'll need to be sure that only one thread opens a fiona file at a time (probably with the 'x' flag) "
+        "and that other threads are patient when trying to access the same file. This'll be much easier than "
+        "setting up multiple jobs to work in parallel and it's better because it'd be overkill to spin up multiple "
+        "instances to just parse data from a file and write it to another file. Good luck! This should only take "
+        "1-2 hours, so don't worry!"
+    )
+
+
 def create_response_quads() -> None:
+    _raise()
     _logger.info('Create response quads')
     quad_features = QuadFeatures()
     idx_feature = 0
     for feature in _yield_features():
         idx_feature += 1
-        if idx_feature < 3044264:
-            continue
         _logger.debug('Processing feature {}'.format(idx_feature))
         quads = _determine_quads(feature['geometry'])
         if not quads:
