@@ -35,14 +35,24 @@ def create_sampling_boundary_shapefiles() -> None:
     for idx_responses, filepath_responses in enumerate(filepaths_responses):
         _logger.debug('Creating boundaries for response file {} of {}'.format(idx_responses, len(filepaths_responses)))
         filepath_boundary = re.sub('responses.tif', 'boundaries.shp', filepath_responses)
+        if os.path.exists(filepath_boundary):
+            continue
         # Get raster of only reef areas
         command = 'gdal_calc.py -A {filepath_responses} --outfile={filepath_reef} --NoDataValue=-9999 ' + \
                   '--calc="1*(A>2) + -9999*(A<=2)" --quiet'
         command = command.format(filepath_responses=filepath_responses, filepath_reef=filepath_reef_raster)
-        subprocess.run(shlex.split(command))
+        completed = subprocess.run(shlex.split(command))
+        if completed.stderr:
+            _logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
+            _logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
+            raise AssertionError('Unknown error in reef raster generation, see above log lines')
         # Get shapefile of reef outline
         command = 'gdal_polygonize.py -q {} {}'.format(filepath_reef_raster, filepath_reef_outline)
-        subprocess.run(shlex.split(command))
+        completed = subprocess.run(shlex.split(command))
+        if completed.stderr:
+            _logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
+            _logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
+            raise AssertionError('Unknown error in reef outline generation, see above log lines')
         # Get shapefile of sampling boundaries by buffering reef outline
         command = 'ogr2ogr -f "ESRI Shapefile" {filepath_boundary} {filepath_outline} -dialect sqlite ' + \
                   '-sql "select ST_buffer(geometry, 200) as geometry from {basename_outline}"'
@@ -50,7 +60,11 @@ def create_sampling_boundary_shapefiles() -> None:
             filepath_boundary=filepath_boundary, filepath_outline=filepath_reef_outline, 
             basename_outline=basename_reef_outline
         )
-        subprocess.run(shlex.split(command))
+        completed = subprocess.run(shlex.split(command))
+        if completed.stderr:
+            _logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
+            _logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
+            raise AssertionError('Unknown error in outline buffering, see above log lines')
         # Clean up
         os.remove(filepath_reef_raster)
         for filename_outline in os.listdir(DIR_DATA_TMP):
