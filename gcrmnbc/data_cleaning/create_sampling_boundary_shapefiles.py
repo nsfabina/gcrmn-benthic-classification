@@ -43,17 +43,17 @@ def create_sampling_boundary_shapefiles() -> None:
         # Get raster of only reef areas
         _logger.debug('Creating reef-only raster')
         command = 'gdal_calc.py -A {filepath_responses} --outfile={filepath_reef} --NoDataValue=-9999 ' + \
-                  '--calc="1*(A>2) + -9999*(A<=2)" --quiet'
+                  '--calc="1*(A>2) + -9999*(A<=2)"'
         command = command.format(filepath_responses=filepath_responses, filepath_reef=filepath_reef_raster)
-        completed = subprocess.run(shlex.split(command))
+        completed = subprocess.run(shlex.split(command), capture_output=True)
         if completed.stderr:
             _logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
             _logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
             raise AssertionError('Unknown error in reef raster generation, see above log lines')
         # Get shapefile of reef outline
         _logger.debug('Creating reef outline shapefile')
-        command = 'gdal_polygonize.py -q {} {}'.format(filepath_reef_raster, filepath_reef_outline)
-        completed = subprocess.run(shlex.split(command))
+        command = 'gdal_polygonize.py {} {}'.format(filepath_reef_raster, filepath_reef_outline)
+        completed = subprocess.run(shlex.split(command), capture_output=True)
         if completed.stderr:
             _logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
             _logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
@@ -66,7 +66,7 @@ def create_sampling_boundary_shapefiles() -> None:
             filepath_boundary=filepath_boundary, filepath_outline=filepath_reef_outline, 
             basename_outline=basename_reef_outline
         )
-        completed = subprocess.run(shlex.split(command))
+        completed = subprocess.run(shlex.split(command), capture_output=True)
         if completed.stderr:
             _logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
             _logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
