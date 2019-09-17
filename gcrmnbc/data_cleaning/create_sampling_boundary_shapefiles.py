@@ -1,22 +1,12 @@
-import logging
 import os
 import re
 import shlex
 import subprocess
-import sys
 
-from gcrmnbc.utils import encodings
+from gcrmnbc.utils import encodings, logs
 
 
-_logger = logging.getLogger(__name__)
-_logger.setLevel('DEBUG')
-_formatter = logging.Formatter(fmt='%(asctime)s - %(processName)s - %(name)s - %(levelname)s - %(message)s')
-_handler = logging.FileHandler(__name__ + '.log')
-_handler.setFormatter(_formatter)
-_logger.addHandler(_handler)
-_handler = logging.StreamHandler(sys.stdout)
-_handler.setFormatter(_formatter)
-_logger.addHandler(_handler)
+_logger = logs.get_logger(__name__)
 
 
 DIR_DATA = '/scratch/nfabina/gcrmn-benthic-classification/training_data'

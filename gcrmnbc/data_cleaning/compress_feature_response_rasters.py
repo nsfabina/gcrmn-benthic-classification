@@ -1,20 +1,12 @@
-import logging
 import os
 import shutil
-import sys
 
 import gdal
 
+from gcrmnbc.utils import logs
 
-_logger = logging.getLogger(__name__)
-_logger.setLevel('DEBUG')
-_formatter = logging.Formatter(fmt='%(asctime)s - %(processName)s - %(name)s - %(levelname)s - %(message)s')
-_handler = logging.FileHandler(__name__ + '.log')
-_handler.setFormatter(_formatter)
-_logger.addHandler(_handler)
-_handler = logging.StreamHandler(sys.stdout)
-_handler.setFormatter(_formatter)
-_logger.addHandler(_handler)
+
+_logger = logs.get_logger(__name__)
 
 
 DIR_BASE = '/scratch/nfabina/gcrmn-benthic-classification/training_data'
