@@ -61,7 +61,7 @@ def create_sampling_boundary_shapefiles() -> None:
         # Get shapefile of sampling boundaries by buffering reef outline
         _logger.debug('Creating buffered outline for boundary file')
         command = 'ogr2ogr -f "ESRI Shapefile" {filepath_boundary} {filepath_outline} -dialect sqlite ' + \
-                  '-sql "select ST_buffer(geometry, 200) as geometry from {basename_outline}"'
+                  '-sql "select ST_buffer(geometry, 64) as geometry from {basename_outline}"'
         command = command.format(
             filepath_boundary=filepath_boundary, filepath_outline=filepath_reef_outline, 
             basename_outline=basename_reef_outline

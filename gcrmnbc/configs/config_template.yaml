@@ -10,7 +10,7 @@ raw_files:
   ignore_projections: True
 data_build:
   dir_out:
-  log_level: INFO
+  log_level: DEBUG
   filename_prefix_out: ''
   network_category: FCN
   random_seed: 1
