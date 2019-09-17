@@ -25,7 +25,7 @@ echo "Download feature quads"
 python ./data_acquisition/download_feature_quads.py
 
 echo "Compress feature quads for efficient reads"
-python ./data_cleaning/compress_feature_rasters.py
+python ./data_cleaning/compress_feature_response_rasters.py
 
 echo "Rasterize response shapefiles according to feature extents"
 python ./data_cleaning/rasterize_response_quads.py

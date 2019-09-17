@@ -18,7 +18,7 @@ from gcrmnbc.utils import encodings
 _logger = logging.getLogger(__name__)
 _logger.setLevel('DEBUG')
 _formatter = logging.Formatter(fmt='%(asctime)s - %(processName)s - %(name)s - %(levelname)s - %(message)s')
-_handler = logging.FileHandler('create_response_shapefile_quads.log')
+_handler = logging.FileHandler(__name__ + '.log')
 _handler.setFormatter(_formatter)
 _logger.addHandler(_handler)
 _handler = logging.StreamHandler(sys.stdout)
