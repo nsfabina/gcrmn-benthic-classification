@@ -7,7 +7,7 @@ from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS
 
 DIR_CONFIGS = '../configs'
 DIR_MODELS = '../models'
-SLURM_COMMAND_CLASSIFY = '--mail-type=END,FAIL --time=4:00:00 --wrap "python run_classification.py ' + \
+SLURM_COMMAND_CLASSIFY = '--mail-type=END,FAIL --time=24:00:00 --wrap "python run_classification.py ' + \
                          '--config_name={} --response_mapping={} {}"'
 
 
