@@ -33,5 +33,8 @@ python ./data_cleaning/rasterize_response_quads.py
 echo "Create shapefile boundaries for training data sampling"
 python ./data_cleaning/create_sampling_boundary_shapefiles.py
 
+echo "Download supplemental training data"
+./data_acquisition/download_supplemental_shapefiles.sh
+
 echo "Download UNEP evaluation data"
 ./data_acquisition/download_unep_from_fabina_gdrive.sh
