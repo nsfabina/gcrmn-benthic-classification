@@ -14,7 +14,7 @@ _DIR_CONFIGS = '../configs'
 _FILEPATH_LOGS = '/scratch/nfabina/gcrmn-benthic-classification/logs/{}/{}/log_model_global_application.out'
 
 
-def run_application(config_name: str, response_mapping: str, version_map: str) -> None:
+def run_application(config_name: str, response_mapping: str, model_version: str) -> None:
     filepath_config = os.path.join(_DIR_CONFIGS, config_name + '.yaml')
     config = shared_configs.build_dynamic_config(filepath_config, response_mapping)
 
@@ -41,7 +41,7 @@ def run_application(config_name: str, response_mapping: str, version_map: str) -
     logger.info('Apply model to quads')
     for idx_quad, quad_blob in enumerate(quad_blobs):
         logger.info('Apply model to quad blob {} of {}'.format(1+idx_quad, len(quad_blobs)))
-        apply.apply_model_to_quad(quad_blob, data_container, experiment, version_map)
+        apply.apply_model_to_quad(quad_blob, data_container, experiment, config_name, model_version)
 
 
 def _load_dataset(config: configs.Config) -> data_core.DataContainer:
@@ -62,6 +62,6 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--config_name', type=str, required=True)
     parser.add_argument('--response_mapping', type=str, required=True)
-    parser.add_argument('--version_map', type=str, required=True)
+    parser.add_argument('--model_version', type=str, required=True)
     args = parser.parse_args()
-    run_application(args.config_name, args.response_mapping, args.version_map)
+    run_application(args.config_name, args.response_mapping, args.model_version)
