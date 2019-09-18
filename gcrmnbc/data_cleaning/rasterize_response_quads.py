@@ -11,7 +11,7 @@ import osr
 from gcrmnbc.utils import data_bucket, encodings
 
 
-_logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__file__)
 _logger.setLevel('DEBUG')
 _formatter = logging.Formatter(fmt='%(asctime)s - %(processName)s - %(name)s - %(levelname)s - %(message)s')
 _handler = logging.FileHandler(__name__ + '.log')

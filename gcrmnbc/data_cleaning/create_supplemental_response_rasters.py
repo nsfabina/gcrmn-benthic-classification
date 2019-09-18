@@ -7,7 +7,7 @@ import osr
 from gcrmnbc.utils import encodings, logs
 
 
-_logger = logs.get_logger(__name__)
+_logger = logs.get_logger(__file__)
 
 DIR_DATA = '/scratch/nfabina/gcrmn-benthic-classification/training_data/clean'
 SUFFIX_LAND = '_land.shp'

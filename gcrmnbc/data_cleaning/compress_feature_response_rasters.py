@@ -6,7 +6,7 @@ import gdal
 from gcrmnbc.utils import logs
 
 
-_logger = logs.get_logger(__name__)
+_logger = logs.get_logger(__file__)
 
 
 DIR_BASE = '/scratch/nfabina/gcrmn-benthic-classification/training_data'

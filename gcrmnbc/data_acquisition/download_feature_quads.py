@@ -4,7 +4,7 @@ import re
 from gcrmnbc.utils import data_bucket, logs
 
 
-_logger = logs.get_logger(__name__)
+_logger = logs.get_logger(__file__)
 
 DIR_TRAINING_DATA = '/scratch/nfabina/gcrmn-benthic-classification/training_data'
 DIR_TMP = os.path.join(DIR_TRAINING_DATA, 'tmp')

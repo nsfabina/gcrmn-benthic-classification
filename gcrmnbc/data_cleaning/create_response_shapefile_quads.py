@@ -13,7 +13,7 @@ import shapely.geometry
 from gcrmnbc.utils import encodings, logs
 
 
-_logger = logs.get_logger(__name__)
+_logger = logs.get_logger(__file__)
 
 DIR_TRAINING_DATA = '/scratch/nfabina/gcrmn-benthic-classification/training_data/'
 FILEPATH_RESPONSE_SOURCE = os.path.join(DIR_TRAINING_DATA, 'raw/lwr_3857.geojson')
