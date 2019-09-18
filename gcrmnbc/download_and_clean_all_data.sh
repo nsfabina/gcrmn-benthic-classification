@@ -6,7 +6,7 @@ set -e
 echo "Download and clean all data"
 echo "Currently, it takes hours/days to parse the shapefiles for raster quads. Do you want to continue?"
 select yn in "Yes" "No"; do
-    case $yn in
+    case ${yn} in
         Yes ) break;;
         No ) exit;;
     esac

@@ -30,7 +30,7 @@ for REEF in `ls "${DIR_BASE}"`; do
     fi
 
     for RASTER in `ls ${DIR_REEF}/*applied.tif`; do
-        FILENAME="$(basename $(basename $RASTER) .tif)"
+        FILENAME="$(basename $(basename ${RASTER}) .tif)"
         BASENAME="${FILENAME%_*}"
         FILEPATH_TMP_1="${DIR_REEF}/tmp/${BASENAME}_1.tif"
         FILEPATH_TMP_2="${DIR_REEF}/tmp/${BASENAME}_2.tif"

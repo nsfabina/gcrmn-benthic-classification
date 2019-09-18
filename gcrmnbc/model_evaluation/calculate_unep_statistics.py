@@ -20,7 +20,8 @@ _logger.addHandler(_handler)
 
 
 _DIR_BASE = '/scratch/nfabina/gcrmn-benthic-classification/'
-_FILEPATH_UNEP = os.path.join(_DIR_BASE, 'unep/14_001_WCMC008_CoralReefs2018_v4/01_Data/WCMC008_CoralReef2018_Py_v4.shp')
+_FILEPATH_UNEP = os.path.join(
+    _DIR_BASE, 'unep/14_001_WCMC008_CoralReefs2018_v4/01_Data/WCMC008_CoralReef2018_Py_v4.shp')
 _DIR_REEFS = os.path.join(_DIR_BASE, 'training_data')
 _FILEPATH_UQ = os.path.join(_DIR_REEFS, '{}/clean/reef_outline.shp')
 _FILEPATH_DATA_OUT = 'unep_statistics.json'

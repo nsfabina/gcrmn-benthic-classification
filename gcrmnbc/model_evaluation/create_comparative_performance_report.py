@@ -36,7 +36,7 @@ def create_comparative_performance_report() -> None:
     asu_statistics = sorted(asu_statistics.items())
 
     _logger.debug('Create report')
-    lines = ['Comparative Reef Performance Report', '', '']
+    lines = list(['Comparative Reef Performance Report', '', ''])
 
     # Calculate and print overall performance
     lines.append('------------------------------------------------------------------------------------------------')

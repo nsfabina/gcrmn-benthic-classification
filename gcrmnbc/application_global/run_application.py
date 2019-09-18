@@ -6,7 +6,7 @@ from bfgn.configuration import configs
 from bfgn.data_management import data_core
 from bfgn.experiments import experiments
 
-from gcrmnbc.model_global_application import apply
+from gcrmnbc.application_global import apply
 from gcrmnbc.utils import data_bucket, shared_configs
 
 
@@ -37,7 +37,7 @@ def run_application(config_name: str, response_mapping: str, version_map: str) -
 
     # Get quad blobs and apply model
     logger.info('Get quad blobs')
-    quad_blobs = data_bucket.get_quad_blobs()
+    quad_blobs = data_bucket.get_imagery_quad_blobs()
     logger.info('Apply model to quads')
     for idx_quad, quad_blob in enumerate(quad_blobs):
         logger.info('Apply model to quad blob {} of {}'.format(1+idx_quad, len(quad_blobs)))

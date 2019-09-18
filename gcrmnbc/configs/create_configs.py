@@ -10,7 +10,7 @@ _BEST_CONFIGS = [
 def create_configs() -> None:
     config_template = configs.create_config_from_file(_FILEPATH_TEMPLATE)
 
-    for window_radius in (128, ):  #192, 256):
+    for window_radius in (128, ):  # 192, 256):
         created_build_only = False
         for architecture_name in ('unet', 'dense_unet'):
             for block_structure in ([2, 2, 2, 2], [2, 2, 2], [4, 4, 4], [4, 4]):

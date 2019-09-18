@@ -4,7 +4,7 @@ import sys
 
 import fiona
 
-from gcrmnbc.utils import data_bucket, encodings
+from gcrmnbc.utils import encodings
 
 
 _logger = logging.getLogger(__file__)
