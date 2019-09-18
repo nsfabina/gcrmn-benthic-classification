@@ -24,6 +24,9 @@ def create_supplemental_response_rasters() -> None:
         _logger.debug('Processing raster {} of {}'.format(1+idx, len(filepaths_boundaries)))
         filepath_features = re.sub(r'_\w*\.shp', '_features.tif', filepath_boundary)
         filepath_responses = re.sub(r'\.shp', '.tif', filepath_boundary)
+        if os.path.exists(filepath_responses):
+            _logger.debug('Skipping, raster already processed')
+            continue
         # Get rasterize parameters from existing features file
         raster_features = gdal.Open(filepath_features)
         srs = osr.SpatialReference(wkt=raster_features.GetProjection())
