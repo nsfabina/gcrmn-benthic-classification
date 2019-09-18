@@ -3,7 +3,7 @@
 
 set -e
 
-PATH_GDRIVE="/data/gcrmn/"
+PATH_GDRIVE="/data/gcrmn"
 PATH_SCRATCH="/scratch/nfabina/gcrmn-benthic-classification/training_data/clean"
 
 
