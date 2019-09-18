@@ -36,5 +36,8 @@ python ./data_cleaning/create_sampling_boundary_shapefiles.py
 echo "Download supplemental training data"
 ./data_acquisition/download_supplemental_shapefiles.sh
 
+echo "Create supplemental response rasters"
+python ./data_cleaning/create_supplemental_response_rasters.py
+
 echo "Download UNEP evaluation data"
 ./data_acquisition/download_unep_from_fabina_gdrive.sh
