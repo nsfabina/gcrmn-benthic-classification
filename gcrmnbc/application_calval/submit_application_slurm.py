@@ -17,10 +17,6 @@ if __name__ == '__main__':
     parser.add_argument('--num_jobs', type=int, required=True)
     args = parser.parse_args()
 
-    # Warning about usage and error checks
-    if args.build_only and args.config_names:
-        print('WARNING:  build_only takes precedence over config_names, which is ignored')
-
     # Prep commands
     slurm_command = SLURM_COMMAND + SLURM_GPUS
 
