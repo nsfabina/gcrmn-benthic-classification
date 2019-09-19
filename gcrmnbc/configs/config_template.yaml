@@ -23,7 +23,6 @@ data_build:
   feature_mean_centering: false
   feature_nodata_maximum_fraction: 0.25
   response_nodata_maximum_fraction: 0.25
-  response_background_values: [0, 1]
   sparse_read: True
 data_samples:
   apply_random_transformations: true
