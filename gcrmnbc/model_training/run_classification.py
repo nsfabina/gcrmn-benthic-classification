@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 import os
 
-from bfgn.data_management import data_core
+from bfgn.data_management import data_core, sequences
 from bfgn.reporting import reports
 from bfgn.experiments import experiments
 
@@ -40,7 +40,8 @@ def run_classification(config_name: str, response_mapping: str, build_only: bool
         data_container = data_core.DataContainer(config)
         data_container.build_or_load_rawfile_data()
         data_container.build_or_load_scalers()
-        data_container.load_sequences()
+        custom_augmentations = sequences.sample_custom_augmentations_constructor(1, config.data_build.window_radius)
+        data_container.load_sequences(custom_augmentations)
 
         # Build experiment
         experiment = experiments.Experiment(config)
