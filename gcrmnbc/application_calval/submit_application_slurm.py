@@ -5,36 +5,53 @@ import subprocess
 from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS
 
 
-SLURM_COMMAND_WRAP = '--wrap "python run_application.py --config_name={} --response_mapping={} "'
+DIR_CONFIGS = '../configs'
+DIR_MODELS = '../models'
+SLURM_COMMAND_WRAP = '--wrap "python run_application.py --config_names={} --response_mapping={} "'
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_name', type=str, required=True)
+    parser.add_argument('--config_names', type=str)
     parser.add_argument('--response_mappings', type=str, required=True)
     parser.add_argument('--num_jobs', type=int, required=True)
     args = parser.parse_args()
 
+    # Warning about usage and error checks
+    if args.build_only and args.config_names:
+        print('WARNING:  build_only takes precedence over config_names, which is ignored')
+
     # Prep commands
     slurm_command = SLURM_COMMAND + SLURM_GPUS
 
-    # Loop through parameters and submit jobs
-    for response_mapping in args.response_mappings.split(','):
-        job_name = 'apply_' + args.config_name + '_' + response_mapping
+    # Get relevant configs, only get one config per window radius if building
+    if args.config_names:
+        filename_configs = [os.path.basename(filepath) for filepath in args.config_names.split(',')]
+    else:
+        filename_configs = [
+            filename for filename in os.listdir(DIR_CONFIGS) if
+            filename.endswith('yaml') and filename != 'config_template.yaml' and not filename.startswith('build_only')
+        ]
 
-        # Set dynamic SLURM arguments
-        dir_model = os.path.join('../models', args.config_name, response_mapping)
-        slurm_args_dynamic = ' '.join([
-            '--job-name={}'.format(job_name),
-            '--output={}/slurm.apply.%j.%t.OUT'.format(dir_model),
-            '--error={}/slurm.apply.%j.%t.ERROR'.format(dir_model),
-        ])
+    # Loop through configs and submit jobs
+    for filename_config in filename_configs:
+        for response_mapping in args.response_mappings.split(','):
+            config_name = os.path.splitext(filename_config)[0]
+            job_name = 'apply_' + args.config_name + '_' + response_mapping
 
-        # Set dynamic python arguments
-        slurm_python_wrap = SLURM_COMMAND_WRAP.format(args.config_name, response_mapping)
+            # Set dynamic SLURM arguments
+            dir_model = os.path.join(DIR_MODELS, config_name, response_mapping)
+            slurm_args_dynamic = ' '.join([
+                '--job-name={}'.format(job_name),
+                '--output={}/slurm.classify.%j.%t.OUT'.format(dir_model),
+                '--error={}/slurm.classify.%j.%t.ERROR'.format(dir_model),
+            ])
 
-        print('Submitting job {}'.format(job_name))
-        command = ' '.join([slurm_command, slurm_args_dynamic, slurm_python_wrap])
-        # print(command)
-        for idx_job in range(args.num_jobs):
-            subprocess.call(command, shell=True)
+            # Set dynamic python arguments
+            slurm_python_wrap = SLURM_COMMAND_WRAP.format(args.config_name, response_mapping)
+
+            print('Submitting job {}'.format(job_name))
+            command = ' '.join([slurm_command, slurm_args_dynamic, slurm_python_wrap])
+            # print(command)
+            for idx_job in range(args.num_jobs):
+                subprocess.call(command, shell=True)
