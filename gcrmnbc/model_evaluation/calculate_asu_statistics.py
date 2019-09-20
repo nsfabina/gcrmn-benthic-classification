@@ -25,7 +25,7 @@ _FILEPATH_UQ_OUTLINE = os.path.join(_DIR_BASE, 'training_data/{}/clean/reef_outl
 
 _DIR_CONFIG = os.path.join(_DIR_BASE, 'training_data_applied/{}/lwr')
 _DIR_REEFS = os.path.join(_DIR_CONFIG, 'reefs')
-_FILENAME_SUFFIX_ASU_OUTLINE = 'features_reefs.shp'
+_FILENAME_SUFFIX_ASU_OUTLINE = 'calval_reefs.shp'
 _FILEPATH_DATA_OUT = os.path.join(_DIR_CONFIG, 'asu_statistics.json')
 _FILEPATH_FIG_OUT = os.path.join(_DIR_CONFIG, 'asu_statistics.pdf')
 

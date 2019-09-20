@@ -55,31 +55,30 @@ def run_application(config_name: str, response_mapping: str) -> None:
     # Apply model
     for idx_filepath, filepath_apply in enumerate(filepaths_apply):
         dir_out = os.path.dirname(os.path.dirname(re.sub(_SUBDIR_TRAINING_IN, subdir_out, filepath_apply)))
-        basename_out = os.path.join(dir_out, os.path.splitext(os.path.basename(filepath_apply))[0])
-        if not os.path.exists(os.path.dirname(basename_out)):
-            os.makedirs(os.path.dirname(basename_out))
+        if not os.path.exists(dir_out):
+            os.makedirs(dir_out)
         logger.debug('Applying model to raster {} of {}; input and output filepaths are {} and {}'.format(
-            idx_filepath+1, len(filepath_apply), filepath_apply, basename_out))
-        _apply_to_raster(experiment, data_container, filepath_apply, basename_out, logger)
+            idx_filepath+1, len(filepath_apply), filepath_apply, dir_out))
+        _apply_to_raster(experiment, data_container, filepath_apply, dir_out, logger)
 
 
 def _apply_to_raster(
         experiment: experiments.Experiment,
         data_container: data_core.DataContainer,
         filepath_apply: str,
-        basename_out: str,
+        dir_out: str,
         logger: Logger
 ) -> None:
     # Return early if application is completed or in progress
-    filepath_probs = basename_out + '_probs.tif'
-    filepath_mle = basename_out + '_mle.tif'
-    filepath_reef_raster = basename_out + '_reefs.tif'
-    filepath_reef_shapefile = basename_out + '_reefs.shp'
+    filepath_probs = os.path.join(dir_out, 'calval_probs.tif')
+    filepath_mle = os.path.join(dir_out, 'calval_mle.tif')
+    filepath_reef_raster = os.path.join(dir_out, 'calval_reefs.tif')
+    filepath_reef_shapefile = os.path.join(dir_out, 'calval_reefs.shp')
+    filepath_lock = os.path.join(dir_out, 'calval_apply.lock')
     filepaths = (filepath_probs, filepath_mle, filepath_reef_raster, filepath_reef_shapefile)
     if all([os.path.exists(filepath) for filepath in filepaths]):
         logger.debug('Skipping application:  output files already exist')
         return
-    filepath_lock = basename_out + '.lock'
     if os.path.exists(filepath_lock):
         logger.debug('Skipping application:  lock file already exists at {}'.format(filepath_lock))
         return
