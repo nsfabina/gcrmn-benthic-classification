@@ -31,7 +31,10 @@ def create_comparative_performance_report() -> None:
     _logger.debug('Load ASU statistics')
     asu_statistics = dict()
     for config_name in os.listdir(_DIR_ASU):
-        with open(_FILEPATH_ASU_STATS.format(config_name)) as file_:
+        filepath_model_stats = _FILEPATH_ASU_STATS.format(config_name)
+        if not os.path.exists(filepath_model_stats):
+            continue
+        with open(filepath_model_stats) as file_:
             asu_statistics[config_name] = json.load(file_)
     asu_statistics = sorted(asu_statistics.items())
 
@@ -60,7 +63,7 @@ def create_comparative_performance_report() -> None:
 
     # Create sections for each reef
     for reef, unep_stats in sorted(unep_statistics.items()):
-        asu_reef_stats = [(config_name, stats[reef]) for config_name, stats in asu_statistics]
+        asu_reef_stats = [(config_name, stats.get(reef)) for config_name, stats in asu_statistics if stats.get(reef)]
         reef_name = re.sub('_', ' ', reef).title()
 
         # Header
@@ -163,6 +166,8 @@ def create_comparative_performance_report() -> None:
 
 
 def _get_precision_str(reef_statistics: dict) -> str:
+    if reef_statistics is None:
+        return '        Not calculated'
     precision = _calculate_precision(reef_statistics)
     if precision:
         precision_str = '{:8.1f} %'.format(precision)
@@ -172,6 +177,8 @@ def _get_precision_str(reef_statistics: dict) -> str:
 
 
 def _get_recall_str(reef_statistics: dict) -> str:
+    if reef_statistics is None:
+        return '        Not calculated'
     recall = _calculate_recall(reef_statistics)
     if recall:
         recall_str = '{:8.1f} %'.format(recall)
@@ -209,6 +216,8 @@ def _get_recall_average_str(model_statistics: dict) -> str:
 
 
 def _calculate_precision(reef_statistics: dict) -> Union[float, None]:
+    if reef_statistics is None:
+        return None
     denominator = reef_statistics['pct_tp'] + reef_statistics['pct_fp']
     if denominator:
         precision = 100 * reef_statistics['pct_tp'] / denominator
@@ -218,6 +227,8 @@ def _calculate_precision(reef_statistics: dict) -> Union[float, None]:
 
 
 def _calculate_recall(reef_statistics: dict) -> Union[float, None]:
+    if reef_statistics is None:
+        return None
     denominator = reef_statistics['pct_tp'] + reef_statistics['pct_fn']
     if denominator:
         recall = 100 * reef_statistics['pct_tp'] / denominator
