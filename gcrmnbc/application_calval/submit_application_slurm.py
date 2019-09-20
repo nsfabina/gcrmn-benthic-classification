@@ -33,7 +33,7 @@ if __name__ == '__main__':
     for filename_config in filename_configs:
         for response_mapping in args.response_mappings.split(','):
             config_name = os.path.splitext(filename_config)[0]
-            job_name = 'apply_' + args.config_name + '_' + response_mapping
+            job_name = 'apply_' + config_name + '_' + response_mapping
 
             # Set dynamic SLURM arguments
             dir_model = os.path.join(DIR_MODELS, config_name, response_mapping)
@@ -44,7 +44,7 @@ if __name__ == '__main__':
             ])
 
             # Set dynamic python arguments
-            slurm_python_wrap = SLURM_COMMAND_WRAP.format(args.config_name, response_mapping)
+            slurm_python_wrap = SLURM_COMMAND_WRAP.format(config_name, response_mapping)
 
             print('Submitting job {}'.format(job_name))
             command = ' '.join([slurm_command, slurm_args_dynamic, slurm_python_wrap])
