@@ -32,9 +32,11 @@ def create_sampling_boundary_shapefiles() -> None:
         _logger.debug('Creating boundary file at:  {}'.format(filepath_boundary))
         # Get raster of only reef areas
         _logger.debug('Creating reef-only raster')
+        min_reef_value = min(encodings.MAPPINGS[encodings.REEF_TOP], encodings.MAPPINGS[encodings.NOT_REEF_TOP])
         command = 'gdal_calc.py -A {filepath_responses} --outfile={filepath_reef} --NoDataValue=-9999 ' + \
-                  '--calc="1*(A>2) + -9999*(A<=2)"'
-        command = command.format(filepath_responses=filepath_responses, filepath_reef=filepath_reef_raster)
+                  '--calc="1*(A>={min_value}) + -9999*(A<{min_value})"'
+        command = command.format(
+            filepath_responses=filepath_responses, filepath_reef=filepath_reef_raster, min_reef_value=min_reef_value)
         completed = subprocess.run(shlex.split(command), capture_output=True)
         if completed.stderr:
             _logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
