@@ -18,7 +18,9 @@ _DIR_APPLY_BASE = '/scratch/nfabina/gcrmn-benthic-classification'
 _SUBDIR_TRAINING_IN = 'training_data'
 _SUBDIR_TRAINING_OUT = 'training_data_applied/{}/{}/reefs'
 _DIR_TRAINING_IN = os.path.join(_DIR_APPLY_BASE, _SUBDIR_TRAINING_IN)
+_REEFS = ('batt_tongue', 'belize', 'hawaii', 'heron', 'karimunjawa', 'little', 'moorea', 'ribbon')
 _FILENAME_VRT = 'features.vrt'
+
 
 
 def run_application(config_name: str, response_mapping: str) -> None:
@@ -47,9 +49,7 @@ def run_application(config_name: str, response_mapping: str) -> None:
     experiment.build_or_load_model(data_container)
 
     # Get filepaths for application
-    filepaths_apply = sorted([
-        os.path.join(_DIR_TRAINING_IN, reef, 'clean', _FILENAME_VRT) for reef in os.listdir(_DIR_TRAINING_IN)
-    ])
+    filepaths_apply = sorted([os.path.join(_DIR_TRAINING_IN, reef, 'clean', _FILENAME_VRT) for reef in _REEFS])
     subdir_out = _SUBDIR_TRAINING_OUT.format(config_name, response_mapping)
 
     # Apply model
