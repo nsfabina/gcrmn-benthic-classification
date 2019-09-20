@@ -25,13 +25,13 @@ _FILEPATH_UQ_OUTLINE = os.path.join(_DIR_BASE, 'training_data/{}/clean/reef_outl
 
 _DIR_CONFIG = os.path.join(_DIR_BASE, 'training_data_applied/{}/lwr')
 _DIR_REEFS = os.path.join(_DIR_CONFIG, 'reefs')
-_FILENAME_SUFFIX_ASU_OUTLINE = 'reef_outline.shp'
+_FILENAME_SUFFIX_ASU_OUTLINE = 'features_reefs.shp'
 _FILEPATH_DATA_OUT = os.path.join(_DIR_CONFIG, 'asu_statistics.json')
 _FILEPATH_FIG_OUT = os.path.join(_DIR_CONFIG, 'asu_statistics.pdf')
 
 
 def calculate_asu_statistics(config_name: str, recalculate: bool = False) -> None:
-    _logger.info('Set paths')
+    _logger.info('Calculate ASU statistics for {} with recalculate {}'.format(config_name, recalculate))
     filepath_data_out = _FILEPATH_DATA_OUT.format(config_name)
 
     _logger.info('Calculating ASU statistics')
@@ -96,7 +96,12 @@ def _calculate_asu_statistics_for_reef(reef: str, config_name: str) -> dict:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_name', required=True)
+    parser.add_argument('--config_names')
     parser.add_argument('-f', dest='recalculate', action='store_true')
     args = parser.parse_args()
-    calculate_asu_statistics(args.config_name, args.recalculate)
+    if args.config_names:
+        config_names = args.config_names
+    else:
+        config_names = os.listdir(os.path.join(_DIR_BASE, 'training_data_applied'))
+    for config_name in config_names:
+        calculate_asu_statistics(config_name, args.recalculate)
