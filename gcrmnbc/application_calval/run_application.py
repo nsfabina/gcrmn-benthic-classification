@@ -115,7 +115,7 @@ def _create_reef_only_raster(filepath_mle: str, filepath_reef_raster: str, logge
     command = 'gdal_calc.py -A {filepath_mle} --outfile={filepath_reef} --NoDataValue=-9999 ' + \
               '--calc="1*(A>={min_value}) + -9999*(A<{min_value})"'
     command = command.format(
-        filepath_responses=filepath_mle, filepath_reef=filepath_reef_raster, min_reef_value=min_reef_value)
+        filepath_mle=filepath_mle, filepath_reef=filepath_reef_raster, min_value=min_reef_value)
     completed = subprocess.run(shlex.split(command), capture_output=True)
     if completed.stderr:
         logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))

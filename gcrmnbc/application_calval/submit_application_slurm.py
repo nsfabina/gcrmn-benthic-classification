@@ -40,8 +40,8 @@ if __name__ == '__main__':
             dir_model = os.path.join(DIR_MODELS, config_name, response_mapping)
             slurm_args_dynamic = ' '.join([
                 '--job-name={}'.format(job_name),
-                '--output={}/slurm.classify.%j.%t.OUT'.format(dir_model),
-                '--error={}/slurm.classify.%j.%t.ERROR'.format(dir_model),
+                '--output={}/slurm.apply_calval.%j.%t.OUT'.format(dir_model),
+                '--error={}/slurm.apply_calval.%j.%t.ERROR'.format(dir_model),
             ])
 
             # Set dynamic python arguments
