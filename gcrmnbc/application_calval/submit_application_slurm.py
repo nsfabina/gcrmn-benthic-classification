@@ -7,7 +7,8 @@ from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS
 
 DIR_CONFIGS = '../configs'
 DIR_MODELS = '../models'
-SLURM_COMMAND_WRAP = '--wrap "python run_application.py --config_names={} --response_mapping={} "'
+SLURM_COMMAND_APPLY = '--mail-type=END,FAIL --time=2:00:00 ' + \
+                      '--wrap "python run_application.py --config_name={} --response_mapping={}"'
 
 
 if __name__ == '__main__':
@@ -33,7 +34,7 @@ if __name__ == '__main__':
     for filename_config in filename_configs:
         for response_mapping in args.response_mappings.split(','):
             config_name = os.path.splitext(filename_config)[0]
-            job_name = 'apply_' + config_name + '_' + response_mapping
+            job_name = 'apply_calval_' + config_name + '_' + response_mapping
 
             # Set dynamic SLURM arguments
             dir_model = os.path.join(DIR_MODELS, config_name, response_mapping)
@@ -44,7 +45,7 @@ if __name__ == '__main__':
             ])
 
             # Set dynamic python arguments
-            slurm_python_wrap = SLURM_COMMAND_WRAP.format(config_name, response_mapping)
+            slurm_python_wrap = SLURM_COMMAND_APPLY.format(config_name, response_mapping)
 
             print('Submitting job {}'.format(job_name))
             command = ' '.join([slurm_command, slurm_args_dynamic, slurm_python_wrap])
