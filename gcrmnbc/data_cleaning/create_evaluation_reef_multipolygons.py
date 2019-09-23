@@ -20,7 +20,7 @@ SHAPEFILE_EPSG = 3857
 SHAPEFILE_SCHEMA = {'geometry': 'Polygon', 'properties': OrderedDict([('class_code', 'int')])}
 
 
-def create_uq_reef_multipolygons_for_model_evaluation() -> None:
+def create_evaluation_reef_multipolygons() -> None:
     _logger.info('Create UQ reef multipolygons for model evaluation')
     dirs_reefs = sorted(os.listdir(DIR_EVAL_DATA))
     crs = fiona.crs.from_epsg(3857)
@@ -37,4 +37,4 @@ def create_uq_reef_multipolygons_for_model_evaluation() -> None:
 
 
 if __name__ == '__main__':
-    create_uq_reef_multipolygons_for_model_evaluation()
+    create_evaluation_reef_multipolygons()

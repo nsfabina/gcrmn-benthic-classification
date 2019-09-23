@@ -5,12 +5,8 @@ import re
 from typing import List
 
 import fiona.crs
-import numpy as np
-import rasterio as rio
-from rasterio.features import geometry_mask
-import shapely.geometry
 
-from gcrmnbc.utils import encodings, logs
+from gcrmnbc.utils import encodings, logs, mosaic_quads
 
 
 _logger = logs.get_logger(__file__)
@@ -81,7 +77,7 @@ def create_response_quads() -> None:
     for feature in _yield_features():
         idx_feature += 1
         _logger.debug('Processing feature {}'.format(idx_feature))
-        quads = _determine_quads(feature['geometry'])
+        quads = mosaic_quads.determine_mosaic_quads_for_geometry(feature['geometry'])
         if not quads:
             _logger.warning('No quads found for feature {}:  {}'.format(idx_feature, feature))
             continue
@@ -124,26 +120,6 @@ def _yield_features() -> dict:
                 'geometry': geometry,
             }
             yield feature
-
-
-def _determine_quads(geometry: dict) -> List[str]:
-    # Parameters
-    MOSAIC_LEVEL = 15
-    MOSAIC_TILE_SIZE = 4096
-    WEBM_EARTH_RADIUS = 6378137.0
-    WEBM_ORIGIN = -np.pi * WEBM_EARTH_RADIUS
-    width = MOSAIC_TILE_SIZE * 2 * abs(WEBM_ORIGIN) / (2**MOSAIC_LEVEL * 256)
-    num_tiles = int(2.0**MOSAIC_LEVEL * 256 / MOSAIC_TILE_SIZE)
-    # Generate a grid where values are True if the geometry is present and False otherwise
-    transform = rio.transform.from_origin(WEBM_ORIGIN, -WEBM_ORIGIN, width, width)
-    shape = shapely.geometry.shape(geometry)
-    grid = np.flipud(geometry_mask([shape], (num_tiles, num_tiles), transform, all_touched=True, invert=True))
-    # Get quad labels
-    quads = list()
-    norths, easts = np.where(grid)
-    for north, east in zip(norths, easts):
-        quads.append('L15-{:04d}E-{:04d}N'.format(east, north))
-    return quads
 
 
 def _write_features_to_quad_shapefile(features: List[dict], quad: str) -> None:
