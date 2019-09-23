@@ -1,8 +1,10 @@
 from collections import OrderedDict
+import functools
 import os
 
 import fiona
 import fiona.crs
+import pyproj
 import shapely.geometry
 import shapely.ops
 
@@ -30,10 +32,22 @@ def create_evaluation_reef_multipolygons() -> None:
         if os.path.exists(filepath_out):
             _logger.debug('Multipolygon already exists at {}, skipping'.format(filepath_out))
         features = fiona.open(os.path.join(DIR_EVAL_DATA, dir_reef, PATH_REEF_FEATURES))
-        reef = shapely.ops.unary_union([shapely.geometry.shape(feature['geometry']) for feature in features])
+        reef_4326 = shapely.ops.unary_union([shapely.geometry.shape(feature['geometry']) for feature in features])
+        reef_3857 = _reproject_geometry(reef_4326)
         _logger.debug('Writing multipolygon to file at {}'.format(filepath_out))
         with fiona.open(filepath_out, 'w', driver=SHAPEFILE_DRIVER, crs=crs, schema=SHAPEFILE_SCHEMA) as file_:
-            file_.write({'geometry': shapely.geometry.mapping(reef), 'properties': {'class_code': 1}})
+            file_.write({'geometry': shapely.geometry.mapping(reef_3857), 'properties': {'class_code': 1}})
+
+
+def _reproject_geometry(geometry: shapely.geometry.base.BaseGeometry) -> shapely.geometry.base.BaseGeometry:
+    return shapely.ops.transform(
+        functools.partial(
+            pyproj.transform,
+            pyproj.Proj(init='EPSG:4326'),
+            pyproj.Proj(proj='EPSG:3857'),
+        ),
+        geometry
+    )
 
 
 if __name__ == '__main__':
