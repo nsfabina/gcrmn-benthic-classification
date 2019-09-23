@@ -15,7 +15,7 @@ data_build:
   network_category: FCN
   random_seed: 1
   max_samples: 20000
-  max_built_data_gb: 50.0
+  max_built_data_gb: 100.0
   number_folds: 10
   validation_fold: 0
   window_radius:
