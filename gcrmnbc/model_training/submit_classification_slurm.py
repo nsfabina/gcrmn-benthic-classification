@@ -2,7 +2,7 @@ import argparse
 import os
 import subprocess
 
-from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS
+from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS, SLURM_GPUS_LARGE
 
 
 DIR_CONFIGS = '../configs'
@@ -21,11 +21,6 @@ if __name__ == '__main__':
     # Warning about usage and error checks
     if args.build_only and args.config_names:
         print('WARNING:  build_only takes precedence over config_names, which is ignored')
-
-    # Prep commands
-    slurm_command = SLURM_COMMAND
-    if not args.build_only:
-        slurm_command += SLURM_GPUS
 
     # Get relevant configs, only get one config per window radius if building
     if args.build_only:
@@ -51,6 +46,7 @@ if __name__ == '__main__':
 
             # Set dynamic SLURM arguments
             slurm_args_dynamic = ' '.join([
+                SLURM_GPUS if '256' not in config_name else SLURM_GPUS_LARGE,
                 '--job-name={}'.format(job_name),
                 '--output={}/slurm.classify.%j.%t.OUT'.format(dir_model),
                 '--error={}/slurm.classify.%j.%t.ERROR'.format(dir_model),
@@ -61,6 +57,6 @@ if __name__ == '__main__':
                 config_name, response_mapping, '--build_only' if args.build_only else '')
 
             print('Submitting job {}'.format(job_name))
-            command = ' '.join([slurm_command, slurm_args_dynamic, slurm_python_wrap])
+            command = ' '.join([SLURM_COMMAND, slurm_args_dynamic, slurm_python_wrap])
             # print(command)
             subprocess.call(command, shell=True)
