@@ -1,5 +1,6 @@
 import argparse
 import os
+import re
 import subprocess
 
 from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS, SLURM_GPUS_LARGE
@@ -14,6 +15,7 @@ SLURM_COMMAND_CLASSIFY = '--mail-type=END,FAIL --time=24:00:00 --wrap "python ru
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_names', type=str)
+    parser.add_argument('--config_regex', type=str)
     parser.add_argument('--response_mappings', type=str, required=True)
     parser.add_argument('--build_only', action='store_true')
     args = parser.parse_args()
@@ -32,6 +34,8 @@ if __name__ == '__main__':
             filename for filename in os.listdir(DIR_CONFIGS) if filename.endswith('yaml')
             and filename != 'config_template.yaml' and not filename.startswith('build_only')
         ]
+        if args.config_regex:
+            filename_configs = [filename for filename in filename_configs if re.search(args.config_regex, filename)]
 
     # Loop through configs and submit jobs
     for filename_config in filename_configs:
