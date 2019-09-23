@@ -13,7 +13,8 @@ from gcrmnbc.utils import encodings, shared_configs
 
 _DIR_MODELS = '../models'
 _DIR_CONFIGS = '../configs'
-_DIR_CALVAL = '/scratch/nfabina/gcrmn-benthic-classification/evaluation_data'
+_DIR_CALVAL_SRC = '/scratch/nfabina/gcrmn-benthic-classification/evaluation_data'
+_DIR_APPLIED_DEST = '/scratch/nfabina/gcrmn-benthic-classification/applied_data'
 _DIR_LOGS = '/scratch/nfabina/gcrmn-benthic-classification/logs'
 
 
@@ -39,26 +40,38 @@ def run_application(config_name: str, response_mapping: str) -> None:
     experiment.build_or_load_model(data_container)
 
     # Apply model
-    dirs_reefs = sorted([os.path.join(_DIR_CALVAL, dir_) for dir_ in os.listdir(_DIR_CALVAL)])
-    for idx_filepath, dir_reef in enumerate(dirs_reefs):
-        logger.debug('Applying model to reef {}'.format(dir_reef))
-        _apply_to_raster(experiment, data_container, dir_reef, logger)
+    reefs = sorted([reef for reef in os.listdir(_DIR_CALVAL_SRC)])
+    dir_model_out = os.path.join(_DIR_APPLIED_DEST, config_name, response_mapping)
+    for idx_filepath, reef in enumerate(reefs):
+        logger.debug('Applying model to reef {}'.format(reef))
+        dir_reef_in = os.path.join(_DIR_CALVAL_SRC, reef)
+        dir_reef_out = os.path.join(dir_model_out, reef)
+        _apply_to_raster(experiment, data_container, dir_reef_in, dir_reef_out, logger)
 
 
 def _apply_to_raster(
         experiment: experiments.Experiment,
         data_container: data_core.DataContainer,
-        dir_reef: str,
+        dir_reef_in: str,
+        dir_reef_out: str,
         logger: Logger
 ) -> None:
-    # Return early if application is completed or in progress
-    filepath_probs = os.path.join(dir_reef, 'calval_probs.tif')
-    filepath_mle = os.path.join(dir_reef, 'calval_mle.tif')
-    filepath_reef_raster = os.path.join(dir_reef, 'calval_reefs.tif')
-    filepath_reef_shapefile = os.path.join(dir_reef, 'calval_reefs.shp')
+    if not os.path.exists(dir_reef_out):
+        try:
+            os.makedirs(dir_reef_out)
+        except FileExistsError:
+            pass
+
+    # Set filepaths
+    filepath_probs = os.path.join(dir_reef_out, 'calval_probs.tif')
+    filepath_mle = os.path.join(dir_reef_out, 'calval_mle.tif')
+    filepath_reef_raster = os.path.join(dir_reef_out, 'calval_reefs.tif')
+    filepath_reef_shapefile = os.path.join(dir_reef_out, 'calval_reefs.shp')
     filepaths_out = (filepath_probs, filepath_mle, filepath_reef_raster, filepath_reef_shapefile)
-    filepath_features = os.path.join(dir_reef, 'features.vrt')
-    filepath_lock = os.path.join(dir_reef, 'calval_apply.lock')
+    filepath_lock = os.path.join(dir_reef_out, 'calval_apply.lock')
+    filepath_features = os.path.join(dir_reef_in, 'features.vrt')
+
+    # Return early if application is completed or in progress
     if all([os.path.exists(filepath) for filepath in filepaths_out]):
         logger.debug('Skipping application:  output files already exist')
         return
