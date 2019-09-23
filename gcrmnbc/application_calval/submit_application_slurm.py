@@ -8,7 +8,7 @@ from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS
 DIR_CONFIGS = '../configs'
 DIR_MODELS = '../models'
 SLURM_COMMAND_APPLY = '--mail-type=END,FAIL --time=2:00:00 ' + \
-                      '--wrap "python run_application.py --config_name={} --response_mapping={}"'
+                      '--wrap "python run_calval_application.py --config_name={} --response_mapping={}"'
 
 
 if __name__ == '__main__':

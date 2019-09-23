@@ -1,7 +1,6 @@
 from argparse import ArgumentParser
 from logging import Logger
 import os
-import re
 import shlex
 import subprocess
 
@@ -13,14 +12,8 @@ from gcrmnbc.utils import encodings, shared_configs
 
 
 _DIR_CONFIGS = '../configs'
-_DIR_APPLY_BASE = '/scratch/nfabina/gcrmn-benthic-classification'
-
-_SUBDIR_TRAINING_IN = 'training_data'
-_SUBDIR_TRAINING_OUT = 'training_data_applied/{}/{}/reefs'
-_DIR_TRAINING_IN = os.path.join(_DIR_APPLY_BASE, _SUBDIR_TRAINING_IN)
-_REEFS = ('batt_tongue', 'belize', 'hawaii', 'heron', 'karimunjawa', 'little', 'moorea', 'ribbon')
-_FILENAME_VRT = 'features.vrt'
-
+_DIR_CALVAL = '/scratch/nfabina/gcrmn-benthic-classification/evaluation_data'
+_DIR_LOGS = '/scratch/nfabina/gcrmn-benthic-classification/logs'
 
 
 def run_application(config_name: str, response_mapping: str) -> None:
@@ -29,11 +22,7 @@ def run_application(config_name: str, response_mapping: str) -> None:
     config = shared_configs.build_dynamic_config(filepath_config, response_mapping)
 
     # Get paths and logger
-    log_out = os.path.join(
-        _DIR_APPLY_BASE,
-        os.path.dirname(_SUBDIR_TRAINING_OUT.format(config_name, response_mapping)),
-        'log_calval_application.out'
-    )
+    log_out = os.path.join(_DIR_LOGS, config_name, response_mapping, 'run_calval_application.log')
     if not os.path.exists(os.path.dirname(log_out)):
         os.makedirs(os.path.dirname(log_out))
     logger = logging.get_root_logger(log_out)
@@ -48,35 +37,28 @@ def run_application(config_name: str, response_mapping: str) -> None:
     experiment = experiments.Experiment(config)
     experiment.build_or_load_model(data_container)
 
-    # Get filepaths for application
-    filepaths_apply = sorted([os.path.join(_DIR_TRAINING_IN, reef, 'clean', _FILENAME_VRT) for reef in _REEFS])
-    subdir_out = _SUBDIR_TRAINING_OUT.format(config_name, response_mapping)
-
     # Apply model
-    for idx_filepath, filepath_apply in enumerate(filepaths_apply):
-        dir_out = os.path.dirname(os.path.dirname(re.sub(_SUBDIR_TRAINING_IN, subdir_out, filepath_apply)))
-        if not os.path.exists(dir_out):
-            os.makedirs(dir_out)
-        logger.debug('Applying model to raster {} of {}; input and output filepaths are {} and {}'.format(
-            idx_filepath+1, len(filepath_apply), filepath_apply, dir_out))
-        _apply_to_raster(experiment, data_container, filepath_apply, dir_out, logger)
+    dirs_reefs = sorted([os.path.join(_DIR_CALVAL, dir_) for dir_ in os.listdir(_DIR_CALVAL)])
+    for idx_filepath, dir_reef in enumerate(dirs_reefs):
+        logger.debug('Applying model to reef {}'.format(dir_reef))
+        _apply_to_raster(experiment, data_container, dir_reef, logger)
 
 
 def _apply_to_raster(
         experiment: experiments.Experiment,
         data_container: data_core.DataContainer,
-        filepath_apply: str,
-        dir_out: str,
+        dir_reef: str,
         logger: Logger
 ) -> None:
     # Return early if application is completed or in progress
-    filepath_probs = os.path.join(dir_out, 'calval_probs.tif')
-    filepath_mle = os.path.join(dir_out, 'calval_mle.tif')
-    filepath_reef_raster = os.path.join(dir_out, 'calval_reefs.tif')
-    filepath_reef_shapefile = os.path.join(dir_out, 'calval_reefs.shp')
-    filepath_lock = os.path.join(dir_out, 'calval_apply.lock')
-    filepaths = (filepath_probs, filepath_mle, filepath_reef_raster, filepath_reef_shapefile)
-    if all([os.path.exists(filepath) for filepath in filepaths]):
+    filepath_probs = os.path.join(dir_reef, 'calval_probs.tif')
+    filepath_mle = os.path.join(dir_reef, 'calval_mle.tif')
+    filepath_reef_raster = os.path.join(dir_reef, 'calval_reefs.tif')
+    filepath_reef_shapefile = os.path.join(dir_reef, 'calval_reefs.shp')
+    filepaths_out = (filepath_probs, filepath_mle, filepath_reef_raster, filepath_reef_shapefile)
+    filepath_features = os.path.join(dir_reef, 'features.vrt')
+    filepath_lock = os.path.join(dir_reef, 'calval_apply.lock')
+    if all([os.path.exists(filepath) for filepath in filepaths_out]):
         logger.debug('Skipping application:  output files already exist')
         return
     if os.path.exists(filepath_lock):
@@ -95,7 +77,7 @@ def _apply_to_raster(
         basename_probs = os.path.splitext(filepath_probs)[0]
         basename_mle = os.path.splitext(filepath_mle)[0]
         apply_model_to_data.apply_model_to_site(
-            experiment.model, data_container, [filepath_apply], basename_probs, exclude_feature_nodata=True)
+            experiment.model, data_container, [filepath_features], basename_probs, exclude_feature_nodata=True)
         apply_model_to_data.maximum_likelihood_classification(
             filepath_probs, data_container, basename_mle, creation_options=['TILED=YES', 'COMPRESS=DEFLATE'])
         _create_reef_only_raster(filepath_mle, filepath_reef_raster, logger)

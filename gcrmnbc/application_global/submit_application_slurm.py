@@ -5,7 +5,7 @@ import subprocess
 from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS
 
 
-SLURM_COMMAND_APPLY = '--mail-type=FAIL --time=72:00:00 --wrap "python run_application.py --config_name={} ' + \
+SLURM_COMMAND_APPLY = '--mail-type=FAIL --time=72:00:00 --wrap "python run_global_application.py --config_name={} ' + \
                       '--response_mapping={} --model_version={} "'
 
 

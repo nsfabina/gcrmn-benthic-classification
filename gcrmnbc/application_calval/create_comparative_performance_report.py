@@ -1,20 +1,15 @@
 import json
-import logging
 import os
 import re
-import sys
 from typing import Union
 
 import matplotlib.pyplot as plt
 import numpy as np
 
+from gcrmnbc.utils import logs
 
-_logger = logging.getLogger(__name__)
-_logger.setLevel('DEBUG')
-_formatter = logging.Formatter(fmt='%(asctime)s - %(processName)s - %(name)s - %(levelname)s - %(message)s')
-_handler = logging.StreamHandler(sys.stdout)
-_handler.setFormatter(_formatter)
-_logger.addHandler(_handler)
+
+_logger = logs.get_logger(__file__)
 
 
 _FILEPATH_UNEP_STATS = 'unep_statistics.json'

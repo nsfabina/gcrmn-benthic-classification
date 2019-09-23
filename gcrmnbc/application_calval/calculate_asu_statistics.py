@@ -1,22 +1,16 @@
 import argparse
 import json
-import logging
 import os
-import sys
 
 import fiona
 import shapely.geometry
 import shapely.ops
 
-from gcrmnbc.model_evaluation import shared_report, shared_statistics
+from gcrmnbc.application_calval import shared_report, shared_statistics
+from gcrmnbc.utils import logs
 
 
-_logger = logging.getLogger(__name__)
-_logger.setLevel('DEBUG')
-_formatter = logging.Formatter(fmt='%(asctime)s - %(processName)s - %(name)s - %(levelname)s - %(message)s')
-_handler = logging.StreamHandler(sys.stdout)
-_handler.setFormatter(_formatter)
-_logger.addHandler(_handler)
+_logger = logs.get_logger(__file__)
 
 
 _DIR_BASE = '/scratch/nfabina/gcrmn-benthic-classification/'

@@ -47,3 +47,6 @@ echo "Download UNEP evaluation data"
 
 echo "Create atlas reef multipolygons for evaluation"
 python ./data_cleaning/create_evaluation_reef_multipolygons.py
+
+echo "Copy feature quads for evaluation"
+python ./data_cleaning/copy_evaluation_feature_quads.py
