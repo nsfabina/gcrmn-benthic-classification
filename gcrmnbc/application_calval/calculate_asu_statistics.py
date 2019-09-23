@@ -15,7 +15,7 @@ _logger = logs.get_logger(__file__)
 
 _DIR_BASE = '/scratch/nfabina/gcrmn-benthic-classification/'
 
-_FILEPATH_UQ_OUTLINE = os.path.join(_DIR_BASE, 'training_data/{}/clean/reef_outline.shp')
+_FILEPATH_UQ_OUTLINE = os.path.join(_DIR_BASE, 'training_data/{}/clean/reef_outline_unioned.shp')
 
 _DIR_CONFIG = os.path.join(_DIR_BASE, 'training_data_applied/{}/lwr')
 _DIR_REEFS = os.path.join(_DIR_CONFIG, 'reefs')
@@ -55,19 +55,15 @@ def calculate_asu_statistics(config_name: str, recalculate: bool = False) -> Non
 def _calculate_asu_statistics_for_reef(reef: str, config_name: str) -> dict:
     _logger.debug('Load UQ reef features')
     uq = fiona.open(_FILEPATH_UQ_OUTLINE.format(reef))
+    uq_reef = shapely.geometry.shape(next(iter(uq))['geometry'])
+    x, y, w, z = uq_reef.bounds
+    uq_bounds = shapely.geometry.Polygon([[x, y], [x, z], [w, z], [w, y]])
 
     _logger.debug('Load ASU reef features')
     dir_asu_outline = os.path.join(_DIR_REEFS.format(config_name), reef)
     filepaths = [os.path.join(dir_asu_outline, filename) for filename in os.listdir(dir_asu_outline)
                  if filename.endswith(_FILENAME_SUFFIX_ASU_OUTLINE)]
     individual_asu = [fiona.open(filepath) for filepath in filepaths]
-
-    _logger.debug('Generate UQ reef multipolygon')
-    uq_reef = shapely.ops.unary_union([shapely.geometry.shape(feature['geometry']) for feature in uq])
-
-    _logger.debug('Generate UQ reef bounds')
-    x, y, w, z = uq_reef.bounds
-    uq_bounds = shapely.geometry.Polygon([[x, y], [x, z], [w, z], [w, y]])
 
     _logger.debug('Generate ASU reef multipolygons nearby UQ reef bounds')
     individual_asu_reefs = list()
