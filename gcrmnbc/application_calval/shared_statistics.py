@@ -58,7 +58,7 @@ def _calculate_area_in_square_kilometers(geometry: shapely.geometry.base.BaseGeo
     transformed = shapely.ops.transform(
         functools.partial(
             pyproj.transform,
-            pyproj.Proj(init='EPSG:4326'),
+            pyproj.Proj(init='EPSG:3857'),
             pyproj.Proj(proj='aea', lat1=geometry.bounds[1], lat2=geometry.bounds[3])
         ),
         geometry
