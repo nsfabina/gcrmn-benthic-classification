@@ -11,6 +11,7 @@ from bfgn.utils import logging
 from gcrmnbc.utils import encodings, shared_configs
 
 
+_DIR_MODELS = '../models'
 _DIR_CONFIGS = '../configs'
 _DIR_CALVAL = '/scratch/nfabina/gcrmn-benthic-classification/evaluation_data'
 _DIR_LOGS = '/scratch/nfabina/gcrmn-benthic-classification/logs'
@@ -22,7 +23,7 @@ def run_application(config_name: str, response_mapping: str) -> None:
     config = shared_configs.build_dynamic_config(filepath_config, response_mapping)
 
     # Get paths and logger
-    log_out = os.path.join(_DIR_LOGS, config_name, response_mapping, 'run_calval_application.log')
+    log_out = os.path.join(_DIR_MODELS, config_name, response_mapping, 'run_calval_application.log')
     if not os.path.exists(os.path.dirname(log_out)):
         os.makedirs(os.path.dirname(log_out))
     logger = logging.get_root_logger(log_out)
