@@ -17,12 +17,14 @@ PATH_REEF_VRT = 'features.vrt'
 
 
 def copy_evaluation_reef_quads() -> None:
-    _logger.info('Create UQ reef multipolygons for model evaluation')
+    _logger.info('Copying evaluation quads')
     dirs_reefs = os.listdir(DIR_EVAL_DATA)
     for dir_reef in dirs_reefs:
+        _logger.debug('Copying evaluation quads for reef {}'.format(dir_reef))
         feature = next(iter(fiona.open(os.path.join(DIR_EVAL_DATA, dir_reef, PATH_REEF_MULTIPOLY))))
         geometry = shapely.geometry.shape(feature['geometry'])
         quads_needed = mosaic_quads.determine_mosaic_quads_for_geometry(geometry)
+        _logger.debug('Quads needed:  {}'.format(quads_needed))
         vrt_srcs = list()
         for quad in quads_needed:
             filename_quad = quad + '_features.tif'
