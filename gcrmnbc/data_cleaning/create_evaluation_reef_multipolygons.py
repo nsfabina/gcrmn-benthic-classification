@@ -44,7 +44,7 @@ def _reproject_geometry(geometry: shapely.geometry.base.BaseGeometry) -> shapely
         functools.partial(
             pyproj.transform,
             pyproj.Proj(init='EPSG:4326'),
-            pyproj.Proj(proj='EPSG:3857'),
+            pyproj.Proj(init='EPSG:3857'),
         ),
         geometry
     )

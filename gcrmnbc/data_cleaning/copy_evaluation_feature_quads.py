@@ -29,6 +29,8 @@ def copy_evaluation_reef_quads() -> None:
         for quad in quads_needed:
             filename_quad = quad + '_features.tif'
             filepath_src = os.path.join(DIR_TRAINING_DATA, filename_quad)
+            if not os.path.exists(filepath_src):
+                continue
             filepath_dest = os.path.join(DIR_EVAL_DATA, dir_reef, filename_quad)
             shutil.copy(filepath_src, filepath_dest)
             vrt_srcs.append(filepath_dest)
