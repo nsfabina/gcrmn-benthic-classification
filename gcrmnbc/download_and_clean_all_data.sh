@@ -44,3 +44,6 @@ python ./data_cleaning/create_supplemental_response_rasters.py
 
 echo "Download UNEP evaluation data"
 ./data_acquisition/download_unep_from_fabina_gdrive.sh
+
+echo "Create atlas reef multipolygons for evaluation"
+python ./data_cleaning/create_evaluation_reef_multipolygons.py
