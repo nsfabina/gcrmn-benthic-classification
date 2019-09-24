@@ -36,6 +36,7 @@ def apply_model_to_quad(
         quad_blob: data_bucket.QuadBlob,
         data_container: data_core.DataContainer,
         experiment: experiments.Experiment,
+        response_mapping: str,
         model_name: str,
         model_version: str
 ) -> None:
@@ -49,7 +50,8 @@ def apply_model_to_quad(
     quad_paths = _get_quad_paths(quad_blob)
 
     _logger.debug('Check if application is already complete')
-    is_complete = data_bucket.check_is_quad_model_application_complete(quad_blob, model_name, model_version)
+    is_complete = data_bucket.check_is_quad_model_application_complete(
+        quad_blob, response_mapping, model_name, model_version)
     if is_complete:
         _logger.debug('Skipping application, is already complete')
         return
@@ -104,11 +106,12 @@ def apply_model_to_quad(
 
         _logger.info('Uploading model results')
         data_bucket.upload_model_application_results_for_quad_blob(
-            quad_paths.dir_for_upload, quad_blob, model_name, model_version)
+            quad_paths.dir_for_upload, quad_blob, response_mapping, model_name, model_version)
 
         _logger.info('Application success for quad {}'.format(quad_blob.quad_focal))
         _logger.debug('Delete model results from other versions and any outdated notifications')
-        data_bucket.delete_model_application_results_for_other_versions(quad_blob, model_name, model_version)
+        data_bucket.delete_model_application_results_for_other_versions(
+            quad_blob, response_mapping, model_name, model_version)
         data_bucket.delete_model_corrupt_data_notification_if_exists(quad_blob)
 
     except Exception as error_:

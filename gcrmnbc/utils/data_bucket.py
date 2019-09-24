@@ -110,17 +110,27 @@ def _update_contextual_blobs(quad_blobs: List[QuadBlob]) -> List[QuadBlob]:
     return updated
 
 
-def _prune_completed_quad_blobs(quad_blobs: List[QuadBlob], model_name: str, model_version: str) -> List[QuadBlob]:
+def _prune_completed_quad_blobs(
+        quad_blobs: List[QuadBlob],
+        response_mapping: str,
+        model_name: str,
+        model_version: str
+) -> List[QuadBlob]:
     pruned = list()
     for quad_blob in quad_blobs:
-        is_complete = check_is_quad_model_application_complete(quad_blob, model_name, model_version)
+        is_complete = check_is_quad_model_application_complete(quad_blob, response_mapping, model_name, model_version)
         if not is_complete:
             pruned.append(quad_blob)
     return pruned
 
 
-def check_is_quad_model_application_complete(quad_blob: QuadBlob, model_name: str, model_version: str) -> bool:
-    blob_complete = _get_application_complete_blob(quad_blob, model_name, model_version)
+def check_is_quad_model_application_complete(
+        quad_blob: QuadBlob,
+        response_mapping: str,
+        model_name: str,
+        model_version: str
+) -> bool:
+    blob_complete = _get_application_complete_blob(quad_blob, response_mapping, model_name, model_version)
     blob_no_apply = _get_no_apply_blob(quad_blob)
     return blob_complete.exists() or blob_no_apply.exists()
 
@@ -152,17 +162,19 @@ def download_model_application_input_data_for_quad_blob(dir_dest: str, quad_blob
 def upload_model_application_results_for_quad_blob(
         dir_results: str,
         quad_blob: QuadBlob,
+        response_mapping: str,
         model_name: str,
         model_version: str
 ) -> None:
     _logger.debug('Upload model results for quad blob {}'.format(quad_blob.quad_focal))
-    blob_name_application = _get_application_path_for_model_results(quad_blob, model_name, model_version)
+    blob_name_application = _get_application_path_for_model_results(
+        quad_blob, response_mapping, model_name, model_version)
     for filename in os.listdir(dir_results):
         filepath = os.path.join(dir_results, filename)
         blob_name = os.path.join(blob_name_application, filename)
         blob = storage.Blob(blob_name, GCS.bucket)
         blob.upload_from_filename(filepath)
-    blob_complete = _get_application_complete_blob(quad_blob, model_name, model_version)
+    blob_complete = _get_application_complete_blob(quad_blob, response_mapping, model_name, model_version)
     blob_complete.upload_from_string('')
 
 
@@ -226,14 +238,25 @@ def _get_application_path_for_quad(quad_blob: QuadBlob) -> str:
     return without_tif_extension
 
 
-def _get_application_path_for_model_results(quad_blob: QuadBlob, model_name: str, model_version: str) -> str:
+def _get_application_path_for_model_results(
+        quad_blob: QuadBlob,
+        response_mapping: str,
+        model_name: str,
+        model_version: str
+) -> str:
     application_path_quad = _get_application_path_for_quad(quad_blob)
-    with_model_ids = os.path.join(application_path_quad, model_name, model_version)
+    with_model_ids = os.path.join(application_path_quad, response_mapping, model_name, model_version)
     return with_model_ids
 
 
-def _get_application_complete_blob(quad_blob: QuadBlob, model_name: str, model_version: str) -> storage.Blob:
-    application_blob_name = _get_application_path_for_model_results(quad_blob, model_name, model_version)
+def _get_application_complete_blob(
+        quad_blob: QuadBlob,
+        response_mapping: str,
+        model_name: str,
+        model_version: str
+) -> storage.Blob:
+    application_blob_name = _get_application_path_for_model_results(
+        quad_blob, response_mapping, model_name, model_version)
     filename_complete = 'application_complete'
     application_complete_name = os.path.join(application_blob_name, filename_complete)
     return storage.Blob(application_complete_name, GCS.bucket)
