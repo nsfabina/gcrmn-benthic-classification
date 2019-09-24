@@ -38,7 +38,7 @@ def remove_feature_rasters_alpha_band() -> None:
         # Remove alpha band
         options_removed = gdal.TranslateOptions(
             bandList=[1, 2, 3], outputType=gdal.GDT_Int16, creationOptions=['COMPRESS=DEFLATE', 'TILED=YES'])
-        gdal.Translate(filepath_tmp, filepath_clean, options=options_removed)
+        gdal.Translate(filepath_clean, filepath_tmp, options=options_removed)
         os.remove(filepath_tmp)
 
 
