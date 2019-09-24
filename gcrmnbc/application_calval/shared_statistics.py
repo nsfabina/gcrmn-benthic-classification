@@ -19,6 +19,10 @@ def calculate_model_performance_statistics(
     model_reef = model_reef.buffer(0)
     assert abs(area_old - model_reef.area) <= 0.01 * area_old, 'Buffering caused significant area changes'
 
+    # Convert to AEA for square kilometer calculations
+    model_reef = _transform_to_aea_projection(model_reef)
+    groundtruth_reef = _transform_to_aea_projection(groundtruth_reef)
+
     # Calculate absolute and percent areas
     total_footprint = groundtruth_reef.convex_hull
     groundtruth_nonreef = total_footprint.difference(groundtruth_reef).buffer(0)
@@ -47,15 +51,17 @@ def calculate_model_performance_statistics(
     return stats
 
 
-def _calculate_area_in_square_kilometers(geometry: shapely.geometry.base.BaseGeometry) -> float:
+def _transform_to_aea_projection(geometry: shapely.geometry.base.BaseGeometry) -> shapely.geometry.base.BaseGeometry:
     """
+    We need this projection because it allows us to calculate area in square kilometers. We do this at the beginning
+    of the calculation script because it's actually moderately expensive and one of the longest calculations in the
+    evaluation script.
+
     Shamelessly borrowed from:
         https://gis.stackexchange.com/questions/127607/area-in-km-from-polygon-of-coordinates
     Trusted because the answer is from sgillies
     """
-    if not geometry.bounds:
-        return 0.0
-    transformed = shapely.ops.transform(
+    return shapely.ops.transform(
         functools.partial(
             pyproj.transform,
             pyproj.Proj(init='EPSG:3857'),
@@ -63,4 +69,9 @@ def _calculate_area_in_square_kilometers(geometry: shapely.geometry.base.BaseGeo
         ),
         geometry
     )
-    return transformed.area / 10 ** 6
+
+
+def _calculate_area_in_square_kilometers(geometry: shapely.geometry.base.BaseGeometry) -> float:
+    if not geometry.bounds:
+        return 0.0
+    return geometry.area / 10 ** 6
