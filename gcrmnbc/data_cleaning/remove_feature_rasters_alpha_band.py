@@ -34,7 +34,7 @@ def remove_feature_rasters_alpha_band() -> None:
         if completed.stderr:
             _logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
             _logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
-            raise AssertionError('Unknown error in reef raster generation, see above log lines')
+            raise AssertionError('Unknown error in feature masking, see above log lines')
         # Remove alpha band
         options_removed = gdal.TranslateOptions(
             bandList=[1, 2, 3], outputType=gdal.GDT_Int16, creationOptions=['COMPRESS=DEFLATE', 'TILED=YES'])

@@ -13,13 +13,13 @@ _DIR_DATA_BUILT = os.path.join(_DIR_DATA_BASE, 'built_{}_{}')
 _SUFFIX_FEATURES = '_features.tif'
 
 _SUFFIXES_RESPONSES_BOUNDARIES = (
-    ('_responses.tif', '_boundaries.shp', True),  # Reef data, True/False denotes whether its required or not
+    ('_responses_{}.tif', '_boundaries.shp', True),  # Reef data, True/False denotes whether its required or not
     ('_land.tif', '_land.shp', False),  # Land data
     ('_water.tif', '_water.shp', False),  # Water data
 )
 
-_RESPONSE_MAPPINGS = ('lwr', )
-_RESPONSE_MAPPING_CLASSES = {'lwr': 4, }
+_RESPONSE_MAPPINGS = ('lwr', 'lwrn', )
+_RESPONSE_MAPPING_CLASSES = {'lwr': 3, 'lwrn': 4, }
 
 
 def build_dynamic_config(filepath_config: str, response_mapping: str) -> configs.Config:
@@ -41,7 +41,11 @@ def build_dynamic_config(filepath_config: str, response_mapping: str) -> configs
         filepath_features = os.path.join(_DIR_DATA_CLEAN, filename)
 
         for suffix_responses, suffix_boundaries, is_required in _SUFFIXES_RESPONSES_BOUNDARIES:
-            filepath_responses = re.sub(_SUFFIX_FEATURES, suffix_responses, filepath_features)
+            if 'responses' in suffix_responses:
+                filepath_responses = re.sub(
+                    _SUFFIX_FEATURES, suffix_responses.format(response_mapping), filepath_features)
+            else:
+                filepath_responses = re.sub(_SUFFIX_FEATURES, suffix_responses, filepath_features)
             filepath_boundaries = re.sub(_SUFFIX_FEATURES, suffix_boundaries, filepath_features)
 
             if is_required:
