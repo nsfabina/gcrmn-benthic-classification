@@ -13,7 +13,7 @@ FILENAME_FIG_OUT = 'asu_statistics.pdf'
 
 SLURM_COMMAND = 'sbatch --mail-user=nfabina@asu.edu --mail-type=END,FAIL --time=4:00:00 ' + \
                 '--nodes=1 --cpus-per-task=1 --mem-per-cpu=20000 --ntasks=1 ' + \
-                '--wrap "python run_calculate_asu_statistics.py --config_name={} --response_mapping={}" {}'
+                '--wrap "python calculate_asu_statistics.py --config_name={} --response_mapping={}" {}'
 
 
 if __name__ == '__main__':
@@ -51,8 +51,8 @@ if __name__ == '__main__':
             dir_model = os.path.join(DIR_MODELS, config_name, response_mapping)
             slurm_args_dynamic = ' '.join([
                 '--job-name={}'.format(job_name),
-                '--output={}/slurm.apply_calval.%j.%t.OUT'.format(dir_model),
-                '--error={}/slurm.apply_calval.%j.%t.ERROR'.format(dir_model),
+                '--output={}/slurm.calc_stats.%j.%t.OUT'.format(dir_model),
+                '--error={}/slurm.calc_stats.%j.%t.ERROR'.format(dir_model),
             ])
 
             print('Submitting job {}'.format(job_name))
