@@ -15,7 +15,6 @@ _DIR_MODELS = '../models'
 _DIR_CONFIGS = '../configs'
 _DIR_CALVAL_SRC = '/scratch/nfabina/gcrmn-benthic-classification/evaluation_data'
 DIR_APPLIED_DEST = '/scratch/nfabina/gcrmn-benthic-classification/applied_data'
-_DIR_LOGS = '/scratch/nfabina/gcrmn-benthic-classification/logs'
 
 FILENAME_COMPLETE = 'calval_application.complete'
 

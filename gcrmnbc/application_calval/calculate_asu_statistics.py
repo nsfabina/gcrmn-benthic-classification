@@ -13,20 +13,20 @@ from gcrmnbc.utils import logs
 _logger = logs.get_logger(__file__)
 
 
-_DIR_BASE = '/scratch/nfabina/gcrmn-benthic-classification/'
+_FILEPATH_UQ_OUTLINE = '/scratch/nfabina/gcrmn-benthic-classification/evaluation_data/{}/clean/reef_outline_unioned.shp'
 
-_FILEPATH_UQ_OUTLINE = os.path.join(_DIR_BASE, 'training_data/{}/clean/reef_outline_unioned.shp')
-
-_DIR_CONFIG = os.path.join(_DIR_BASE, 'training_data_applied/{}/lwr')
-_DIR_REEFS = os.path.join(_DIR_CONFIG, 'reefs')
-_FILENAME_SUFFIX_ASU_OUTLINE = 'calval_reefs.shp'
-_FILEPATH_DATA_OUT = os.path.join(_DIR_CONFIG, 'asu_statistics.json')
-_FILEPATH_FIG_OUT = os.path.join(_DIR_CONFIG, 'asu_statistics.pdf')
+_DIR_STATS_OUT = '/scratch/nfabina/gcrmn-benthic-classification/application_data/{}/{}'
+_FILENAME_DATA_OUT = 'asu_statistics.json'
+_FILENAME_FIG_OUT = 'asu_statistics.pdf'
+_FILENAME_ASU_OUTLINE = 'calval_reefs.shp'
 
 
-def calculate_asu_statistics(config_name: str, recalculate: bool = False) -> None:
-    _logger.info('Calculate ASU statistics for {} with recalculate {}'.format(config_name, recalculate))
-    filepath_data_out = _FILEPATH_DATA_OUT.format(config_name)
+def calculate_asu_statistics(config_name: str, response_mapping: str, recalculate: bool = False) -> None:
+    _logger.info('Calculate ASU statistics for {} {} with recalculate {}'.format(
+        config_name, response_mapping, recalculate))
+    dir_model = _DIR_STATS_OUT.format(config_name, response_mapping)
+    filepath_data_out = os.path.join(dir_model, _FILENAME_DATA_OUT)
+    filepath_fig_out = os.path.join(dir_model, _FILENAME_FIG_OUT)
 
     _logger.info('Calculating ASU statistics')
     if os.path.exists(filepath_data_out) and not recalculate:
@@ -37,22 +37,22 @@ def calculate_asu_statistics(config_name: str, recalculate: bool = False) -> Non
         _logger.debug('Calculating statistics from scratch')
         statistics = dict()
 
-    reefs = sorted([dir_reef for dir_reef in os.listdir(_DIR_REEFS.format(config_name))])
+    reefs = sorted([reef for reef in os.listdir(dir_model) if reef != 'calval_application.complete'])
     for reef in reefs:
         if reef in statistics and not recalculate:
             _logger.debug('Skipping {}:  already calculated'.format(reef))
             continue
         _logger.info('Calculating statistics for {}'.format(reef))
-        statistics[reef] = _calculate_asu_statistics_for_reef(reef, config_name)
+        statistics[reef] = _calculate_asu_statistics_for_reef(reef, config_name, response_mapping)
         _logger.debug('Saving statistics'.format(reef))
         with open(filepath_data_out, 'w') as file_:
             json.dump(statistics, file_)
     _logger.info('Calculations complete, generating report')
-    shared_report.generate_pdf_summary_report(statistics, 'ASU', _FILEPATH_FIG_OUT.format(config_name), config_name)
+    shared_report.generate_pdf_summary_report(statistics, 'ASU', filepath_fig_out, config_name)
     _logger.info('Report generation complete')
 
 
-def _calculate_asu_statistics_for_reef(reef: str, config_name: str) -> dict:
+def _calculate_asu_statistics_for_reef(reef: str, config_name: str, response_mapping: str) -> dict:
     _logger.debug('Load UQ reef features')
     uq = fiona.open(_FILEPATH_UQ_OUTLINE.format(reef))
     uq_reef = shapely.geometry.shape(next(iter(uq))['geometry'])
@@ -60,38 +60,28 @@ def _calculate_asu_statistics_for_reef(reef: str, config_name: str) -> dict:
     uq_bounds = shapely.geometry.Polygon([[x, y], [x, z], [w, z], [w, y]])
 
     _logger.debug('Load ASU reef features')
-    dir_asu_outline = os.path.join(_DIR_REEFS.format(config_name), reef)
-    filepaths = [os.path.join(dir_asu_outline, filename) for filename in os.listdir(dir_asu_outline)
-                 if filename.endswith(_FILENAME_SUFFIX_ASU_OUTLINE)]
-    individual_asu = [fiona.open(filepath) for filepath in filepaths]
+    dir_model = _DIR_STATS_OUT.format(config_name, response_mapping)
+    filepath_asu_outline = os.path.join(dir_model, reef, _FILENAME_ASU_OUTLINE)
+    asu_features = fiona.open(filepath_asu_outline)
 
     _logger.debug('Generate ASU reef multipolygons nearby UQ reef bounds')
-    individual_asu_reefs = list()
-    for asu in individual_asu:
-        shapes = list()
-        for feature in asu:
-            prediction = feature['properties']['DN']
-            assert prediction in (0, 1), 'Reef predictions should either be 0 or 1, but found {}'.format(prediction)
-            if prediction == 0:
-                continue  # Reef == 1, nonreef == 0
-            shape = shapely.geometry.shape(feature['geometry'])
-            if shape.intersects(uq_bounds):
-                shapes.append(shape)
-        individual_asu_reefs.append(shapely.ops.unary_union(shapes))
-    asu_reef = shapely.ops.unary_union(individual_asu_reefs)
-    del individual_asu_reefs
-
+    asu_geometries = list()
+    for feature in asu_features:
+        prediction = feature['properties']['DN']
+        assert prediction in (0, 1), 'Reef predictions should either be 0 or 1, but found {}'.format(prediction)
+        if prediction == 0:
+            continue  # reef == 1, nonreef == 0
+        geometry = shapely.geometry.shape(feature['geometry'])
+        if geometry.intersects(uq_bounds):
+            asu_geometries.append(geometry)
+    asu_reef = shapely.ops.unary_union(asu_geometries)
     return shared_statistics.calculate_model_performance_statistics(asu_reef, uq_reef)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_names')
-    parser.add_argument('-f', dest='recalculate', action='store_true')
+    parser.add_argument('--config_name', required=True)
+    parser.add_argument('--response_mapping', required=True)
+    parser.add_argument('--recalculate', action='store_true')
     args = parser.parse_args()
-    if args.config_names:
-        config_names = args.config_names
-    else:
-        config_names = os.listdir(os.path.join(_DIR_BASE, 'training_data_applied'))
-    for config_name in config_names:
-        calculate_asu_statistics(config_name, args.recalculate)
+    calculate_asu_statistics(args.config_name, args.response_mapping, args.recalculate)
