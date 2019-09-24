@@ -63,26 +63,17 @@ def _calculate_asu_statistics_for_reef(reef: str, config_name: str, response_map
     _logger.debug('Load ASU reef features')
     dir_model = _DIR_STATS_OUT.format(config_name, response_mapping)
     filepath_asu_outline = os.path.join(dir_model, reef, _FILENAME_ASU_OUTLINE)
-    num_features = len(list(fiona.open(filepath_asu_outline)))
     asu_features = fiona.open(filepath_asu_outline)
 
     _logger.debug('Parse ASU features near UQ reef bounds')
-    asu_geometries = list()
-    time_start = time.time()
+    asu_polygons = list()
     for idx_feature, feature in enumerate(asu_features):
-        prediction = feature['properties']['DN']
-        assert prediction in (0, 1), 'Reef predictions should either be 0 or 1, but found {}'.format(prediction)
-        if prediction == 0:
-            continue  # reef == 1, nonreef == 0
-        geometry = shapely.geometry.shape(feature['geometry'])
-        if geometry.intersects(uq_reef_bounds):
-            asu_geometries.append(geometry)
-    _logger.debug('Total time:  {}'.format(time.time() - time_start))
-
-    _logger.debug('Union ASU features')
-    time_start = time.time()
-    asu_reef = shapely.ops.unary_union(asu_geometries)
-    _logger.debug('Total time:  {}'.format(time.time() - time_start))
+        geom_type = feature['geometry']['type']
+        assert geom_type == 'Polygon', 'Reef features are expected to all be polygons, but found {}'.format(geom_type)
+        polygon = shapely.geometry.shape(feature['geometry'])
+        if polygon.intersects(uq_reef_bounds):
+            asu_polygons.append(polygon)
+    asu_reef = shapely.geometry.MultiPolygon(asu_polygons)
 
     _logger.debug('Calculate performance statistics')
     time_start = time.time()
