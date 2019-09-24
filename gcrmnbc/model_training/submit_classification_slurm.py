@@ -61,8 +61,14 @@ if __name__ == '__main__':
                 continue
 
             # Set dynamic SLURM arguments
+            if args.build_only:
+                gpu_constraint = ''
+            elif '256' in config_name:
+                gpu_constraint = SLURM_GPUS_LARGE
+            else:
+                gpu_constraint = SLURM_GPUS
             slurm_args_dynamic = ' '.join([
-                SLURM_GPUS if '256' not in config_name else SLURM_GPUS_LARGE,
+                gpu_constraint,
                 '--job-name={}'.format(job_name),
                 '--output={}/slurm.classify.%j.%t.OUT'.format(dir_model),
                 '--error={}/slurm.classify.%j.%t.ERROR'.format(dir_model),
