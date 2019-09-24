@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import time
 
 import fiona
 import shapely.geometry
@@ -28,7 +29,7 @@ def calculate_asu_statistics(config_name: str, response_mapping: str, recalculat
     filepath_data_out = os.path.join(dir_model, _FILENAME_DATA_OUT)
     filepath_fig_out = os.path.join(dir_model, _FILENAME_FIG_OUT)
 
-    _logger.info('Calculating ASU statistics')
+    _logger.debug('Calculating ASU statistics')
     if os.path.exists(filepath_data_out) and not recalculate:
         _logger.debug('Loading existing statistics')
         with open(filepath_data_out) as file_:
@@ -37,19 +38,20 @@ def calculate_asu_statistics(config_name: str, response_mapping: str, recalculat
         _logger.debug('Calculating statistics from scratch')
         statistics = dict()
 
-    reefs = sorted([reef for reef in os.listdir(dir_model) if reef != 'calval_application.complete'])
+    reefs = sorted([reef for reef in os.listdir(dir_model) if os.path.isdir(os.path.join(dir_model, reef))])
+    _logger.debug('Calculating statistics for reefs: {}'.format(reefs))
     for reef in reefs:
         if reef in statistics and not recalculate:
             _logger.debug('Skipping {}:  already calculated'.format(reef))
             continue
-        _logger.info('Calculating statistics for {}'.format(reef))
+        _logger.debug('Calculating statistics for {}'.format(reef))
         statistics[reef] = _calculate_asu_statistics_for_reef(reef, config_name, response_mapping)
         _logger.debug('Saving statistics'.format(reef))
         with open(filepath_data_out, 'w') as file_:
             json.dump(statistics, file_)
-    _logger.info('Calculations complete, generating report')
+    _logger.debug('Calculations complete, generating report')
     shared_report.generate_pdf_summary_report(statistics, 'ASU', filepath_fig_out, config_name)
-    _logger.info('Report generation complete')
+    _logger.debug('Report generation complete')
 
 
 def _calculate_asu_statistics_for_reef(reef: str, config_name: str, response_mapping: str) -> dict:
@@ -65,31 +67,29 @@ def _calculate_asu_statistics_for_reef(reef: str, config_name: str, response_map
     num_features = len(list(fiona.open(filepath_asu_outline)))
     asu_features = fiona.open(filepath_asu_outline)
 
-    _logger.debug('Generate ASU reef multipolygons nearby UQ reef bounds')
+    _logger.debug('Parse ASU features near UQ reef bounds')
     asu_geometries = list()
-    import time
-    time_intersects = 0
     time_start = time.time()
     for idx_feature, feature in enumerate(asu_features):
-        _logger.debug('Parse feature {} ({} total)'.format(idx_feature, num_features))
         prediction = feature['properties']['DN']
         assert prediction in (0, 1), 'Reef predictions should either be 0 or 1, but found {}'.format(prediction)
         if prediction == 0:
             continue  # reef == 1, nonreef == 0
         geometry = shapely.geometry.shape(feature['geometry'])
-        time_x = time.time()
         if geometry.intersects(uq_bounds):
             asu_geometries.append(geometry)
-        time_intersects += time.time() - time_x
-    time_total = time.time() - time_start
-    print('Total time:  {}'.format(time_total))
-    print('Intersect time:  {}'.format(time_intersects))
+    _logger.debug('Total time:  {}'.format(time.time() - time_start))
 
-    _logger.debug('Calculate the union of model reef features')
+    _logger.debug('Union ASU features')
     time_start = time.time()
     asu_reef = shapely.ops.unary_union(asu_geometries)
-    print('Union time:  {}'.format(time.time() - time_start))
-    return shared_statistics.calculate_model_performance_statistics(asu_reef, uq_reef)
+    _logger.debug('Total time:  {}'.format(time.time() - time_start))
+
+    _logger.debug('Calculate performance statistics')
+    time_start = time.time()
+    stats = shared_statistics.calculate_model_performance_statistics(asu_reef, uq_reef)
+    _logger.debug('Total time:  {}'.format(time.time() - time_start))
+    return stats
 
 
 if __name__ == '__main__':
