@@ -106,6 +106,7 @@ def _apply_to_raster(
             experiment.model, data_container, [filepath_features], basename_probs, exclude_feature_nodata=True)
         apply_model_to_data.maximum_likelihood_classification(
             filepath_probs, data_container, basename_mle, creation_options=['TILED=YES', 'COMPRESS=DEFLATE'])
+        _compress_probs_raster(filepath_probs, logger)
         _create_reef_only_raster(filepath_mle, filepath_reef_raster, logger)
         _create_reef_only_shapefile(filepath_reef_raster, filepath_reef_shapefile, logger)
         logger.debug('Application success, removing lock file and placing complete file')
@@ -116,6 +117,17 @@ def _apply_to_raster(
         file_lock.close()
         os.remove(filepath_lock)
         logger.debug('Lock file removed')
+
+
+def _compress_probs_raster(filepath_probs: str, logger: Logger) -> None:
+    command = 'gdal_calc.py -A {filepath_probs} --allBands=A --outfile={filepath_probs} --NoDataValue=255 ' + \
+              '--type=Byte --co=COMPRESS=DEFLATE --co=TILED=YES --overwrite  --calc="A*100"'
+    command.format(filepath_probs=filepath_probs)
+    completed = subprocess.run(shlex.split(command), capture_output=True)
+    if completed.stderr:
+        logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
+        logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
+        raise AssertionError('Unknown error in prob raster compression, see above log lines')
 
 
 def _create_reef_only_raster(filepath_mle: str, filepath_reef_raster: str, logger: Logger) -> None:
