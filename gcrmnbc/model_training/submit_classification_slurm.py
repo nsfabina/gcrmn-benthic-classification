@@ -3,12 +3,13 @@ import os
 import re
 import subprocess
 
-from gcrmnbc.model_training.run_classification import FILENAME_LOCK, FILENAME_SUCCESS
 from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS, SLURM_GPUS_LARGE
 
 
 DIR_CONFIGS = '../configs'
 DIR_MODELS = '../models'
+FILENAME_LOCK = 'classify.lock'
+FILENAME_SUCCESS = 'classify.complete'
 SLURM_COMMAND_CLASSIFY = '--mail-type=END,FAIL --time=24:00:00 --wrap "python run_classification.py ' + \
                          '--config_name={} --response_mapping={} {}"'
 

@@ -3,13 +3,14 @@ import os
 import re
 import subprocess
 
-from gcrmnbc.application_calval.run_calval_application import DIR_APPLIED_DEST, FILENAME_COMPLETE
-from gcrmnbc.model_training.run_classification import FILENAME_COMPLETE as FILENAME_CLASSIFICATION_COMPLETE
 from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS, SLURM_GPUS_LARGE
 
 
 DIR_CONFIGS = '../configs'
 DIR_MODELS = '../models'
+DIR_APPLIED_DEST = '/scratch/nfabina/gcrmn-benthic-classification/applied_data'
+FILENAME_CLASS_COMPLETE = 'classify.complete'
+FILENAME_APPL_COMPLETE = 'calval_application.complete'
 SLURM_COMMAND_APPLY = '--mail-type=END,FAIL --time=2:00:00 ' + \
                       '--wrap "python run_calval_application.py --config_name={} --response_mapping={}"'
 
@@ -39,8 +40,8 @@ if __name__ == '__main__':
             job_name = 'apply_calval_' + config_name + '_' + response_mapping
 
             # Do not submit jobs that do not have trained models or are already complete
-            filepath_class = os.path.join(DIR_MODELS, config_name, response_mapping, FILENAME_CLASSIFICATION_COMPLETE)
-            filepath_appli = os.path.join(DIR_APPLIED_DEST, config_name, response_mapping, FILENAME_COMPLETE)
+            filepath_class = os.path.join(DIR_MODELS, config_name, response_mapping, FILENAME_CLASS_COMPLETE)
+            filepath_appli = os.path.join(DIR_APPLIED_DEST, config_name, response_mapping, FILENAME_APPL_COMPLETE)
             if not os.path.exists(filepath_class):
                 print('Classification not complete:  {} {}'.format(config_name, response_mapping))
                 continue
