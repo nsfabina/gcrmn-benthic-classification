@@ -17,7 +17,10 @@ def calculate_model_performance_statistics(
     # Buffer geometries for validity and assert that areas are approximately equal
     area_old = model_reef.area
     model_reef = model_reef.buffer(0)
-    assert abs(area_old - model_reef.area) <= 0.01 * area_old, 'Buffering caused significant area changes'
+    assert abs(area_old - model_reef.area) <= 0.01 * area_old, 'Buffering caused significant model area changes'
+    area_old = groundtruth_reef.area
+    groundtruth_reef = groundtruth_reef.buffer(0)
+    assert abs(area_old - groundtruth_reef.area) <= 0.01 * area_old, 'Buffering caused significant reef area changes'
 
     # Convert to AEA for square kilometer calculations
     model_reef = _transform_to_aea_projection(model_reef)
