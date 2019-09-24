@@ -14,8 +14,10 @@ from gcrmnbc.utils import encodings, shared_configs
 _DIR_MODELS = '../models'
 _DIR_CONFIGS = '../configs'
 _DIR_CALVAL_SRC = '/scratch/nfabina/gcrmn-benthic-classification/evaluation_data'
-_DIR_APPLIED_DEST = '/scratch/nfabina/gcrmn-benthic-classification/applied_data'
+DIR_APPLIED_DEST = '/scratch/nfabina/gcrmn-benthic-classification/applied_data'
 _DIR_LOGS = '/scratch/nfabina/gcrmn-benthic-classification/logs'
+
+FILENAME_COMPLETE = 'calval_application.complete'
 
 
 def run_application(config_name: str, response_mapping: str) -> None:
@@ -41,12 +43,21 @@ def run_application(config_name: str, response_mapping: str) -> None:
 
     # Apply model
     reefs = sorted([reef for reef in os.listdir(_DIR_CALVAL_SRC)])
-    dir_model_out = os.path.join(_DIR_APPLIED_DEST, config_name, response_mapping)
+    dir_model_out = os.path.join(DIR_APPLIED_DEST, config_name, response_mapping)
     for idx_filepath, reef in enumerate(reefs):
         logger.debug('Applying model to reef {}'.format(reef))
         dir_reef_in = os.path.join(_DIR_CALVAL_SRC, reef)
         dir_reef_out = os.path.join(dir_model_out, reef)
         _apply_to_raster(experiment, data_container, dir_reef_in, dir_reef_out, logger)
+
+    # Create application.complete if all files are done
+    are_reefs_complete = list()
+    for reef in reefs:
+        filepath_reef_complete = os.path.join(dir_model_out, reef, FILENAME_COMPLETE)
+        are_reefs_complete.append(os.path.exists(filepath_reef_complete))
+    if all(are_reefs_complete):
+        filepath_model_complete = os.path.join(dir_model_out, FILENAME_COMPLETE)
+        open(filepath_model_complete, 'w')
 
 
 def _apply_to_raster(
@@ -69,6 +80,7 @@ def _apply_to_raster(
     filepath_reef_shapefile = os.path.join(dir_reef_out, 'calval_reefs.shp')
     filepaths_out = (filepath_probs, filepath_mle, filepath_reef_raster, filepath_reef_shapefile)
     filepath_lock = os.path.join(dir_reef_out, 'calval_apply.lock')
+    filepath_complete = os.path.join(dir_reef_out, FILENAME_COMPLETE)
     filepath_features = os.path.join(dir_reef_in, 'features.vrt')
 
     # Return early if application is completed or in progress
@@ -96,7 +108,8 @@ def _apply_to_raster(
             filepath_probs, data_container, basename_mle, creation_options=['TILED=YES', 'COMPRESS=DEFLATE'])
         _create_reef_only_raster(filepath_mle, filepath_reef_raster, logger)
         _create_reef_only_shapefile(filepath_reef_raster, filepath_reef_shapefile, logger)
-        logger.debug('Application success, removing lock file')
+        logger.debug('Application success, removing lock file and placing complete file')
+        open(filepath_complete, 'w')
     except Exception as error_:
         raise error_
     finally:

@@ -9,8 +9,8 @@ from gcrmnbc.utils import shared_configs
 
 
 _DIR_CONFIGS = '../configs'
-_FILENAME_LOCK = 'classify.lock'
-_FILENAME_SUCCESS = 'classify.complete'
+FILENAME_LOCK = 'classify.lock'
+FILENAME_COMPLETE = 'classify.complete'
 
 
 def run_classification(config_name: str, response_mapping: str, build_only: bool = False) -> None:
@@ -24,12 +24,12 @@ def run_classification(config_name: str, response_mapping: str, build_only: bool
         os.makedirs(config.model_training.dir_out)
 
     # Exit early if classification already finished -- assume build is finished too
-    filepath_success = os.path.join(config.model_training.dir_out, _FILENAME_SUCCESS)
-    if os.path.exists(filepath_success):
+    filepath_complete = os.path.join(config.model_training.dir_out, FILENAME_COMPLETE)
+    if os.path.exists(filepath_complete):
         return
 
     # Exit early if classification in progress
-    filepath_lock = os.path.join(config.model_training.dir_out, _FILENAME_LOCK)
+    filepath_lock = os.path.join(config.model_training.dir_out, FILENAME_LOCK)
     try:
         file_lock = open(filepath_lock, 'x')
     except OSError:
@@ -57,8 +57,8 @@ def run_classification(config_name: str, response_mapping: str, build_only: bool
         experiment.fit_model_with_data_container(data_container, resume_training=True)
         reporter.create_model_report()
 
-        # Create success file to avoid rerunning in the future, close and remove lock file
-        open(filepath_success, 'w')
+        # Create complete file to avoid rerunning in the future, close and remove lock file
+        open(filepath_complete, 'w')
     except Exception as error_:
         raise error_
     finally:

@@ -3,6 +3,7 @@ import os
 import re
 import subprocess
 
+from gcrmnbc.model_training.run_classification import FILENAME_LOCK, FILENAME_SUCCESS
 from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS, SLURM_GPUS_LARGE
 
 
@@ -47,6 +48,16 @@ if __name__ == '__main__':
             dir_model = os.path.join(DIR_MODELS, config_name, response_mapping)
             if not os.path.exists(dir_model):
                 os.makedirs(dir_model)
+
+            # Do not submit if classification is locked or complete
+            filepath_complete = os.path.join(DIR_MODELS, config_name, response_mapping, FILENAME_SUCCESS)
+            filepath_lock = os.path.join(DIR_MODELS, config_name, response_mapping, FILENAME_LOCK)
+            if os.path.exists(filepath_lock):
+                print('Classification in progress:  {} {}'.format(config_name, response_mapping))
+                continue
+            if os.path.exists(filepath_complete):
+                print('Classification complete:  {} {}'.format(config_name, response_mapping))
+                continue
 
             # Set dynamic SLURM arguments
             slurm_args_dynamic = ' '.join([

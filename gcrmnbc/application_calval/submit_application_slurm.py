@@ -3,6 +3,8 @@ import os
 import re
 import subprocess
 
+from gcrmnbc.application_calval.run_calval_application import DIR_APPLIED_DEST, FILENAME_COMPLETE
+from gcrmnbc.model_training.run_classification import FILENAME_COMPLETE as FILENAME_CLASSIFICATION_COMPLETE
 from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS, SLURM_GPUS_LARGE
 
 
@@ -35,6 +37,16 @@ if __name__ == '__main__':
         for response_mapping in args.response_mappings.split(','):
             config_name = os.path.splitext(filename_config)[0]
             job_name = 'apply_calval_' + config_name + '_' + response_mapping
+
+            # Do not submit jobs that do not have trained models or are already complete
+            filepath_class = os.path.join(DIR_MODELS, config_name, response_mapping, FILENAME_CLASSIFICATION_COMPLETE)
+            filepath_appli = os.path.join(DIR_APPLIED_DEST, config_name, response_mapping, FILENAME_COMPLETE)
+            if not os.path.exists(filepath_class):
+                print('Classification not complete:  {} {}'.format(config_name, response_mapping))
+                continue
+            if os.path.exists(filepath_appli):
+                print('Application complete:  {} {}'.format(config_name, response_mapping))
+                continue
 
             # Set dynamic SLURM arguments
             dir_model = os.path.join(DIR_MODELS, config_name, response_mapping)
