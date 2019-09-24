@@ -13,9 +13,9 @@ from gcrmnbc.utils import logs
 _logger = logs.get_logger(__file__)
 
 
-_FILEPATH_UQ_OUTLINE = '/scratch/nfabina/gcrmn-benthic-classification/evaluation_data/{}/clean/reef_outline_unioned.shp'
+_FILEPATH_UQ_OUTLINE = '/scratch/nfabina/gcrmn-benthic-classification/evaluation_data/{}/clean/reef_outline_union.shp'
 
-_DIR_STATS_OUT = '/scratch/nfabina/gcrmn-benthic-classification/application_data/{}/{}'
+_DIR_STATS_OUT = '/scratch/nfabina/gcrmn-benthic-classification/applied_data/{}/{}'
 _FILENAME_DATA_OUT = 'asu_statistics.json'
 _FILENAME_FIG_OUT = 'asu_statistics.pdf'
 _FILENAME_ASU_OUTLINE = 'calval_reefs.shp'
