@@ -58,8 +58,7 @@ def _calculate_asu_statistics_for_reef(reef: str, config_name: str, response_map
     _logger.debug('Load UQ reef features')
     uq = fiona.open(_FILEPATH_UQ_OUTLINE.format(reef))
     uq_reef = shapely.geometry.shape(next(iter(uq))['geometry'])
-    x, y, w, z = uq_reef.bounds
-    uq_bounds = shapely.geometry.Polygon([[x, y], [x, z], [w, z], [w, y]])
+    uq_reef_bounds = uq_reef.convex_hull
 
     _logger.debug('Load ASU reef features')
     dir_model = _DIR_STATS_OUT.format(config_name, response_mapping)
@@ -76,7 +75,7 @@ def _calculate_asu_statistics_for_reef(reef: str, config_name: str, response_map
         if prediction == 0:
             continue  # reef == 1, nonreef == 0
         geometry = shapely.geometry.shape(feature['geometry'])
-        if geometry.intersects(uq_bounds):
+        if geometry.intersects(uq_reef_bounds):
             asu_geometries.append(geometry)
     _logger.debug('Total time:  {}'.format(time.time() - time_start))
 
