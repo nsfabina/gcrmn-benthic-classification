@@ -1,5 +1,8 @@
 import os
+import re
 import shutil
+import shlex
+import subprocess
 
 import gdal
 
@@ -16,14 +19,26 @@ DIR_TMP = os.path.join(DIR_BASE, 'tmp')
 
 def remove_feature_rasters_alpha_band() -> None:
     _logger.info('Remove alpha band from feature rasters')
-    filepaths_features = [os.path.join(DIR_CLEAN, fn) for fn in os.listdir(DIR_CLEAN) if fn.endswith('features.tif')]
-    filepath_tmp = os.path.join(DIR_TMP, 'tmp_alpha_removed.tif')
-    for idx_filepath, filepath_clean in enumerate(filepaths_features):
-        _logger.debug('Removing alpha band for raster {} ({} total):  {}'.format(
-            idx_filepath, len(filepaths_features), filepath_clean))
-        options_translate = gdal.TranslateOptions(bandList=[1, 2, 3], creationOptions=['COMPRESS=DEFLATE', 'TILED=YES'])
-        gdal.Translate(filepath_tmp, filepath_clean, options=options_translate)
-        shutil.copy(filepath_tmp, filepath_clean)
+    filenames_raw = [filename for filename in os.listdir(DIR_TMP) if filename.endswith('features.tif')]
+    for idx, filename_raw in enumerate(filenames_raw):
+        _logger.debug('Removing alpha band for raster {} ({} total):  {}'.format(idx, len(filenames_raw), filename_raw))
+        filepath_raw = os.path.join(DIR_TMP, filename_raw)
+        filepath_tmp = os.path.join(DIR_TMP, re.sub('features.tif', 'features_tmp.tif', filename_raw))
+        filepath_clean = os.path.join(DIR_CLEAN, filename_raw)
+        # Write in nodata values
+        command = 'gdal_calc.py -A {filepath_raw} --allBands=A -B {filepath_raw} --B_band=4 ' + \
+                  '--outfile={filepath_tmp} --NoDataValue=-9999 --type=Int16 --co=COMPRESS=DEFLATE ' + \
+                  '--co=TILED=YES --overwrite --calc="A * (B == 255) + -9999 * (B == 0)"'
+        command = command.format(filepath_raw=filepath_raw, filepath_tmp=filepath_tmp)
+        completed = subprocess.run(shlex.split(command), capture_output=True)
+        if completed.stderr:
+            _logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
+            _logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
+            raise AssertionError('Unknown error in reef raster generation, see above log lines')
+        # Remove alpha band
+        options_removed = gdal.TranslateOptions(
+            bandList=[1, 2, 3], outputType=gdal.GDT_Int16, creationOptions=['COMPRESS=DEFLATE', 'TILED=YES'])
+        gdal.Translate(filepath_tmp, filepath_clean, options=options_removed)
         os.remove(filepath_tmp)
 
 
