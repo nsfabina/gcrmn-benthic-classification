@@ -86,6 +86,7 @@ def _apply_to_raster(
     # Return early if application is completed or in progress
     if all([os.path.exists(filepath) for filepath in filepaths_out]):
         logger.debug('Skipping application:  output files already exist')
+        open(filepath_complete, 'w')
         return
     if os.path.exists(filepath_lock):
         logger.debug('Skipping application:  lock file already exists at {}'.format(filepath_lock))
