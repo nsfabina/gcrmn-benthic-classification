@@ -28,7 +28,7 @@ def calculate_model_performance_statistics(
 
     # Calculate absolute and percent areas
     total_footprint = groundtruth_reef.convex_hull
-    groundtruth_nonreef = total_footprint.difference(groundtruth_reef).buffer(0)
+    groundtruth_nonreef = total_footprint.difference(groundtruth_reef)
     stats = dict()
     stats['total_area'] = _calculate_area_in_square_kilometers(total_footprint)
     stats['groundtruth_reef_area'] = _calculate_area_in_square_kilometers(groundtruth_reef)
