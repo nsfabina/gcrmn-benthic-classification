@@ -62,19 +62,33 @@ def _calculate_asu_statistics_for_reef(reef: str, config_name: str, response_map
     _logger.debug('Load ASU reef features')
     dir_model = _DIR_STATS_OUT.format(config_name, response_mapping)
     filepath_asu_outline = os.path.join(dir_model, reef, _FILENAME_ASU_OUTLINE)
+    num_features = len(list(fiona.open(filepath_asu_outline)))
     asu_features = fiona.open(filepath_asu_outline)
 
     _logger.debug('Generate ASU reef multipolygons nearby UQ reef bounds')
     asu_geometries = list()
-    for feature in asu_features:
+    import time
+    time_intersects = 0
+    time_start = time.time()
+    for idx_feature, feature in enumerate(asu_features):
+        _logger.debug('Parse feature {} ({} total)'.format(idx_feature, num_features))
         prediction = feature['properties']['DN']
         assert prediction in (0, 1), 'Reef predictions should either be 0 or 1, but found {}'.format(prediction)
         if prediction == 0:
             continue  # reef == 1, nonreef == 0
         geometry = shapely.geometry.shape(feature['geometry'])
+        time_x = time.time()
         if geometry.intersects(uq_bounds):
             asu_geometries.append(geometry)
+        time_intersects += time.time() - time_x
+    time_total = time.time() - time_start
+    print('Total time:  {}'.format(time_total))
+    print('Intersect time:  {}'.format(time_intersects))
+
+    _logger.debug('Calculate the union of model reef features')
+    time_start = time.time()
     asu_reef = shapely.ops.unary_union(asu_geometries)
+    print('Union time:  {}'.format(time.time() - time_start))
     return shared_statistics.calculate_model_performance_statistics(asu_reef, uq_reef)
 
 
