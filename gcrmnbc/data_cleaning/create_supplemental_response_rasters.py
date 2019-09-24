@@ -1,3 +1,4 @@
+import argparse
 import os
 import re
 
@@ -14,7 +15,7 @@ SUFFIX_LAND = '_land.shp'
 SUFFIX_WATER = '_water.shp'
 
 
-def create_supplemental_response_rasters() -> None:
+def create_supplemental_response_rasters(recalculate: bool) -> None:
     _logger.info('Create supplemental response rasters')
     filepaths_boundaries = sorted([
         os.path.join(DIR_DATA, filename) for filename in os.listdir(DIR_DATA)
@@ -24,7 +25,7 @@ def create_supplemental_response_rasters() -> None:
         _logger.debug('Processing raster {} of {}'.format(1+idx, len(filepaths_boundaries)))
         filepath_features = re.sub(r'_\w*\.shp', '_features.tif', filepath_boundary)
         filepath_responses = re.sub(r'\.shp', '.tif', filepath_boundary)
-        if os.path.exists(filepath_responses):
+        if os.path.exists(filepath_responses) and not recalculate:
             _logger.debug('Skipping, raster already processed')
             continue
         # Get rasterize parameters from existing features file
@@ -53,4 +54,8 @@ def create_supplemental_response_rasters() -> None:
 
 
 if __name__ == '__main__':
-    create_supplemental_response_rasters()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--recalculate', action='store_true')
+    args = parser.parse_args()
+    create_supplemental_response_rasters(args.recalculate)
+
