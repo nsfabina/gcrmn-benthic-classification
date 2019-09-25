@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import re
@@ -233,4 +234,7 @@ def _calculate_recall(reef_statistics: dict) -> Union[float, None]:
 
 
 if __name__ == '__main__':
-    create_comparative_performance_report()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--response_mappings', type=str, required=True)
+    args = parser.parse_args()
+    create_comparative_performance_report(args.response_mapping)
