@@ -13,12 +13,12 @@ _logger = logs.get_logger(__file__)
 
 
 _FILEPATH_UNEP_STATS = 'unep_statistics.json'
-_DIR_ASU = '/scratch/nfabina/gcrmn-benthic-classification/training_data_applied'
-_FILEPATH_ASU_STATS = os.path.join(_DIR_ASU, '{}/lwr/asu_statistics.json')
-_FILEPATH_FIG_OUT = 'comparative_report.pdf'
+_DIR_ASU = '/scratch/nfabina/gcrmn-benthic-classification/applied_data'
+_FILEPATH_ASU_STATS = os.path.join(_DIR_ASU, '{}/{}/asu_statistics.json')
+_FILEPATH_FIG_OUT = 'comparative_report_{}.pdf'
 
 
-def create_comparative_performance_report() -> None:
+def create_comparative_performance_report(response_mapping: str) -> None:
     _logger.debug('Load UNEP statistics')
     with open(_FILEPATH_UNEP_STATS) as file_:
         unep_statistics = json.load(file_)
@@ -26,7 +26,7 @@ def create_comparative_performance_report() -> None:
     _logger.debug('Load ASU statistics')
     asu_statistics = dict()
     for config_name in os.listdir(_DIR_ASU):
-        filepath_model_stats = _FILEPATH_ASU_STATS.format(config_name)
+        filepath_model_stats = _FILEPATH_ASU_STATS.format(config_name, response_mapping)
         if not os.path.exists(filepath_model_stats):
             continue
         with open(filepath_model_stats) as file_:
@@ -34,7 +34,7 @@ def create_comparative_performance_report() -> None:
     asu_statistics = sorted(asu_statistics.items())
 
     _logger.debug('Create report')
-    lines = list(['Comparative Reef Performance Report', '', ''])
+    lines = list(['Comparative Reef Performance Report', '{} reef mappings'.format(response_mapping), '', ''])
 
     # Calculate and print overall performance
     lines.append('------------------------------------------------------------------------------------------------')
