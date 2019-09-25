@@ -158,7 +158,7 @@ def create_comparative_performance_report(response_mapping: str) -> None:
     fig, ax = plt.subplots(figsize=(8.5, 2.0 + height_per_line * len(lines)))
     ax.text(0, 0, '\n'.join(lines), **{'fontsize': 8, 'fontfamily': 'monospace'})
     ax.axis('off')
-    plt.savefig(_FILEPATH_FIG_OUT)
+    plt.savefig(_FILEPATH_FIG_OUT.format(response_mapping))
 
 
 def _get_precision_str(reef_statistics: dict) -> str:
