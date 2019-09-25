@@ -122,7 +122,7 @@ def _apply_to_raster(
 def _compress_probs_raster(filepath_probs: str, logger: Logger) -> None:
     command = 'gdal_calc.py -A {filepath_probs} --allBands=A --outfile={filepath_probs} --NoDataValue=255 ' + \
               '--type=Byte --co=COMPRESS=DEFLATE --co=TILED=YES --overwrite  --calc="A*100"'
-    command.format(filepath_probs=filepath_probs)
+    command = command.format(filepath_probs=filepath_probs)
     completed = subprocess.run(shlex.split(command), capture_output=True)
     if completed.stderr:
         logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
