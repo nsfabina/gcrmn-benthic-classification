@@ -36,8 +36,8 @@ if __name__ == '__main__':
 
             # Do not submit jobs that do not have application data or are already complete
             filepath_appli = os.path.join(DIR_APPLIED_DEST, config_name, response_mapping, FILENAME_APPL_COMPLETE)
-            filepath_stats = os.path.join(DIR_MODELS, config_name, response_mapping, FILENAME_STATS_OUT)
-            filepath_report = os.path.join(DIR_MODELS, config_name, response_mapping, FILENAME_FIG_OUT)
+            filepath_stats = os.path.join(DIR_APPLIED_DEST, config_name, response_mapping, FILENAME_STATS_OUT)
+            filepath_report = os.path.join(DIR_APPLIED_DEST, config_name, response_mapping, FILENAME_FIG_OUT)
             if not os.path.exists(filepath_appli):
                 print('Application not complete:  {} {}'.format(config_name, response_mapping))
                 continue
