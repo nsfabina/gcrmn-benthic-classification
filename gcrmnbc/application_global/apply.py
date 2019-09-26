@@ -109,6 +109,7 @@ def apply_model_to_quad(
             quad_paths.dir_for_upload, quad_blob, response_mapping, model_name, model_version)
 
         _logger.info('Application success for quad {}'.format(quad_blob.quad_focal))
+        raise AssertionError('Check if successful!')
         _logger.debug('Delete model results from other versions and any outdated notifications')
         data_bucket.delete_model_application_results_for_other_versions(
             quad_blob, response_mapping, model_name, model_version)

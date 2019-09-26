@@ -11,7 +11,7 @@ from gcrmnbc.utils import data_bucket, shared_configs
 
 
 _DIR_CONFIGS = '../configs'
-_FILEPATH_LOGS = '/scratch/nfabina/gcrmn-benthic-classification/logs/{}/{}/log_model_global_application.out'
+_DIR_MODELS = '../models'
 
 
 def run_application(config_name: str, response_mapping: str, model_version: str) -> None:
@@ -19,7 +19,7 @@ def run_application(config_name: str, response_mapping: str, model_version: str)
     config = shared_configs.build_dynamic_config(filepath_config, response_mapping)
 
     # Get paths and logger
-    log_out = _FILEPATH_LOGS.format(config_name, response_mapping)
+    log_out = os.path.join(_DIR_MODELS, config_name, response_mapping, 'log_global_application')
     if not os.path.exists(os.path.dirname(log_out)):
         os.makedirs(os.path.dirname(log_out))
     logger = logging.getLogger('model_global_application')
