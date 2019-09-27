@@ -106,7 +106,8 @@ def _apply_to_raster(
             experiment.model, data_container, [filepath_features], basename_probs, exclude_feature_nodata=True)
         apply_model_to_data.maximum_likelihood_classification(
             filepath_probs, data_container, basename_mle, creation_options=['TILED=YES', 'COMPRESS=DEFLATE'])
-        _compress_probs_raster(filepath_probs, logger)
+        _mask_and_compress_probs_raster(filepath_probs, filepath_features, logger)
+        _mask_and_compress_mle_raster(filepath_mle, filepath_features, logger)
         _create_reef_only_raster(filepath_mle, filepath_reef_raster, logger)
         _create_reef_only_shapefile(filepath_reef_raster, filepath_reef_shapefile, logger)
         logger.debug('Application success, removing lock file and placing complete file')
@@ -119,21 +120,36 @@ def _apply_to_raster(
         logger.debug('Lock file removed')
 
 
-def _compress_probs_raster(filepath_probs: str, logger: Logger) -> None:
-    command = 'gdal_calc.py -A {filepath_probs} --allBands=A --outfile={filepath_probs} --NoDataValue=255 ' + \
-              '--type=Byte --co=COMPRESS=DEFLATE --co=TILED=YES --overwrite  --calc="A*100"'
-    command = command.format(filepath_probs=filepath_probs)
+def _mask_and_compress_probs_raster(filepath_probs: str, filepath_features: str, logger: Logger) -> None:
+    command = 'gdal_calc.py -A {filepath_probs} --allBands=A -B {filepath_features} --B_band=1 ' + \
+              '--outfile={filepath_probs} --NoDataValue=255 ' + \
+              '--type=Byte --co=COMPRESS=DEFLATE --co=TILED=YES --overwrite  ' + \
+              '--calc="A*100 * (B != -9999) + 255 * (B == -9999)"'
+    command = command.format(filepath_probs=filepath_probs, filepath_features=filepath_features)
     completed = subprocess.run(shlex.split(command), capture_output=True)
     if completed.stderr:
         logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
         logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
-        raise AssertionError('Unknown error in prob raster compression, see above log lines')
+        raise AssertionError('Unknown error in prob raster mask and compression, see above log lines')
+
+
+def _mask_and_compress_mle_raster(filepath_mle: str, filepath_features: str, logger: Logger) -> None:
+    command = 'gdal_calc.py -A {filepath_mle} --allBands=A -B {filepath_features} --B_band=1 ' + \
+              '--outfile={filepath_mle} --NoDataValue=255 ' + \
+              '--type=Byte --co=COMPRESS=DEFLATE --co=TILED=YES --overwrite  ' + \
+              '--calc="A * (B != -9999) + 255 * (B == -9999)"'
+    command = command.format(filepath_mle=filepath_mle, filepath_features=filepath_features)
+    completed = subprocess.run(shlex.split(command), capture_output=True)
+    if completed.stderr:
+        logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
+        logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
+        raise AssertionError('Unknown error in mle raster mask and compression, see above log lines')
 
 
 def _create_reef_only_raster(filepath_mle: str, filepath_reef_raster: str, logger: Logger) -> None:
     min_reef_value = min(encodings.MAPPINGS[encodings.REEF_TOP], encodings.MAPPINGS[encodings.NOT_REEF_TOP])
-    command = 'gdal_calc.py -A {filepath_mle} --outfile={filepath_reef} --type=Byte --NoDataValue=0 ' + \
-              '--calc="1*(A>={min_value}) + 0*(A<{min_value})"'
+    command = 'gdal_calc.py -A {filepath_mle} --outfile={filepath_reef} --type=Byte --NoDataValue=255 ' + \
+              '--calc="1*(A>={min_value}) + 255*(A<{min_value})"'
     command = command.format(
         filepath_mle=filepath_mle, filepath_reef=filepath_reef_raster, min_value=min_reef_value)
     completed = subprocess.run(shlex.split(command), capture_output=True)
