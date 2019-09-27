@@ -1,14 +1,12 @@
 from argparse import ArgumentParser
 from logging import Logger
 import os
-import shlex
-import subprocess
 
 from bfgn.data_management import apply_model_to_data, data_core
 from bfgn.experiments import experiments
 from bfgn.utils import logging
 
-from gcrmnbc.utils import encodings, shared_configs
+from gcrmnbc.utils import encodings, gdal_command_line, shared_configs
 
 
 _DIR_MODELS = '../models'
@@ -126,11 +124,7 @@ def _mask_and_compress_probs_raster(filepath_probs: str, filepath_features: str,
               '--type=Byte --co=COMPRESS=DEFLATE --co=TILED=YES --overwrite  ' + \
               '--calc="A*100 * (B != -9999) + 255 * (B == -9999)"'
     command = command.format(filepath_probs=filepath_probs, filepath_features=filepath_features)
-    completed = subprocess.run(shlex.split(command), capture_output=True)
-    if completed.stderr:
-        logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
-        logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
-        raise AssertionError('Unknown error in prob raster mask and compression, see above log lines')
+    gdal_command_line.run_gdal_command(command, logger)
 
 
 def _mask_and_compress_mle_raster(filepath_mle: str, filepath_features: str, logger: Logger) -> None:
@@ -139,11 +133,7 @@ def _mask_and_compress_mle_raster(filepath_mle: str, filepath_features: str, log
               '--type=Byte --co=COMPRESS=DEFLATE --co=TILED=YES --overwrite  ' + \
               '--calc="A * (B != -9999) + 255 * (B == -9999)"'
     command = command.format(filepath_mle=filepath_mle, filepath_features=filepath_features)
-    completed = subprocess.run(shlex.split(command), capture_output=True)
-    if completed.stderr:
-        logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
-        logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
-        raise AssertionError('Unknown error in mle raster mask and compression, see above log lines')
+    gdal_command_line.run_gdal_command(command, logger)
 
 
 def _create_reef_only_raster(filepath_mle: str, filepath_reef_raster: str, logger: Logger) -> None:
@@ -152,20 +142,12 @@ def _create_reef_only_raster(filepath_mle: str, filepath_reef_raster: str, logge
               '--calc="1*(A>={min_value}) + 255*(A<{min_value})"'
     command = command.format(
         filepath_mle=filepath_mle, filepath_reef=filepath_reef_raster, min_value=min_reef_value)
-    completed = subprocess.run(shlex.split(command), capture_output=True)
-    if completed.stderr:
-        logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
-        logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
-        raise AssertionError('Unknown error in reef raster generation, see above log lines')
+    gdal_command_line.run_gdal_command(command, logger)
 
 
 def _create_reef_only_shapefile(filepath_reef_raster: str, filepath_reef_shapefile: str, logger: Logger) -> None:
     command = 'gdal_polygonize.py {} {}'.format(filepath_reef_raster, filepath_reef_shapefile)
-    completed = subprocess.run(shlex.split(command), capture_output=True)
-    if completed.stderr:
-        logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
-        logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
-        raise AssertionError('Unknown error in reef outline generation, see above log lines')
+    gdal_command_line.run_gdal_command(command, logger)
 
 
 def _assert_encoding_assumptions_hold():

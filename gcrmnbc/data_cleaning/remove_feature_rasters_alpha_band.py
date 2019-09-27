@@ -1,16 +1,12 @@
 import os
 import re
-import shutil
-import shlex
-import subprocess
 
 import gdal
 
-from gcrmnbc.utils import logs
+from gcrmnbc.utils import gdal_command_line, logs
 
 
 _logger = logs.get_logger(__file__)
-
 
 DIR_BASE = '/scratch/nfabina/gcrmn-benthic-classification/training_data'
 DIR_CLEAN = os.path.join(DIR_BASE, 'clean')
@@ -30,11 +26,7 @@ def remove_feature_rasters_alpha_band() -> None:
                   '--outfile={filepath_tmp} --NoDataValue=-9999 --type=Int16 --co=COMPRESS=DEFLATE ' + \
                   '--co=TILED=YES --overwrite --calc="A * (B == 255) + -9999 * (B == 0)"'
         command = command.format(filepath_raw=filepath_raw, filepath_tmp=filepath_tmp)
-        completed = subprocess.run(shlex.split(command), capture_output=True)
-        if completed.stderr:
-            _logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
-            _logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
-            raise AssertionError('Unknown error in feature masking, see above log lines')
+        gdal_command_line.run_gdal_command(command, _logger)
         # Remove alpha band
         options_removed = gdal.TranslateOptions(
             bandList=[1, 2, 3], outputType=gdal.GDT_Int16, creationOptions=['COMPRESS=DEFLATE', 'TILED=YES'])

@@ -1,13 +1,10 @@
 import os
 import re
-import shlex
-import subprocess
 
-from gcrmnbc.utils import encodings, logs
+from gcrmnbc.utils import encodings, gdal_command_line, logs
 
 
 _logger = logs.get_logger(__file__)
-
 
 DIR_DATA = '/scratch/nfabina/gcrmn-benthic-classification/training_data'
 DIR_DATA_TMP = os.path.join(DIR_DATA, 'tmp')
@@ -37,19 +34,11 @@ def create_sampling_boundary_shapefiles() -> None:
                   '--calc="1*(A>={min_value}) + -9999*(A<{min_value})"'
         command = command.format(
             filepath_responses=filepath_responses, filepath_reef=filepath_reef_raster, min_reef_value=min_reef_value)
-        completed = subprocess.run(shlex.split(command), capture_output=True)
-        if completed.stderr:
-            _logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
-            _logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
-            raise AssertionError('Unknown error in reef raster generation, see above log lines')
+        gdal_command_line.run_gdal_command(command, _logger)
         # Get shapefile of reef outline
         _logger.debug('Creating reef outline shapefile')
         command = 'gdal_polygonize.py {} {}'.format(filepath_reef_raster, filepath_reef_outline)
-        completed = subprocess.run(shlex.split(command), capture_output=True)
-        if completed.stderr:
-            _logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
-            _logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
-            raise AssertionError('Unknown error in reef outline generation, see above log lines')
+        gdal_command_line.run_gdal_command(command, _logger)
         # Get shapefile of sampling boundaries by buffering reef outline
         _logger.debug('Creating buffered outline for boundary file')
         command = 'ogr2ogr -f "ESRI Shapefile" {filepath_boundary} {filepath_outline} -dialect sqlite ' + \
@@ -58,11 +47,7 @@ def create_sampling_boundary_shapefiles() -> None:
             filepath_boundary=filepath_boundary, filepath_outline=filepath_reef_outline, 
             basename_outline=basename_reef_outline
         )
-        completed = subprocess.run(shlex.split(command), capture_output=True)
-        if completed.stderr:
-            _logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
-            _logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
-            raise AssertionError('Unknown error in outline buffering, see above log lines')
+        gdal_command_line.run_gdal_command(command, _logger)
         # Clean up
         _logger.debug('Remove temporary files')
         os.remove(filepath_reef_raster)

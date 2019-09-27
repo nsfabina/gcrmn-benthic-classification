@@ -1,9 +1,7 @@
 import logging
 import os
 import re
-import shlex
 import shutil
-import subprocess
 from typing import NamedTuple
 
 from bfgn.data_management import data_core
@@ -12,7 +10,7 @@ from bfgn.data_management import apply_model_to_data
 import numpy as np
 from osgeo import gdal, osr
 
-from gcrmnbc.utils import data_bucket
+from gcrmnbc.utils import data_bucket, gdal_command_line
 
 
 _logger = logging.getLogger('model_global_application.apply')
@@ -109,10 +107,10 @@ def apply_model_to_quad(
             quad_paths.dir_for_upload, quad_blob, response_mapping, model_name, model_version)
 
         _logger.info('Application success for quad {}'.format(quad_blob.quad_focal))
-        raise AssertionError('Check if successful!')
         _logger.debug('Delete model results from other versions and any outdated notifications')
-        data_bucket.delete_model_application_results_for_other_versions(
-            quad_blob, response_mapping, model_name, model_version)
+        # TODO
+        #data_bucket.delete_model_application_results_for_other_versions(
+        #    quad_blob, response_mapping, model_name, model_version)
         data_bucket.delete_model_corrupt_data_notification_if_exists(quad_blob)
 
     except Exception as error_:
@@ -157,7 +155,7 @@ def _create_feature_vrt(quad_paths: QuadPaths, buffer: int) -> None:
         or filename.endswith(data_bucket.FILENAME_SUFFIX_CONTEXT)
     ]
     options_buildvrt = gdal.BuildVRTOptions(
-        bandList=[1, 2, 3], outputBounds=(llx, lly, urx, ury), outputSRS=focal_srs, VRTNodata=-9999
+        bandList=[1, 2, 3], outputBounds=(llx, lly, urx, ury), outputSRS=focal_srs, VRTNodata=-9999,
     )
     gdal.BuildVRT(quad_paths.filepath_features, filepaths_quads, options=options_buildvrt)
 
@@ -194,28 +192,24 @@ def _crop_model_probabilities_raster(quad_paths: QuadPaths) -> None:
 
 
 def _mask_model_probabilities_raster(quad_paths: QuadPaths) -> None:
-    command = 'gdal_calc.py -A {filepath_focal} --A_band=4 -B {filepath_prob} --B_band=1 --allBands=B ' + \
-              '--outfile {outfile} --NoDataValue=-9999 --overwrite --quiet --calc="B * (A == 255) + -9999 * (A == 0)"'
-    command = command.format(filepath_focal=quad_paths.filepath_focal_quad, filepath_prob=quad_paths.filepath_prob,
-                             outfile=quad_paths.filepath_prob)
-    subprocess.run(shlex.split(command))
+    command = 'gdal_calc.py -A {filepath_prob} --allBands=A -B {filepath_focal} --B_band=4 ' + \
+              '--outfile {filepath_prob} --NoDataValue=-9999 --overwrite --calc="A * (B == 255) + -9999 * (B == 0)"'
+    command = command.format(filepath_prob=quad_paths.filepath_prob, filepath_focal=quad_paths.filepath_focal_quad)
+    gdal_command_line.run_gdal_command(command, _logger)
 
 
-def _generate_model_classifications_raster(
-        quad_paths: QuadPaths,
-        data_container: data_core.DataContainer,
-) -> None:
+def _generate_model_classifications_raster(quad_paths: QuadPaths, data_container: data_core.DataContainer) -> None:
     basename_mle = os.path.splitext(quad_paths.filepath_mle)[0]
     apply_model_to_data.maximum_likelihood_classification(
         quad_paths.filepath_prob, data_container, basename_mle, creation_options=['TILED=YES', 'COMPRESS=DEFLATE'])
 
 
 def _mask_model_classifications_raster(quad_paths: QuadPaths) -> None:
-    command = 'gdal_calc.py -A {filepath_focal} --A_band=4 -B {filepath_mle} --B_band=1 --allBands=B ' + \
-              '--outfile {outfile} --NoDataValue=-9999 --overwrite --quiet --calc="B * (A == 255) + -9999 * (A == 0)"'
-    command = command.format(filepath_focal=quad_paths.filepath_focal_quad, filepath_prob=quad_paths.filepath_mle,
-                             outfile=quad_paths.filepath_mle)
-    subprocess.run(shlex.split(command))
+    command = 'gdal_calc.py -A {filepath_mle} --allBands=A -B {filepath_focal} --B_band=4 --type=Byte ' + \
+              '--co=COMPRESS=DEFLATE --co=TILED=YES --NoDataValue=255 --outfile {filepath_mle} --overwrite' + \
+              '--calc="A * (B == 255) + 255 * (B == 0)"'
+    command = command.format(filepath_mle=quad_paths.filepath_mle, filepath_focal=quad_paths.filepath_focal_quad)
+    gdal_command_line.run_gdal_command(command, _logger)
 
 
 def _check_model_classifications_include_reef(quad_paths: QuadPaths) -> bool:
@@ -226,9 +220,9 @@ def _check_model_classifications_include_reef(quad_paths: QuadPaths) -> bool:
 
 
 def _generate_model_classification_shapefile(quad_paths: QuadPaths) -> None:
-    command = 'gdal_polygonize.py {filepath_mle} {filepath_shapefile} -q'.format(
+    command = 'gdal_polygonize.py {filepath_mle} {filepath_shapefile}'.format(
         filepath_mle=quad_paths.filepath_mle, filepath_shapefile=quad_paths.filepath_shapefile)
-    subprocess.run(shlex.split(command))
+    gdal_command_line.run_gdal_command(command, _logger)
 
 
 def _scale_model_probabilities_raster(quad_paths: QuadPaths) -> None:
@@ -239,15 +233,6 @@ def _scale_model_probabilities_raster(quad_paths: QuadPaths) -> None:
     tmp_filepath = re.sub('.tif', '_tmp.tif', quad_paths.filepath_prob)
     gdal.Translate(tmp_filepath, quad_paths.filepath_prob, options=options_translate)
     os.rename(tmp_filepath, quad_paths.filepath_prob)
-
-
-def _scale_model_classifications_raster(quad_paths: QuadPaths) -> None:
-    options_translate = gdal.TranslateOptions(
-        outputType=gdal.GDT_Byte, creationOptions=['TILED=YES', 'COMPRESS=DEFLATE'], noData=255
-    )
-    tmp_filepath = re.sub('.tif', '_tmp.tif', quad_paths.filepath_mle)
-    gdal.Translate(tmp_filepath, quad_paths.filepath_mle, options=options_translate)
-    os.rename(tmp_filepath, quad_paths.filepath_mle)
 
 
 def _get_quad_paths(quad_blob: data_bucket.QuadBlob) -> QuadPaths:

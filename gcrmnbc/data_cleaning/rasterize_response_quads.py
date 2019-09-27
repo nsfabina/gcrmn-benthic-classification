@@ -1,12 +1,10 @@
 import os
 import re
-import shlex
-import subprocess
 
 import gdal
 import osr
 
-from gcrmnbc.utils import data_bucket, encodings, logs
+from gcrmnbc.utils import data_bucket, encodings, gdal_command_line, logs
 
 
 _logger = logs.get_logger(__file__)
@@ -52,11 +50,7 @@ def rasterize_response_quads() -> None:
         command = 'gdal_calc.py -A {filepath} --outfile {filepath} --NoDataValue=-9999 --overwrite ' + \
                   '--calc="A * (A < {min_nodata}) + -9999 * (A >= {min_nodata})"'
         command = command.format(filepath=filepath_dest_lwrn, min_nodata=min_nodata)
-        completed = subprocess.run(shlex.split(command), capture_output=True)
-        if completed.stderr:
-            _logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
-            _logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
-            raise AssertionError('Unknown error in removing cloud-shade/unknown, see above log lines')
+        gdal_command_line.run_gdal_command(command, _logger)
         # Create Land-Water-Reef
         val_reef = encodings.MAPPINGS[encodings.REEF_TOP]
         val_notreef = encodings.MAPPINGS[encodings.NOT_REEF_TOP]
@@ -64,13 +58,8 @@ def rasterize_response_quads() -> None:
                   '--calc="A * (A != {val_notreef}) + {val_reef} * (A == {val_notreef})"'
         command = command.format(
             filepath_lwrn=filepath_dest_lwrn, filepath_lwr=filepath_dest_lwr, val_notreef=val_notreef,
-            val_reef=val_reef
-        )
-        completed = subprocess.run(shlex.split(command), capture_output=True)
-        if completed.stderr:
-            _logger.error('gdalinfo stdout:  {}'.format(completed.stdout.decode('utf-8')))
-            _logger.error('gdalinfo stderr:  {}'.format(completed.stderr.decode('utf-8')))
-            raise AssertionError('Unknown error in LWR creation, see above log lines')
+            val_reef=val_reef)
+        gdal_command_line.run_gdal_command(command, _logger)
 
 
 def _assert_encoding_assumptions_hold():
