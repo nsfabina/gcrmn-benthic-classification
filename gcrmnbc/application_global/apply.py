@@ -100,7 +100,6 @@ def apply_model_to_quad(
 
         _logger.info('Compress model probabilities and classifications')
         _scale_model_probabilities_raster(quad_paths)
-        _scale_model_classifications_raster(quad_paths)
 
         _logger.info('Uploading model results')
         data_bucket.upload_model_application_results_for_quad_blob(
@@ -206,7 +205,7 @@ def _generate_model_classifications_raster(quad_paths: QuadPaths, data_container
 
 def _mask_model_classifications_raster(quad_paths: QuadPaths) -> None:
     command = 'gdal_calc.py -A {filepath_mle} --allBands=A -B {filepath_focal} --B_band=4 --type=Byte ' + \
-              '--co=COMPRESS=DEFLATE --co=TILED=YES --NoDataValue=255 --outfile {filepath_mle} --overwrite' + \
+              '--co=COMPRESS=DEFLATE --co=TILED=YES --NoDataValue=255 --outfile {filepath_mle} --overwrite ' + \
               '--calc="A * (B == 255) + 255 * (B == 0)"'
     command = command.format(filepath_mle=quad_paths.filepath_mle, filepath_focal=quad_paths.filepath_focal_quad)
     gdal_command_line.run_gdal_command(command, _logger)
