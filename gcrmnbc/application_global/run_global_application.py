@@ -7,27 +7,17 @@ from bfgn.data_management import data_core
 from bfgn.experiments import experiments
 
 from gcrmnbc.application_global import apply
-from gcrmnbc.utils import data_bucket, shared_configs
+from gcrmnbc.utils import data_bucket, logs, shared_configs
 
 
 _DIR_CONFIGS = '../configs'
-_DIR_MODELS = '../models'
 
 
 def run_application(config_name: str, response_mapping: str, model_version: str) -> None:
     filepath_config = os.path.join(_DIR_CONFIGS, config_name + '.yaml')
     config = shared_configs.build_dynamic_config(filepath_config, response_mapping)
 
-    # Get paths and logger
-    log_out = os.path.join(_DIR_MODELS, config_name, response_mapping, 'log_global_application')
-    if not os.path.exists(os.path.dirname(log_out)):
-        os.makedirs(os.path.dirname(log_out))
-    logger = logging.getLogger('model_global_application')
-    logger.setLevel('DEBUG')
-    _formatter = logging.Formatter(fmt='%(asctime)s - %(processName)s - %(name)s - %(levelname)s - %(message)s')
-    _handler = logging.FileHandler(log_out)
-    _handler.setFormatter(_formatter)
-    logger.addHandler(_handler)
+    logger = logs.get_model_logger(config_name, response_mapping, 'log_run_global_application.log')
 
     # Get data and model objects
     logger.info('Create data and model objects')

@@ -11,9 +11,6 @@ from gcrmnbc.application_calval import shared_report, shared_statistics
 from gcrmnbc.utils import logs
 
 
-_logger = logs.get_logger(__file__)
-
-
 _FILEPATH_UQ_OUTLINE = '/scratch/nfabina/gcrmn-benthic-classification/evaluation_data/{}/clean/reef_outline_union.shp'
 
 _DIR_STATS_OUT = '/scratch/nfabina/gcrmn-benthic-classification/applied_data/{}/{}'
@@ -23,6 +20,7 @@ _FILENAME_ASU_OUTLINE = 'calval_reefs.shp'
 
 
 def calculate_asu_statistics(config_name: str, response_mapping: str, recalculate: bool = False) -> None:
+    _logger = logs.get_model_logger(config_name, response_mapping, 'log_calculate_asu_statistics.log')
     _logger.info('Calculate ASU statistics for {} {} with recalculate {}'.format(
         config_name, response_mapping, recalculate))
     dir_model = _DIR_STATS_OUT.format(config_name, response_mapping)

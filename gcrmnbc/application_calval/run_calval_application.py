@@ -4,12 +4,10 @@ import os
 
 from bfgn.data_management import apply_model_to_data, data_core
 from bfgn.experiments import experiments
-from bfgn.utils import logging
 
-from gcrmnbc.utils import encodings, gdal_command_line, shared_configs
+from gcrmnbc.utils import encodings, gdal_command_line, logs, shared_configs
 
 
-_DIR_MODELS = '../models'
 _DIR_CONFIGS = '../configs'
 _DIR_CALVAL_SRC = '/scratch/nfabina/gcrmn-benthic-classification/evaluation_data'
 DIR_APPLIED_DEST = '/scratch/nfabina/gcrmn-benthic-classification/applied_data'
@@ -22,11 +20,7 @@ def run_application(config_name: str, response_mapping: str) -> None:
     filepath_config = os.path.join(_DIR_CONFIGS, config_name + '.yaml')
     config = shared_configs.build_dynamic_config(filepath_config, response_mapping)
 
-    # Get paths and logger
-    log_out = os.path.join(_DIR_MODELS, config_name, response_mapping, 'run_calval_application.log')
-    if not os.path.exists(os.path.dirname(log_out)):
-        os.makedirs(os.path.dirname(log_out))
-    logger = logging.get_root_logger(log_out)
+    logger = logs.get_model_logger(config_name, response_mapping, 'log_run_calval_application.log')
 
     # Build dataset
     data_container = data_core.DataContainer(config)

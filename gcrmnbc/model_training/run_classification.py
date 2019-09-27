@@ -5,7 +5,7 @@ from bfgn.data_management import data_core, sequences
 from bfgn.reporting import reports
 from bfgn.experiments import experiments
 
-from gcrmnbc.utils import shared_configs
+from gcrmnbc.utils import logs, shared_configs
 
 
 _DIR_CONFIGS = '../configs'
@@ -16,6 +16,8 @@ FILENAME_COMPLETE = 'classify.complete'
 def run_classification(config_name: str, response_mapping: str, build_only: bool = False) -> None:
     filepath_config = os.path.join(_DIR_CONFIGS, config_name + '.yaml')
     config = shared_configs.build_dynamic_config(filepath_config, response_mapping)
+
+    logger = logs.get_model_logger(config_name, response_mapping, 'log_run_classification.log')
 
     # Create directories if necessary
     if not os.path.exists(config.data_build.dir_out):
