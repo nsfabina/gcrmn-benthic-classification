@@ -19,6 +19,10 @@ FILENAME_SUFFIX_FEATURES = '_features.tif'
 FILENAME_SUFFIX_FOCAL = '_focal.tif'
 FILENAME_SUFFIX_CONTEXT = '_context.tif'
 
+FILENAME_COMPLETE = 'application_complete'
+FILENAME_NO_APPLY = 'no_apply'
+FILENAME_CORRUPT = 'data_corrupt'
+
 
 class _GCS(object):
     _client = None
@@ -257,20 +261,17 @@ def _get_application_complete_blob(
 ) -> storage.Blob:
     application_blob_name = _get_application_path_for_model_results(
         quad_blob, response_mapping, model_name, model_version)
-    filename_complete = 'application_complete'
-    application_complete_name = os.path.join(application_blob_name, filename_complete)
+    application_complete_name = os.path.join(application_blob_name, FILENAME_COMPLETE)
     return storage.Blob(application_complete_name, GCS.bucket)
 
 
 def _get_no_apply_blob(quad_blob: QuadBlob) -> storage.Blob:
     application_path_quad = _get_application_path_for_quad(quad_blob)
-    filename_no_apply = 'no_apply'
-    no_apply_name = os.path.join(application_path_quad, filename_no_apply)
+    no_apply_name = os.path.join(application_path_quad, FILENAME_NO_APPLY)
     return storage.Blob(no_apply_name, GCS.bucket)
 
 
 def _get_corrupt_data_blob(quad_blob: QuadBlob) -> storage.Blob:
     application_path_quad = _get_application_path_for_quad(quad_blob)
-    filename_corrupt = 'data_corrupt'
-    corrupt_name = os.path.join(application_path_quad, filename_corrupt)
+    corrupt_name = os.path.join(application_path_quad, FILENAME_CORRUPT)
     return storage.Blob(corrupt_name, GCS.bucket)
