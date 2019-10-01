@@ -53,6 +53,7 @@ def run_classification(config_name: str, response_mapping: str, build_only: bool
         reporter = reports.Reporter(data_container, experiment, config)
         reporter.create_model_report()
         if build_only:
+            open(filepath_complete, 'w')
             return
 
         # Train model
