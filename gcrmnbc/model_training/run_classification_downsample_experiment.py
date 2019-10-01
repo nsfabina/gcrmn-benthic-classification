@@ -33,6 +33,8 @@ def run_classification_downsample_experiment(
     config.data_build.dir_out = '/scratch/nfabina/gcrmn-benthic-classification/built_lwr_downsample_{}'.format(
         downsample_pct)
     config.model_training.dir_out = os.path.join(_DIR_MODELS, config_name, 'downsample_{}'.format(downsample_pct))
+    config.data_build.dir_out = '/scratch/nfabina/gcrmn-benthic-classification/built_lwr_ds_{}_{}_{}'.format(
+        config.data_build.window_radius, config.data_build.loss_window_radius, downsample_pct)
     # ------------------------------------------------------------------------------------------------------------------
 
     logger = logs.get_model_logger(config_name, response_mapping, 'log_run_classification.log')
