@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
             # Set dynamic python arguments
             slurm_python_wrap = SLURM_COMMAND_CLASSIFY.format(
-                config_name, response_mapping, '--build_only' if args.build_only else '')
+                config_name, response_mapping, args.downsample_pct, '--build_only' if args.build_only else '')
 
             print('Submitting job {}'.format(job_name))
             command = ' '.join([SLURM_COMMAND, slurm_args_dynamic, slurm_python_wrap])
