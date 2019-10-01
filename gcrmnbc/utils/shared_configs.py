@@ -8,7 +8,7 @@ _DIR_MODELS = '../models'
 
 _DIR_DATA_BASE = '/scratch/nfabina/gcrmn-benthic-classification/'
 _DIR_DATA_CLEAN = os.path.join(_DIR_DATA_BASE, 'training_data/clean')
-_DIR_DATA_BUILT = os.path.join(_DIR_DATA_BASE, 'built_{}_{}')
+_DIR_DATA_BUILT = os.path.join(_DIR_DATA_BASE, 'built_{}_{}_{}')
 
 _SUFFIX_FEATURES = '_features.tif'
 
@@ -72,7 +72,8 @@ def build_dynamic_config(filepath_config: str, response_mapping: str) -> configs
     config.raw_files.feature_files = filepaths_features
     config.raw_files.response_files = filepaths_responses
     config.raw_files.boundary_files = filepaths_boundaries
-    config.data_build.dir_out = _DIR_DATA_BUILT.format(response_mapping, config.data_build.window_radius)
+    config.data_build.dir_out = _DIR_DATA_BUILT.format(
+        response_mapping, config.data_build.window_radius, config.data_build.loss_window_radius)
     config.model_training.dir_out = os.path.join(_DIR_MODELS, config_name, response_mapping)
     config.architecture.n_classes = _RESPONSE_MAPPING_CLASSES[response_mapping]
     return config
