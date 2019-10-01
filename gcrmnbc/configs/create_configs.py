@@ -58,7 +58,8 @@ def create_configs() -> None:
 
             # Save config for build only
             if not created_build_only:
-                configs.save_config_to_file(config_template, 'build_only_{}.yaml'.format(window_radius))
+                configs.save_config_to_file(
+                    config_template, 'build_only_{}_{}.yaml'.format(window_radius, loss_window_radius))
                 created_build_only = True
 
 
