@@ -11,8 +11,8 @@ _REGEX_QUAD = r'L15-\d{4}E-\d{4}N'
 
 
 def calculate_application_progress(config_name: str, response_mapping: str, model_version: str) -> None:
-    command = 'gsutil ls -r gs://coral-atlas-data-share/gcrmn-global-map/**/{}/{}/{}/'.format(
-        response_mapping, config_name, model_version)
+    command = 'gsutil ls -r gs://coral-atlas-data-share/gcrmn-global-map/**/{}/{}/{}/{}'.format(
+        response_mapping, config_name, model_version, data_bucket.FILENAME_COMPLETE)
     quads_complete = _parse_quads_from_gsutil(command)
     num_complete = len(quads_complete)
 
