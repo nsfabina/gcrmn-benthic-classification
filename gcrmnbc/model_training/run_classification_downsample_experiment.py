@@ -27,9 +27,9 @@ def run_classification_downsample_experiment(
     # ------------------------------------------------------------------------------------------------------------------
     # Modify config for downsample
     config.raw_files.feature_files = [
-        re.sub('clean', 'downsample_{}'.format(downsample_pct), fp) for fp in config.raw_files.feature_files]
+        [re.sub('clean', 'downsample_{}'.format(downsample_pct), ff[0])] for ff in config.raw_files.feature_files]
     config.raw_files.response_files = [
-        re.sub('clean', 'downsample_{}'.format(downsample_pct), fp) for fp in config.raw_files.response_files]
+        [re.sub('clean', 'downsample_{}'.format(downsample_pct), rf[0])] for rf in config.raw_files.response_files]
     config.data_build.dir_out = '/scratch/nfabina/gcrmn-benthic-classification/built_lwr_downsample_{}'.format(
         downsample_pct)
     config.model_training.dir_out = os.path.join(_DIR_MODELS, config_name, 'downsample_{}'.format(downsample_pct))
