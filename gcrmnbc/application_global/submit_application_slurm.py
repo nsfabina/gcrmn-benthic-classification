@@ -2,7 +2,7 @@ import argparse
 import os
 import subprocess
 
-from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS, SLURM_GPUS_LARGE
+from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS
 
 
 SLURM_COMMAND_APPLY = '--mail-type=FAIL --time=24:00:00 --wrap "python run_global_application.py --config_name={} ' + \
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     for idx_job in range(args.num_jobs):
         job_name = 'apply_' + args.config_name + '_' + args.response_mapping + '_' + str(idx_job)
         slurm_args_dynamic = ' '.join([
-            SLURM_GPUS if '256' not in args.config_name else SLURM_GPUS_LARGE,
+            SLURM_GPUS,
             '--job-name={}'.format(job_name),
             '--output={}/slurm.global_apply.%j.%t.OUT'.format(dir_model),
             '--error={}/slurm.global_apply.%j.%t.ERROR'.format(dir_model),

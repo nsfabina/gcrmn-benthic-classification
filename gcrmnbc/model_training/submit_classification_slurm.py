@@ -3,7 +3,7 @@ import os
 import re
 import subprocess
 
-from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS, SLURM_GPUS_LARGE
+from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS
 
 
 DIR_CONFIGS = '../configs'
@@ -63,8 +63,6 @@ if __name__ == '__main__':
             # Set dynamic SLURM arguments
             if args.build_only:
                 gpu_constraint = ''
-            elif '256' in config_name:
-                gpu_constraint = SLURM_GPUS_LARGE
             else:
                 gpu_constraint = SLURM_GPUS
             slurm_args_dynamic = ' '.join([

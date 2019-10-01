@@ -3,7 +3,7 @@ import os
 import re
 import subprocess
 
-from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS, SLURM_GPUS_LARGE
+from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS
 
 
 DIR_CONFIGS = '../configs'
@@ -52,7 +52,7 @@ if __name__ == '__main__':
             # Set dynamic SLURM arguments
             dir_model = os.path.join(DIR_MODELS, config_name, response_mapping)
             slurm_args_dynamic = ' '.join([
-                SLURM_GPUS if '256' not in config_name else SLURM_GPUS_LARGE,
+                SLURM_GPUS,
                 '--job-name={}'.format(job_name),
                 '--output={}/slurm.apply_calval.%j.%t.OUT'.format(dir_model),
                 '--error={}/slurm.apply_calval.%j.%t.ERROR'.format(dir_model),
