@@ -10,8 +10,9 @@ DIR_CONFIGS = '../configs'
 DIR_MODELS = '../models'
 FILENAME_LOCK = 'classify.lock'
 FILENAME_SUCCESS = 'classify.complete'
-SLURM_COMMAND_CLASSIFY = '--mail-type=END,FAIL --time=24:00:00 --wrap "python run_classification.py ' + \
-                         '--config_name={} --response_mapping={} {}"'
+SLURM_COMMAND_CLASSIFY = \
+    '--mail-type=END,FAIL --time=24:00:00 --wrap ' + \
+    '"python run_classification_downsample_experiment.py --config_name={} --response_mapping={} --downsample_pct {} {}"'
 
 
 if __name__ == '__main__':
@@ -19,6 +20,7 @@ if __name__ == '__main__':
     parser.add_argument('--config_names', type=str)
     parser.add_argument('--config_regex', type=str)
     parser.add_argument('--response_mappings', type=str, required=True)
+    parser.add_argument('--downsample_pct', type=int, required=True)
     parser.add_argument('--build_only', action='store_true')
     args = parser.parse_args()
 
@@ -46,7 +48,7 @@ if __name__ == '__main__':
             job_name = 'classify_' + config_name + '_' + response_mapping
 
             # Create model directory
-            dir_model = os.path.join(DIR_MODELS, config_name, response_mapping)
+            dir_model = os.path.join(DIR_MODELS, config_name, 'downsample_{}'.format(args.downsample_pct))
             if not os.path.exists(dir_model):
                 os.makedirs(dir_model)
 
