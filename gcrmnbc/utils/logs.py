@@ -28,7 +28,10 @@ def get_model_logger(
         response_mapping: str,
         config: configs.Config
 ) -> logging.Logger:
-    log_out = os.path.join(paths.get_dir_model_experiment(label_experiment, response_mapping, config), logger_name)
+    log_out = os.path.join(
+        paths.get_dir_model_experiment_config(label_experiment, response_mapping, config),
+        logger_name
+    )
     if not log_out.endswith('.log'):
         log_out += '.log'
     if not os.path.exists(os.path.dirname(log_out)):

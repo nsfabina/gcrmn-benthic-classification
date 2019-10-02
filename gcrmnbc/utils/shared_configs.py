@@ -64,8 +64,8 @@ def build_dynamic_config(config_name: str, response_mapping: str, label_experime
     config.raw_files.feature_files = filepaths_features
     config.raw_files.response_files = filepaths_responses
     config.raw_files.boundary_files = filepaths_boundaries
-    config.data_build.dir_out = paths.get_dir_built_data(label_experiment, response_mapping, config)
-    config.model_training.dir_out = paths.get_dir_model_experiment(label_experiment, response_mapping, config)
+    config.data_build.dir_out = paths.get_dir_built_data_experiment(label_experiment, response_mapping, config)
+    config.model_training.dir_out = paths.get_dir_model_experiment_config(label_experiment, response_mapping, config)
     config.architecture.n_classes = _RESPONSE_MAPPING_CLASSES[response_mapping]
 
     # Modify configs for different experiments
@@ -84,11 +84,11 @@ def _modify_config_for_downsampling(label_experiment: str, response_mapping: str
 
     # Modify feature and response filepaths, but leave boundaries the same
     config.raw_files.feature_files = [
-        [re.sub('clean', 'downsample_{}'.format(downsample_pct), ff[0])] for ff in config.raw_files.feature_files]
+        [re.sub('originals', 'downsample_{}'.format(downsample_pct), ff[0])] for ff in config.raw_files.feature_files]
     config.raw_files.response_files = [
-        [re.sub('clean', 'downsample_{}'.format(downsample_pct), rf[0])] for rf in config.raw_files.response_files]
+        [re.sub('originals', 'downsample_{}'.format(downsample_pct), rf[0])] for rf in config.raw_files.response_files]
 
     # Modify built data filepath
-    config.data_build.dir_out = paths.get_dir_built_data(label_experiment, response_mapping, config)
-    config.model_training.dir_out = paths.get_dir_model_experiment(label_experiment, response_mapping, config)
+    config.data_build.dir_out = paths.get_dir_built_data_experiment(label_experiment, response_mapping, config)
+    config.model_training.dir_out = paths.get_dir_model_experiment_config(label_experiment, response_mapping, config)
     return config
