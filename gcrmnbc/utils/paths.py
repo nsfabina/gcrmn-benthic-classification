@@ -29,7 +29,7 @@ def get_dir_built_data_experiment(label_experiment: str, response_mapping: str, 
     return os.path.join(
         DIR_DATA_BUILT,
         label_experiment,
-        '_'.join([response_mapping, config.data_build.window_radius, config.data_build.loss_window_radius])
+        '_'.join([response_mapping, str(config.data_build.window_radius), str(config.data_build.loss_window_radius)])
     )
 
 
@@ -41,8 +41,9 @@ def get_dir_model_experiment_config(label_experiment: str, response_mapping: str
     str_blocks = str(config.architecture.block_structure[0]) + str(len(config.architecture.block_structure))
     return os.path.join(
         get_dir_model_experiment(label_experiment),
+        response_mapping,
         '_'.join([
-            response_mapping, config.model_training.architecture_name, str(config.data_build.window_radius),
+            config.model_training.architecture_name, str(config.data_build.window_radius),
             str(config.data_build.loss_window_radius), str_blocks, str(config.architecture.filters)
         ])
     )
