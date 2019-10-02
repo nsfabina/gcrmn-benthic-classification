@@ -20,6 +20,7 @@ DIR_DATA_EVAL = os.path.join(DIR_DATA, 'evaluation_data')
 DIR_DATA_APPLY_CALVAL = os.path.join(DIR_DATA, 'applied_data')
 DIR_DATA_APPLY_GLOBAL = os.path.join(DIR_DATA, 'tmp_global_application')
 
+FILENAME_BUILD_COMPLETE = 'build.complete'
 FILENAME_CLASSIFY_LOCK = 'classify.lock'
 FILENAME_CLASSIFY_COMPLETE = 'classify.complete'
 FILENAME_APPLY_CALVAL_COMPLETE = 'calval_application.complete'
@@ -46,6 +47,13 @@ def get_dir_model_experiment_config(label_experiment: str, response_mapping: str
             config.model_training.architecture_name, str(config.data_build.window_radius),
             str(config.data_build.loss_window_radius), str_blocks, str(config.architecture.filters)
         ])
+    )
+
+
+def get_filepath_build_complete(label_experiment: str, response_mapping: str, config: configs.Config) -> str:
+    return os.path.join(
+        get_dir_model_experiment_config(label_experiment, response_mapping, config),
+        FILENAME_BUILD_COMPLETE
     )
 
 

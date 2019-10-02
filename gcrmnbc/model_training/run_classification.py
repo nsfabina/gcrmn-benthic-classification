@@ -52,9 +52,12 @@ def run_classification(
 
         # Create preliminary model report before training
         reporter = reports.Reporter(data_container, experiment, config)
-        reporter.create_model_report()
+        # TODO:  fix subplots index error
+        # reporter.create_model_report()
         if build_only:
-            open(filepath_complete, 'w')
+            filepath_built = paths.get_filepath_build_complete(
+                label_experiment=label_experiment, response_mapping=response_mapping, config=config)
+            open(filepath_built, 'w')
             return
 
         # Train model

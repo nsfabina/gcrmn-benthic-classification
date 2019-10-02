@@ -42,7 +42,8 @@ if __name__ == '__main__':
             if not os.path.exists(dir_model):
                 os.makedirs(dir_model)
 
-            # Do not submit if classification is locked or complete
+            # Do not submit if classification is locked or complete, or if data is built and build_only is True
+            filepath_built = paths.get_filepath_build_complete(args.label_experiment, response_mapping, config)
             filepath_complete = paths.get_filepath_classify_complete(args.label_experiment, response_mapping, config)
             filepath_lock = paths.get_filepath_classify_lock(args.label_experiment, response_mapping, config)
             command = 'squeue -u nfabina -o %j'
@@ -58,6 +59,9 @@ if __name__ == '__main__':
                     os.remove(filepath_lock)
             if os.path.exists(filepath_complete):
                 print('Classification complete:  {} {}'.format(config_name, response_mapping))
+                continue
+            if os.path.exists(filepath_built) and args.build_only:
+                print('Data build complete:  {} {}'.format(config_name, response_mapping))
                 continue
 
             # Set dynamic SLURM arguments
