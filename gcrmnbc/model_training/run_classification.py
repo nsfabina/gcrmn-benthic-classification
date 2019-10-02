@@ -5,19 +5,17 @@ from bfgn.data_management import data_core, sequences
 from bfgn.reporting import reports
 from bfgn.experiments import experiments
 
-from gcrmnbc.utils import logs, shared_configs
+from gcrmnbc.utils import logs, paths, shared_configs
 
 
-_DIR_CONFIGS = '../configs'
-FILENAME_LOCK = 'classify.lock'
-FILENAME_COMPLETE = 'classify.complete'
-
-
-def run_classification(config_name: str, response_mapping: str, build_only: bool = False) -> None:
-    filepath_config = os.path.join(_DIR_CONFIGS, config_name + '.yaml')
-    config = shared_configs.build_dynamic_config(filepath_config, response_mapping)
-
+def run_classification(
+        config_name: str,
+        label_experiment: str,
+        response_mapping: str,
+        build_only: bool = False
+) -> None:
     logger = logs.get_model_logger(config_name, response_mapping, 'log_run_classification.log')
+    config = shared_configs.build_dynamic_config(config_name, label_experiment, response_mapping)
 
     # Create directories if necessary
     if not os.path.exists(config.data_build.dir_out):
@@ -26,12 +24,12 @@ def run_classification(config_name: str, response_mapping: str, build_only: bool
         os.makedirs(config.model_training.dir_out)
 
     # Exit early if classification already finished -- assume build is finished too
-    filepath_complete = os.path.join(config.model_training.dir_out, FILENAME_COMPLETE)
+    filepath_complete = paths.get_filepath_classify_complete(label_experiment, response_mapping, config)
     if os.path.exists(filepath_complete):
         return
 
     # Exit early if classification in progress
-    filepath_lock = os.path.join(config.model_training.dir_out, FILENAME_LOCK)
+    filepath_lock = paths.get_filepath_classify_lock(label_experiment, response_mapping, config)
     try:
         file_lock = open(filepath_lock, 'x')
     except OSError:
@@ -72,6 +70,7 @@ def run_classification(config_name: str, response_mapping: str, build_only: bool
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--config_name', required=True)
+    parser.add_argument('--label_experiment', required=True)
     parser.add_argument('--response_mapping', required=True)
     parser.add_argument('--build_only', action='store_true')
     args = vars(parser.parse_args())

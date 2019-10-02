@@ -3,12 +3,8 @@ import re
 
 from bfgn.configuration import configs
 
+from gcrmnbc.utils import paths
 
-_DIR_MODELS = '../models'
-
-_DIR_DATA_BASE = '/scratch/nfabina/gcrmn-benthic-classification/'
-_DIR_DATA_CLEAN = os.path.join(_DIR_DATA_BASE, 'training_data/clean')
-_DIR_DATA_BUILT = os.path.join(_DIR_DATA_BASE, 'built_{}_{}_{}')
 
 _SUFFIX_FEATURES = '_features.tif'
 
@@ -22,7 +18,7 @@ _RESPONSE_MAPPINGS = ('lwr', 'lwrn', )
 _RESPONSE_MAPPING_CLASSES = {'lwr': 3, 'lwrn': 4, }
 
 
-def build_dynamic_config(filepath_config: str, response_mapping: str) -> configs.Config:
+def build_dynamic_config(config_name: str, response_mapping: str, label_experiment: str) -> configs.Config:
     assert response_mapping in _RESPONSE_MAPPINGS, \
         'response_mapping is {} but must be one of:  {}'.format(response_mapping, _RESPONSE_MAPPINGS)
 
@@ -34,11 +30,11 @@ def build_dynamic_config(filepath_config: str, response_mapping: str) -> configs
     # reef training data, but may also be associated with land and/or water training data. Thus, feature files may be
     # used 1-3 times in the training data.
 
-    for filename in os.listdir(_DIR_DATA_CLEAN):
+    for filename in os.listdir(paths.DIR_DATA_TRAIN_CLEAN):
         if not filename.endswith(_SUFFIX_FEATURES):
             continue
 
-        filepath_features = os.path.join(_DIR_DATA_CLEAN, filename)
+        filepath_features = os.path.join(paths.DIR_DATA_TRAIN_CLEAN, filename)
 
         for suffix_responses, suffix_boundaries, is_required in _SUFFIXES_RESPONSES_BOUNDARIES:
             if 'responses' in suffix_responses:
@@ -59,21 +55,40 @@ def build_dynamic_config(filepath_config: str, response_mapping: str) -> configs
                         filepath_responses, filepath_boundaries)
             if not os.path.exists(filepath_responses):
                 continue
-
             filepaths_features.append([filepath_features])
             filepaths_responses.append([filepath_responses])
             filepaths_boundaries.append(filepath_boundaries)
 
-    # Parse config
-    config = configs.create_config_from_file(filepath_config)
-    config_name = os.path.splitext(os.path.basename(filepath_config))[0]
-
-    # Update config with dynamic values
+    # Parse config and update dynamic values
+    config = configs.create_config_from_file(paths.get_filepath_config(config_name))
     config.raw_files.feature_files = filepaths_features
     config.raw_files.response_files = filepaths_responses
     config.raw_files.boundary_files = filepaths_boundaries
-    config.data_build.dir_out = _DIR_DATA_BUILT.format(
-        response_mapping, config.data_build.window_radius, config.data_build.loss_window_radius)
-    config.model_training.dir_out = os.path.join(_DIR_MODELS, config_name, response_mapping)
+    config.data_build.dir_out = paths.get_dir_built_data(label_experiment, response_mapping, config)
+    config.model_training.dir_out = paths.get_dir_model_experiment(label_experiment, response_mapping, config)
     config.architecture.n_classes = _RESPONSE_MAPPING_CLASSES[response_mapping]
+
+    # Modify configs for different experiments
+    if label_experiment.startswith('downsample'):
+        config = _modify_config_for_downsampling(label_experiment, response_mapping, config)
+
+    return config
+
+
+def _modify_config_for_downsampling(label_experiment: str, response_mapping: str, config: configs.Config) \
+        -> configs.Config:
+    if label_experiment == 'downsample_25':
+        downsample_pct = '25'
+    elif label_experiment == 'downsample_50':
+        downsample_pct = '50'
+
+    # Modify feature and response filepaths, but leave boundaries the same
+    config.raw_files.feature_files = [
+        [re.sub('clean', 'downsample_{}'.format(downsample_pct), ff[0])] for ff in config.raw_files.feature_files]
+    config.raw_files.response_files = [
+        [re.sub('clean', 'downsample_{}'.format(downsample_pct), rf[0])] for rf in config.raw_files.response_files]
+
+    # Modify built data filepath
+    config.data_build.dir_out = paths.get_dir_built_data(label_experiment, response_mapping, config)
+    config.model_training.dir_out = paths.get_dir_model_experiment(label_experiment, response_mapping, config)
     return config

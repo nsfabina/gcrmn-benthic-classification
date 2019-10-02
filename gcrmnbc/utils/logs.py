@@ -2,8 +2,9 @@ import logging
 import os
 import sys
 
+from bfgn.configuration import configs
 
-_DIR_MODELS = '../models'
+from gcrmnbc.utils import paths
 
 
 def get_logger(logger_name: str) -> logging.Logger:
@@ -21,8 +22,15 @@ def get_logger(logger_name: str) -> logging.Logger:
     return logger
 
 
-def get_model_logger(config_name: str, response_mapping: str, logger_name: str) -> logging.Logger:
-    log_out = os.path.join(_DIR_MODELS, config_name, response_mapping, logger_name)
+def get_model_logger(
+        logger_name: str,
+        label_experiment: str,
+        response_mapping: str,
+        config: configs.Config
+) -> logging.Logger:
+    log_out = os.path.join(paths.get_dir_model_experiment(label_experiment, response_mapping, config), logger_name)
+    if not log_out.endswith('.log'):
+        log_out += '.log'
     if not os.path.exists(os.path.dirname(log_out)):
         os.makedirs(os.path.dirname(log_out))
     logger = logging.getLogger()
