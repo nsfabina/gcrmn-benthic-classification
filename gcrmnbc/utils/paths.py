@@ -58,3 +58,20 @@ def get_filepath_classify_lock(label_experiment: str, response_mapping: str, con
 
 def get_filepath_config(config_name: str) -> str:
     return os.path.join(DIR_CONFIGS, config_name)
+
+
+def get_filepath_config_from_config(config: configs.Config) -> str:
+    str_blocks = str(config.architecture.block_structure[0]) + str(len(config.architecture.block_structure))
+    basename = '_'.join([
+        config.model_training.architecture_name,
+        config.data_build.window_radius,
+        config.data_build.loss_window_radius,
+        str_blocks,
+        config.architecture.filters
+    ])
+    return os.path.join(DIR_CONFIGS, basename + '.yaml')
+
+
+def get_filepath_build_only_config_from_config(config: configs.Config) -> str:
+    return os.path.join(DIR_CONFIGS, 'build_only_{}_{}.yaml'.format(
+        config.data_build.window_radius, config.data_build.loss_window_radius))

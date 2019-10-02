@@ -26,7 +26,7 @@ data_build:
   sparse_read: True
 data_samples:
   apply_random_transformations: true
-  batch_size: 32
+  batch_size: 16
   feature_scaler_names: ['RobustScaler']
   response_scaler_names: ['NullScaler']
   feature_nodata_encoding: -10.0
