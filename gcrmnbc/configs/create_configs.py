@@ -39,10 +39,10 @@ def create_configs() -> None:
     # Create the specialized configs after seeing that we might benefit from more context
     window_radius = 256
     loss_window_radius = 64
-    filters = 16
+    block_structure = [4, 4, 4]
     for architecture_name in ('unet', 'dense_unet'):
-        created_build_only = False
-        for block_structure in ([4, 4, 4, 4, 4], [4, 4, 4, 4], [4, 4, 4]):
+        for filters in (4, 8):
+            created_build_only = False
             # Create new config
             config_template.data_build.window_radius = window_radius
             config_template.data_build.loss_window_radius = loss_window_radius
