@@ -44,12 +44,11 @@ if __name__ == '__main__':
             # Do not submit if classification is locked or complete
             filepath_complete = paths.get_filepath_classify_complete(args.label_experiment, response_mapping, config)
             filepath_lock = paths.get_filepath_classify_lock(args.label_experiment, response_mapping, config)
-            command = 'squeue -u nfabina -o %j | grep ${}'.format(job_name)
+            command = 'squeue -u nfabina -o %j'
             result = subprocess.run(shlex.split(command), capture_output=True)
+            is_in_job_queue = job_name in result.stdout.decode('utf-8')
             print(result.stdout)
-            print(result.stderr)
-            raise AssertionError('Check the STDOUT to see the response, remove locks if necessary and remove this')
-            is_in_job_queue = True  # TODO
+            print(is_in_job_queue)
             if os.path.exists(filepath_lock):
                 if is_in_job_queue:
                     print('Classification in progress:  {} {}'.format(config_name, response_mapping))

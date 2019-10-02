@@ -42,8 +42,8 @@ def get_dir_model_experiment_config(label_experiment: str, response_mapping: str
     return os.path.join(
         get_dir_model_experiment(label_experiment),
         '_'.join([
-            response_mapping, config.model_training.architecture_name, config.data_build.window_radius,
-            config.data_build.loss_window_radius, str_blocks, config.architecture.filters
+            response_mapping, config.model_training.architecture_name, str(config.data_build.window_radius),
+            str(config.data_build.loss_window_radius), str_blocks, str(config.architecture.filters)
         ])
     )
 
@@ -63,17 +63,17 @@ def get_filepath_classify_lock(label_experiment: str, response_mapping: str, con
 
 
 def get_filepath_config(config_name: str) -> str:
-    return os.path.join(DIR_CONFIGS, config_name)
+    return os.path.join(DIR_CONFIGS, config_name + '.yaml')
 
 
 def get_filepath_config_from_config(config: configs.Config) -> str:
     str_blocks = str(config.architecture.block_structure[0]) + str(len(config.architecture.block_structure))
     basename = '_'.join([
         config.model_training.architecture_name,
-        config.data_build.window_radius,
-        config.data_build.loss_window_radius,
+        str(config.data_build.window_radius),
+        str(config.data_build.loss_window_radius),
         str_blocks,
-        config.architecture.filters
+        str(config.architecture.filters)
     ])
     return os.path.join(DIR_CONFIGS, basename + '.yaml')
 
