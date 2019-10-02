@@ -27,8 +27,11 @@ if __name__ == '__main__':
     if args.build_only and args.config_names:
         print('WARNING:  build_only takes precedence over config_names, which is ignored')
 
+    config_names = None
+    if args.config_names:
+        config_names = args.config_names.split(',')
     filename_configs = shared_submit_slurm.get_relevant_config_filenames(
-        args.config_names.split(','), args.build_only, args.config_regex)
+        config_names, args.build_only, args.config_regex)
 
     # Loop through configs and submit jobs
     for filename_config in filename_configs:
@@ -49,8 +52,6 @@ if __name__ == '__main__':
             command = 'squeue -u nfabina -o %j'
             result = subprocess.run(shlex.split(command), capture_output=True)
             is_in_job_queue = job_name in result.stdout.decode('utf-8')
-            print(result.stdout)
-            print(is_in_job_queue)
             if os.path.exists(filepath_lock):
                 if is_in_job_queue:
                     print('Classification in progress:  {} {}'.format(config_name, response_mapping))
