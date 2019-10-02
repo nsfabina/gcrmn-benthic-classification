@@ -10,7 +10,8 @@ from gcrmnbc.utils import paths, shared_submit_slurm
 
 SLURM_COMMAND_CLASSIFY = \
     '--mail-type=END,FAIL --time=8:00:00 --wrap ' + \
-    '"python run_classification.py --config_name={} --label_experiment={} --response_mapping={} {}"'
+    '"python run_classification.py --config_name={config_name} --label_experiment={label_experiment} ' + \
+    '--response_mapping={response_mapping} {build_only}"'
 
 
 if __name__ == '__main__':
@@ -70,7 +71,9 @@ if __name__ == '__main__':
 
             # Set dynamic python arguments
             slurm_python_wrap = SLURM_COMMAND_CLASSIFY.format(
-                config_name, args.label_experiment, response_mapping, '--build_only' if args.build_only else '')
+                config_name=config_name, label_experiment=args.label_experiment, response_mapping=response_mapping,
+                build_only='--build_only' if args.build_only else ''
+            )
 
             print('Submitting job {}'.format(job_name))
             command = ' '.join([shared_submit_slurm.SLURM_COMMAND, slurm_args_dynamic, slurm_python_wrap])

@@ -14,7 +14,8 @@ def run_classification(
         response_mapping: str,
         build_only: bool = False
 ) -> None:
-    config = shared_configs.build_dynamic_config(config_name, label_experiment, response_mapping)
+    config = shared_configs.build_dynamic_config(
+        config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
     logger = logs.get_model_logger(config_name, response_mapping, 'log_run_classification.log', config)
 
     # Create directories if necessary
@@ -24,12 +25,14 @@ def run_classification(
         os.makedirs(config.model_training.dir_out)
 
     # Exit early if classification already finished -- assume build is finished too
-    filepath_complete = paths.get_filepath_classify_complete(label_experiment, response_mapping, config)
+    filepath_complete = paths.get_filepath_classify_complete(
+        label_experiment=label_experiment, response_mapping=response_mapping, config=config)
     if os.path.exists(filepath_complete):
         return
 
     # Exit early if classification in progress
-    filepath_lock = paths.get_filepath_classify_lock(label_experiment, response_mapping, config)
+    filepath_lock = paths.get_filepath_classify_lock(
+        label_experiment=label_experiment, response_mapping=response_mapping, config=config)
     try:
         file_lock = open(filepath_lock, 'x')
     except OSError:
