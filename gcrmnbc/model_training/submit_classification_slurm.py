@@ -1,23 +1,23 @@
 import argparse
 import os
-import re
+import shlex
 import subprocess
 
-from gcrmnbc.utils.shared_submit_slurm import SLURM_COMMAND, SLURM_GPUS
+from bfgn.configuration import configs
+
+from gcrmnbc.utils import paths, shared_submit_slurm
 
 
-DIR_CONFIGS = '../configs'
-DIR_MODELS = '../models'
-FILENAME_LOCK = 'classify.lock'
-FILENAME_SUCCESS = 'classify.complete'
-SLURM_COMMAND_CLASSIFY = '--mail-type=END,FAIL --time=24:00:00 --wrap "python run_classification.py ' + \
-                         '--config_name={} --response_mapping={} {}"'
+SLURM_COMMAND_CLASSIFY = \
+    '--mail-type=END,FAIL --time=8:00:00 --wrap ' + \
+    '"python run_classification.py --config_name={} --label_experiment={} --response_mapping={} {}"'
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_names', type=str)
     parser.add_argument('--config_regex', type=str)
+    parser.add_argument('--label_experiment', type=str, required=True)
     parser.add_argument('--response_mappings', type=str, required=True)
     parser.add_argument('--build_only', action='store_true')
     args = parser.parse_args()
@@ -26,47 +26,43 @@ if __name__ == '__main__':
     if args.build_only and args.config_names:
         print('WARNING:  build_only takes precedence over config_names, which is ignored')
 
-    # Get relevant configs, only get one config per window radius if building
-    if args.build_only:
-        filename_configs = [filename for filename in os.listdir(DIR_CONFIGS) if filename.startswith('build_only')]
-    elif args.config_names:
-        filename_configs = [os.path.basename(filepath) for filepath in args.config_names.split(',')]
-    else:
-        filename_configs = [
-            filename for filename in os.listdir(DIR_CONFIGS) if filename.endswith('yaml')
-            and filename != 'config_template.yaml' and not filename.startswith('build_only')
-        ]
-        if args.config_regex:
-            filename_configs = [filename for filename in filename_configs if re.search(args.config_regex, filename)]
+    filename_configs = shared_submit_slurm.get_relevant_config_filenames(
+        args.config_names.split(','), args.build_only, args.config_regex)
 
     # Loop through configs and submit jobs
     for filename_config in filename_configs:
         for response_mapping in args.response_mappings.split(','):
             config_name = os.path.splitext(filename_config)[0]
-            job_name = 'classify_' + config_name + '_' + response_mapping
+            config = configs.create_config_from_file(paths.get_filepath_config(config_name))
+            job_name = shared_submit_slurm.get_classify_job_name(config_name, args.label_experiment, response_mapping)
 
             # Create model directory
-            dir_model = os.path.join(DIR_MODELS, config_name, response_mapping)
+            dir_model = paths.get_dir_model_experiment_config(args.label_experiment, response_mapping, config)
             if not os.path.exists(dir_model):
                 os.makedirs(dir_model)
 
             # Do not submit if classification is locked or complete
-            filepath_complete = os.path.join(dir_model, FILENAME_SUCCESS)
-            filepath_lock = os.path.join(dir_model, FILENAME_LOCK)
+            filepath_complete = paths.get_filepath_classify_complete(args.label_experiment, response_mapping, config)
+            filepath_lock = paths.get_filepath_classify_lock(args.label_experiment, response_mapping, config)
+            command = 'squeue -u nfabina -o %j | grep ${}'.format(job_name)
+            result = subprocess.run(shlex.split(command), capture_output=True)
+            print(result.stdout)
+            print(result.stderr)
+            raise AssertionError('Check the STDOUT to see the response, remove locks if necessary and remove this')
+            is_in_job_queue = True  # TODO
             if os.path.exists(filepath_lock):
-                print('Classification in progress:  {} {}'.format(config_name, response_mapping))
-                continue
+                if is_in_job_queue:
+                    print('Classification in progress:  {} {}'.format(config_name, response_mapping))
+                    continue
+                else:
+                    os.remove(filepath_lock)
             if os.path.exists(filepath_complete):
                 print('Classification complete:  {} {}'.format(config_name, response_mapping))
                 continue
 
             # Set dynamic SLURM arguments
-            if args.build_only:
-                gpu_constraint = ''
-            else:
-                gpu_constraint = SLURM_GPUS
             slurm_args_dynamic = ' '.join([
-                gpu_constraint,
+                '' if args.build_only else shared_submit_slurm.SLURM_GPUS,
                 '--job-name={}'.format(job_name),
                 '--output={}/slurm.classify.%j.%t.OUT'.format(dir_model),
                 '--error={}/slurm.classify.%j.%t.ERROR'.format(dir_model),
@@ -74,9 +70,9 @@ if __name__ == '__main__':
 
             # Set dynamic python arguments
             slurm_python_wrap = SLURM_COMMAND_CLASSIFY.format(
-                config_name, response_mapping, '--build_only' if args.build_only else '')
+                config_name, args.label_experiment, response_mapping, '--build_only' if args.build_only else '')
 
             print('Submitting job {}'.format(job_name))
-            command = ' '.join([SLURM_COMMAND, slurm_args_dynamic, slurm_python_wrap])
+            command = ' '.join([shared_submit_slurm.SLURM_COMMAND, slurm_args_dynamic, slurm_python_wrap])
             # print(command)
             subprocess.call(command, shell=True)
