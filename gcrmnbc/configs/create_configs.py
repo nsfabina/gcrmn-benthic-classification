@@ -51,8 +51,8 @@ def create_configs() -> None:
             config_template.architecture.filters = filters
 
             # Save config to file
-            basename = '{}_{}_{}{}_{}'.format(
-                architecture_name, window_radius, block_structure[0], len(block_structure), filters)
+            basename = '{}_{}_{}_{}{}_{}'.format(
+                architecture_name, window_radius, loss_window_radius, block_structure[0], len(block_structure), filters)
             filepath = basename + '.yaml'
             configs.save_config_to_file(config_template, filepath)
 
