@@ -34,6 +34,8 @@ def copy_evaluation_reef_quads() -> None:
                 if not os.path.exists(filepath_src):
                     continue
                 filepath_dest = os.path.join(paths.DIR_DATA_EVAL, dir_reef, dir_variant, filename_quad)
+                if not os.path.exists(os.path.dirname(filepath_dest)):
+                    os.makedirs(os.path.dirname(filepath_dest))
                 shutil.copy(filepath_src, filepath_dest)
                 vrt_srcs.append(filepath_dest)
             filepath_vrt = os.path.join(paths.DIR_DATA_EVAL, dir_reef, dir_variant, PATH_REEF_VRT)
