@@ -65,7 +65,7 @@ def run_classification(
 
         # Train model
         experiment.fit_model_with_data_container(data_container, resume_training=True)
-        reporter.create_model_report()
+        # reporter.create_model_report()
 
         # Create complete file to avoid rerunning in the future, close and remove lock file
         open(filepath_complete, 'w')
