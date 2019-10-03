@@ -20,8 +20,6 @@ def create_configs(print_size_estimate: bool = False) -> None:
     all_growths = (True, True, False, False, False)
     all_batch_norms = (True, False)
     all_block_structures = (
-        [2, 2],
-        [2, 2, 2],
         [4, 4],
         [4, 4, 4],
         [6, 6],
