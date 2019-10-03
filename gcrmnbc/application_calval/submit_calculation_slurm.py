@@ -32,11 +32,11 @@ if __name__ == '__main__':
                 config = shared_configs.build_dynamic_config(
                     config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
                 job_name = shared_submit_slurm.get_calval_calculate_job_name(
-                    config_name=config_name, label_experiment=args.label_experiment, response_mapping=response_mapping)
+                    config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
 
                 # Do not submit jobs that do not have application data or are already complete
                 dir_results = paths.get_dir_calval_data_experiment_config(
-                    label_experiment=args.label_experiment, response_mapping=response_mapping, config=config)
+                    label_experiment=label_experiment, response_mapping=response_mapping, config=config)
                 filepath_apply_complete = os.path.join(dir_results, paths.FILENAME_APPLY_CALVAL_COMPLETE)
                 filepath_stats = os.path.join(dir_results, paths.FILENAME_CALVAL_STATS)
                 filepath_report = os.path.join(dir_results, paths.FILENAME_CALVAL_FIGS)

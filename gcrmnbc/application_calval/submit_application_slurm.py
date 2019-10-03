@@ -34,7 +34,8 @@ if __name__ == '__main__':
                 shared_submit_slurm.validate_response_mapping(response_mapping)
 
                 config_name = os.path.splitext(filename_config)[0]
-                config = shared_configs.build_dynamic_config(config_name)
+                config = shared_configs.build_dynamic_config(
+                    config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
                 job_name = shared_submit_slurm.get_calval_apply_job_name(
                     config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
 
