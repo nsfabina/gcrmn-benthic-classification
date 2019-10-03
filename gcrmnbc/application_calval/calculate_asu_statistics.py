@@ -91,7 +91,8 @@ def _calculate_asu_statistics_for_reef(reef: str, dir_model: str, logger: loggin
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', required=True)
+    parser.add_argument('--label_experiment', required=True)
     parser.add_argument('--response_mapping', required=True)
     parser.add_argument('--recalculate', action='store_true')
-    args = parser.parse_args()
-    calculate_asu_statistics(args.config_name, args.response_mapping, args.recalculate)
+    args = vars(parser.parse_args())
+    calculate_asu_statistics(**args)

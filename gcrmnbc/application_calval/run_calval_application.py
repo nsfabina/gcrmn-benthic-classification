@@ -167,5 +167,5 @@ if __name__ == '__main__':
     parser.add_argument('--config_name', required=True)
     parser.add_argument('--label_experiment', required=True)
     parser.add_argument('--response_mapping', required=True)
-    args = parser.parse_args()
-    run_application(args.config_name, args.response_mapping)
+    args = vars(parser.parse_args())
+    run_application(**args)
