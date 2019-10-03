@@ -10,13 +10,11 @@ from bfgn.data_management import apply_model_to_data
 import numpy as np
 from osgeo import gdal, osr
 
-from gcrmnbc.utils import data_bucket, gdal_command_line
+from gcrmnbc.utils import data_bucket, gdal_command_line, paths
 
 
 _logger = logging.getLogger('model_global_application.apply')
 _logger.setLevel('DEBUG')
-
-_DIR_SCRATCH_TMP = '/scratch/nfabina/gcrmn-benthic-classification/tmp_global_application'
 
 
 class QuadPaths(NamedTuple):
@@ -38,9 +36,9 @@ def apply_model_to_quad(
         model_name: str,
         model_version: str
 ) -> None:
-    if not os.path.exists(_DIR_SCRATCH_TMP):
+    if not os.path.exists(paths.DIR_DATA_APPLY_GLOBAL):
         try:
-            os.makedirs(_DIR_SCRATCH_TMP)
+            os.makedirs(paths.DIR_DATA_APPLY_GLOBAL)
         except FileExistsError:
             pass
 
@@ -236,10 +234,10 @@ def _scale_model_probabilities_raster(quad_paths: QuadPaths) -> None:
 
 def _get_quad_paths(quad_blob: data_bucket.QuadBlob) -> QuadPaths:
     # Directories
-    dir_quad = os.path.join(_DIR_SCRATCH_TMP, quad_blob.quad_focal)
+    dir_quad = os.path.join(paths.DIR_DATA_APPLY_GLOBAL, quad_blob.quad_focal)
     dir_for_upload = os.path.join(dir_quad, 'for_upload')
     # Filepaths - for input files
-    filepath_lock = os.path.join(_DIR_SCRATCH_TMP, '{}.lock'.format(quad_blob.quad_focal))
+    filepath_lock = os.path.join(paths.DIR_DATA_APPLY_GLOBAL, '{}.lock'.format(quad_blob.quad_focal))
     filepath_focal_quad = os.path.join(dir_quad, quad_blob.quad_focal + data_bucket.FILENAME_SUFFIX_FOCAL)
     filepath_features = os.path.join(dir_quad, 'features.vrt')
     # Filepaths - for output files which are uploaded

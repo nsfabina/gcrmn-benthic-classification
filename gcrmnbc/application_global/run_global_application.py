@@ -1,6 +1,5 @@
 from argparse import ArgumentParser
 import logging
-import os
 
 from bfgn.configuration import configs
 from bfgn.data_management import data_core
@@ -10,14 +9,14 @@ from gcrmnbc.application_global import apply
 from gcrmnbc.utils import data_bucket, logs, shared_configs
 
 
-_DIR_CONFIGS = '../configs'
+def run_application(config_name: str, label_experiment: str, response_mapping: str, model_version: str) -> None:
+    config = shared_configs.build_dynamic_config(
+        config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
 
-
-def run_application(config_name: str, response_mapping: str, model_version: str) -> None:
-    filepath_config = os.path.join(_DIR_CONFIGS, config_name + '.yaml')
-    config = shared_configs.build_dynamic_config(filepath_config, response_mapping)
-
-    logger = logs.get_model_logger(config_name, response_mapping, 'log_run_global_application.log')
+    logger = logs.get_model_logger(
+        logger_name='log_run_global_application', label_experiment=label_experiment, response_mapping=response_mapping,
+        config=config
+    )
 
     # Get data and model objects
     logger.info('Create data and model objects')
@@ -50,8 +49,9 @@ def _load_experiment(config: configs.Config, data_container: data_core.DataConta
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('--config_name', type=str, required=True)
-    parser.add_argument('--response_mapping', type=str, required=True)
-    parser.add_argument('--model_version', type=str, required=True)
-    args = parser.parse_args()
-    run_application(args.config_name, args.response_mapping, args.model_version)
+    parser.add_argument('--config_name', required=True)
+    parser.add_argument('--label_experiment', required=True)
+    parser.add_argument('--response_mapping', required=True)
+    parser.add_argument('--model_version', required=True)
+    args = vars(parser.parse_args())
+    run_application(**args)
