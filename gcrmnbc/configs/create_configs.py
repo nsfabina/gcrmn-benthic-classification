@@ -12,21 +12,35 @@ _FILEPATH_TEMPLATE = 'config_template.yaml'
 def create_configs(print_size_estimate: bool = False) -> None:
     config_template = configs.create_config_from_file(_FILEPATH_TEMPLATE)
 
-    # Please see previous version of this file for other configs that have been tested
-    # The current configs are those which make the most sense with downsampled data, after testing that and finding
-    # it successful
+    # Please see previous versions of this file for other configs that have been tested
     window_radius = 128
-    filters = 16
-    for loss_window_radius in (48, 64):
+    loss_window_radius = 64
+    architecture_name = 'dense_unet'
+    all_filters = (4, 8, 4, 8, 16)
+    all_growths = (True, True, False, False, False)
+    all_batch_norms = (True, False)
+    all_block_structures = (
+        [2, 2],
+        [2, 2, 2],
+        [4, 4],
+        [4, 4, 4],
+        [6, 6],
+        [6, 6, 6],
+        [8, 8],
+        [8, 8, 8],
+    )
+    for filters, use_growth in zip(all_filters, all_growths):
         created_build_only = False
-        for architecture_name in ('unet', 'dense_unet'):
-            for block_structure in ([4, 4, 4, 4], [4, 4, 4], [4, 4]):
+        for use_bn in all_batch_norms:
+            for block_structure in all_block_structures:
                 # Create new config
                 config_template.data_build.window_radius = window_radius
                 config_template.data_build.loss_window_radius = loss_window_radius
                 config_template.model_training.architecture_name = architecture_name
                 config_template.architecture.block_structure = block_structure
                 config_template.architecture.filters = filters
+                config_template.architecture.use_batch_norm = use_bn
+                config_template.architecture.use_growth = use_growth
 
                 # Test that models aren't too large -- hacky!
                 if print_size_estimate:
