@@ -19,6 +19,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Get configs
+    config_names = None
+    if args.config_names:
+        config_names = args.config_names.split(',')
     filename_configs = shared_submit_slurm.get_all_config_filenames()
 
     # Loop through configs and submit jobs

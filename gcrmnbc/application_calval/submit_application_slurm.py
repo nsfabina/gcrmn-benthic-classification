@@ -19,6 +19,10 @@ if __name__ == '__main__':
     parser.add_argument('--num_jobs', type=int, required=True)
     args = parser.parse_args()
 
+    # Get config filenames
+    config_names = None
+    if args.config_names:
+        config_names = args.config_names.split(',')
     filename_configs = shared_submit_slurm.get_relevant_config_filenames(
         config_names=args.config_names.split(','), build_only=False, config_regex=args.config_regex)
 
