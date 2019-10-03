@@ -15,7 +15,7 @@ _logger = logs.get_logger(__file__)
 _FILEPATH_UNEP = os.path.join(
     paths.DIR_DATA, 'unep/14_001_WCMC008_CoralReefs2018_v4/01_Data/WCMC008_CoralReef2018_Py_v4.shp')
 
-_FILEPATH_UQ = os.path.join(paths.DIR_DATA_TRAIN, '{}/clean/reef_outline.shp')
+_FILEPATH_UQ = os.path.join(paths.DIR_DATA_TRAIN, '{}/originals/reef_outline.shp')
 _FILEPATH_DATA_OUT = 'unep_statistics.json'
 _FILEPATH_FIG_OUT = 'unep_statistics.pdf'
 

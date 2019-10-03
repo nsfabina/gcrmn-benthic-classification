@@ -4,7 +4,7 @@
 set -e
 
 PATH_GDRIVE="/data/gcrmn"
-PATH_SCRATCH="/scratch/nfabina/gcrmn-benthic-classification/training_data/clean"
+PATH_SCRATCH="/scratch/nfabina/gcrmn-benthic-classification/training_data/originals"
 
 
 if [[ ! -d "${PATH_SCRATCH}" ]]; then
