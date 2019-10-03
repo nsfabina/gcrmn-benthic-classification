@@ -18,7 +18,7 @@ _RESPONSE_MAPPINGS = ('lwr', 'lwrn', )
 _RESPONSE_MAPPING_CLASSES = {'lwr': 3, 'lwrn': 4, }
 
 
-def build_dynamic_config(config_name: str, response_mapping: str, label_experiment: str) -> configs.Config:
+def build_dynamic_config(config_name: str, label_experiment: str, response_mapping: str) -> configs.Config:
     assert response_mapping in _RESPONSE_MAPPINGS, \
         'response_mapping is {} but must be one of:  {}'.format(response_mapping, _RESPONSE_MAPPINGS)
 

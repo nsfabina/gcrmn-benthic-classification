@@ -5,22 +5,17 @@ import os
 from bfgn.data_management import apply_model_to_data, data_core
 from bfgn.experiments import experiments
 
-from gcrmnbc.utils import encodings, gdal_command_line, logs, shared_configs
+from gcrmnbc.utils import encodings, gdal_command_line, logs, paths, shared_configs
 
 
-_DIR_CONFIGS = '../configs'
-_DIR_CALVAL_SRC = '/scratch/nfabina/gcrmn-benthic-classification/evaluation_data'
-DIR_APPLIED_DEST = '/scratch/nfabina/gcrmn-benthic-classification/applied_data'
-
-FILENAME_COMPLETE = 'calval_application.complete'
-
-
-def run_application(config_name: str, response_mapping: str) -> None:
+def run_application(config_name: str, label_experiment: str, response_mapping: str) -> None:
     _assert_encoding_assumptions_hold()
-    filepath_config = os.path.join(_DIR_CONFIGS, config_name + '.yaml')
-    config = shared_configs.build_dynamic_config(filepath_config, response_mapping)
-
-    logger = logs.get_model_logger(config_name, response_mapping, 'log_run_calval_application.log')
+    config = shared_configs.build_dynamic_config(
+        config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
+    logger = logs.get_model_logger(
+        'log_run_calval_application', label_experiment=label_experiment, response_mapping=response_mapping,
+        config=config
+    )
 
     # Build dataset
     data_container = data_core.DataContainer(config)
@@ -33,21 +28,23 @@ def run_application(config_name: str, response_mapping: str) -> None:
     experiment.build_or_load_model(data_container)
 
     # Apply model
-    reefs = sorted([reef for reef in os.listdir(_DIR_CALVAL_SRC)])
-    dir_model_out = os.path.join(DIR_APPLIED_DEST, config_name, response_mapping)
+    dir_model_out = paths.get_dir_calval_data_experiment_config(
+        label_experiment=label_experiment, response_mapping=response_mapping, config=config)
+    reefs = sorted([reef for reef in os.listdir(paths.DIR_DATA_EVAL)])
     for idx_filepath, reef in enumerate(reefs):
         logger.debug('Applying model to reef {}'.format(reef))
-        dir_reef_in = os.path.join(_DIR_CALVAL_SRC, reef)
+        dir_reef_in = os.path.join(paths.DIR_DATA_EVAL, reef)
         dir_reef_out = os.path.join(dir_model_out, reef)
         _apply_to_raster(experiment, data_container, dir_reef_in, dir_reef_out, logger)
 
     # Create application.complete if all files are done
     are_reefs_complete = list()
     for reef in reefs:
-        filepath_reef_complete = os.path.join(dir_model_out, reef, FILENAME_COMPLETE)
+        filepath_reef_complete = os.path.join(dir_model_out, reef, paths.FILENAME_APPLY_CALVAL_COMPLETE)
         are_reefs_complete.append(os.path.exists(filepath_reef_complete))
     if all(are_reefs_complete):
-        filepath_model_complete = os.path.join(dir_model_out, FILENAME_COMPLETE)
+        filepath_model_complete = paths.get_filepath_calval_apply_complete(
+            label_experiment=label_experiment, response_mapping=response_mapping, config=config)
         open(filepath_model_complete, 'w')
 
 
@@ -71,7 +68,7 @@ def _apply_to_raster(
     filepath_reef_shapefile = os.path.join(dir_reef_out, 'calval_reefs.shp')
     filepaths_out = (filepath_probs, filepath_mle, filepath_reef_raster, filepath_reef_shapefile)
     filepath_lock = os.path.join(dir_reef_out, 'calval_apply.lock')
-    filepath_complete = os.path.join(dir_reef_out, FILENAME_COMPLETE)
+    filepath_complete = os.path.join(dir_reef_out, paths.FILENAME_APPLY_CALVAL_COMPLETE)
     filepath_features = os.path.join(dir_reef_in, 'features.vrt')
 
     # Return early if application is completed or in progress
@@ -168,6 +165,7 @@ def _assert_encoding_assumptions_hold():
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--config_name', required=True)
+    parser.add_argument('--label_experiment', required=True)
     parser.add_argument('--response_mapping', required=True)
     args = parser.parse_args()
     run_application(args.config_name, args.response_mapping)

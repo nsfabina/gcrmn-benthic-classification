@@ -7,16 +7,15 @@ import shapely.geometry
 import shapely.ops
 
 from gcrmnbc.application_calval import shared_report, shared_statistics
-from gcrmnbc.utils import logs
+from gcrmnbc.utils import logs, paths
 
 
 _logger = logs.get_logger(__file__)
 
-_DIR_BASE = '/scratch/nfabina/gcrmn-benthic-classification/'
 _FILEPATH_UNEP = os.path.join(
-    _DIR_BASE, 'unep/14_001_WCMC008_CoralReefs2018_v4/01_Data/WCMC008_CoralReef2018_Py_v4.shp')
-_DIR_REEFS = os.path.join(_DIR_BASE, 'training_data')
-_FILEPATH_UQ = os.path.join(_DIR_REEFS, '{}/clean/reef_outline.shp')
+    paths.DIR_DATA, 'unep/14_001_WCMC008_CoralReefs2018_v4/01_Data/WCMC008_CoralReef2018_Py_v4.shp')
+
+_FILEPATH_UQ = os.path.join(paths.DIR_DATA_TRAIN, '{}/clean/reef_outline.shp')
 _FILEPATH_DATA_OUT = 'unep_statistics.json'
 _FILEPATH_FIG_OUT = 'unep_statistics.pdf'
 
@@ -30,7 +29,7 @@ def calculate_unep_statistics(recalculate: bool = False) -> None:
     else:
         _logger.debug('Calculating statistics from scratch')
         statistics = dict()
-    reefs = os.listdir(_DIR_REEFS)
+    reefs = os.listdir(paths.DIR_DATA_TRAIN)
 
     for reef in reefs:
         if reef in statistics and not recalculate:

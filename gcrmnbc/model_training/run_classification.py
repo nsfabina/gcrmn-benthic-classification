@@ -17,7 +17,9 @@ def run_classification(
     config = shared_configs.build_dynamic_config(
         config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
     logger = logs.get_model_logger(
-        logger_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping, config=config)
+        logger_name='log_run_classification', label_experiment=label_experiment, response_mapping=response_mapping,
+        config=config
+    )
 
     # Create directories if necessary
     if not os.path.exists(config.data_build.dir_out):

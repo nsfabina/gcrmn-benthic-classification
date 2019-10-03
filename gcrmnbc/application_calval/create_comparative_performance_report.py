@@ -7,31 +7,31 @@ from typing import Union
 import matplotlib.pyplot as plt
 import numpy as np
 
-from gcrmnbc.utils import logs
+from gcrmnbc.utils import logs, paths
 
 
 _logger = logs.get_logger(__file__)
 
 
 _FILEPATH_UNEP_STATS = 'unep_statistics.json'
-_DIR_ASU = '/scratch/nfabina/gcrmn-benthic-classification/applied_data'
-_FILEPATH_ASU_STATS = os.path.join(_DIR_ASU, '{}/{}/asu_statistics.json')
-_FILEPATH_FIG_OUT = 'comparative_report_{}.pdf'
+
+_FILENAME_FIG_OUT = 'comparative_report_{}_{}.pdf'
 
 
-def create_comparative_performance_report(response_mapping: str) -> None:
+def create_comparative_performance_report(label_experiment: str, response_mapping: str) -> None:
     _logger.debug('Load UNEP statistics')
     with open(_FILEPATH_UNEP_STATS) as file_:
         unep_statistics = json.load(file_)
 
     _logger.debug('Load ASU statistics')
     asu_statistics = dict()
-    for config_name in os.listdir(_DIR_ASU):
-        filepath_model_stats = _FILEPATH_ASU_STATS.format(config_name, response_mapping)
+    dir_experiment = paths.get_dir_calval_data_experiment(label_experiment, response_mapping)
+    for dir_config in os.listdir(dir_experiment):
+        filepath_model_stats = os.path.join(dir_experiment, dir_config, paths.FILENAME_CALVAL_STATS)
         if not os.path.exists(filepath_model_stats):
             continue
         with open(filepath_model_stats) as file_:
-            asu_statistics[config_name] = json.load(file_)
+            asu_statistics[dir_config] = json.load(file_)
     asu_statistics = sorted(asu_statistics.items())
 
     _logger.debug('Create report')
@@ -158,7 +158,7 @@ def create_comparative_performance_report(response_mapping: str) -> None:
     fig, ax = plt.subplots(figsize=(8.5, 2.0 + height_per_line * len(lines)))
     ax.text(0, 0, '\n'.join(lines), **{'fontsize': 8, 'fontfamily': 'monospace'})
     ax.axis('off')
-    plt.savefig(_FILEPATH_FIG_OUT.format(response_mapping))
+    plt.savefig(os.path.join(dir_experiment, _FILENAME_FIG_OUT.format(label_experiment, response_mapping)))
 
 
 def _get_precision_str(reef_statistics: dict) -> str:
@@ -235,6 +235,7 @@ def _calculate_recall(reef_statistics: dict) -> Union[float, None]:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--response_mapping', type=str, required=True)
-    args = parser.parse_args()
-    create_comparative_performance_report(args.response_mapping)
+    parser.add_argument('--label_experiment', required=True)
+    parser.add_argument('--response_mapping', required=True)
+    args = vars(parser.parse_args())
+    create_comparative_performance_report(**args)

@@ -25,6 +25,9 @@ FILENAME_CLASSIFY_LOCK = 'classify.lock'
 FILENAME_CLASSIFY_COMPLETE = 'classify.complete'
 FILENAME_APPLY_CALVAL_COMPLETE = 'calval_application.complete'
 
+FILENAME_CALVAL_STATS = 'asu_statistics.json'
+FILENAME_CALVAL_FIGS = 'asu_statistics.pdf'
+
 
 def get_dir_built_data_experiment(label_experiment: str, response_mapping: str, config: configs.Config) -> str:
     return os.path.join(
@@ -34,19 +37,26 @@ def get_dir_built_data_experiment(label_experiment: str, response_mapping: str, 
     )
 
 
+def get_dir_calval_data_experiment(label_experiment: str, response_mapping: str) -> str:
+    return os.path.join(DIR_DATA_APPLY_CALVAL, label_experiment, response_mapping)
+
+
+def get_dir_calval_data_experiment_config(label_experiment: str, response_mapping: str, config: configs.Config) -> str:
+    return os.path.join(
+        get_dir_calval_data_experiment(label_experiment, response_mapping),
+        _get_experiment_config_string(config)
+    )
+
+
 def get_dir_model_experiment(label_experiment: str) -> str:
     return os.path.join(DIR_MODELS, label_experiment)
 
 
 def get_dir_model_experiment_config(label_experiment: str, response_mapping: str, config: configs.Config) -> str:
-    str_blocks = str(config.architecture.block_structure[0]) + str(len(config.architecture.block_structure))
     return os.path.join(
         get_dir_model_experiment(label_experiment),
         response_mapping,
-        '_'.join([
-            config.model_training.architecture_name, str(config.data_build.window_radius),
-            str(config.data_build.loss_window_radius), str_blocks, str(config.architecture.filters)
-        ])
+        _get_experiment_config_string(config)
     )
 
 
@@ -54,6 +64,13 @@ def get_filepath_build_complete(label_experiment: str, response_mapping: str, co
     return os.path.join(
         get_dir_model_experiment_config(label_experiment, response_mapping, config),
         FILENAME_BUILD_COMPLETE
+    )
+
+
+def get_filepath_calval_apply_complete(label_experiment: str, response_mapping: str, config: configs.Config) -> str:
+    return os.path.join(
+        get_dir_calval_data_experiment_config(label_experiment, response_mapping, config),
+        FILENAME_APPLY_CALVAL_COMPLETE
     )
 
 
@@ -76,17 +93,20 @@ def get_filepath_config(config_name: str) -> str:
 
 
 def get_filepath_config_from_config(config: configs.Config) -> str:
+    return os.path.join(DIR_CONFIGS, _get_experiment_config_string(config) + '.yaml')
+
+
+def get_filepath_build_only_config_from_config(config: configs.Config) -> str:
+    return os.path.join(DIR_CONFIGS, 'build_only_{}_{}.yaml'.format(
+        config.data_build.window_radius, config.data_build.loss_window_radius))
+
+
+def _get_experiment_config_string(config: configs.Config) -> str:
     str_blocks = str(config.architecture.block_structure[0]) + str(len(config.architecture.block_structure))
-    basename = '_'.join([
+    return '_'.join([
         config.model_training.architecture_name,
         str(config.data_build.window_radius),
         str(config.data_build.loss_window_radius),
         str_blocks,
         str(config.architecture.filters)
     ])
-    return os.path.join(DIR_CONFIGS, basename + '.yaml')
-
-
-def get_filepath_build_only_config_from_config(config: configs.Config) -> str:
-    return os.path.join(DIR_CONFIGS, 'build_only_{}_{}.yaml'.format(
-        config.data_build.window_radius, config.data_build.loss_window_radius))
