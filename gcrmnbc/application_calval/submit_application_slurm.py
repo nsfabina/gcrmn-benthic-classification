@@ -26,6 +26,9 @@ if __name__ == '__main__':
     for filename_config in filename_configs:
         for label_experiment in args.labels_experiments.split(','):
             for response_mapping in args.response_mappings.split(','):
+                shared_submit_slurm.validate_label_experiment(label_experiment)
+                shared_submit_slurm.validate_response_mapping(response_mapping)
+
                 config_name = os.path.splitext(filename_config)[0]
                 config = shared_configs.build_dynamic_config(config_name)
                 job_name = shared_submit_slurm.get_calval_apply_job_name(
