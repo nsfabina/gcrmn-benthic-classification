@@ -33,7 +33,7 @@ def run_application(config_name: str, label_experiment: str, response_mapping: s
     reefs = sorted([reef for reef in os.listdir(paths.DIR_DATA_EVAL)])
     for idx_filepath, reef in enumerate(reefs):
         logger.debug('Applying model to reef {}'.format(reef))
-        dir_reef_in = os.path.join(paths.DIR_DATA_EVAL, reef)
+        dir_reef_in = os.path.join(paths.DIR_DATA_EVAL, reef, label_experiment)
         dir_reef_out = os.path.join(dir_model_out, reef)
         _apply_to_raster(experiment, data_container, dir_reef_in, dir_reef_out, logger)
 
