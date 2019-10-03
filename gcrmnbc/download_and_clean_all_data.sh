@@ -30,6 +30,9 @@ python ./data_cleaning/remove_feature_rasters_alpha_band.py
 echo "Compress rasters for efficient reads"
 python ./data_cleaning/compress_feature_response_rasters.py
 
+echo "Create downsampled rasters for tests"
+python ./data_cleaning/downsample_feature_rasters.py
+
 echo "Rasterize response shapefiles according to feature extents"
 python ./data_cleaning/rasterize_response_quads.py
 
