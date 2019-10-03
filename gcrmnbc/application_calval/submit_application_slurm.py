@@ -24,7 +24,7 @@ if __name__ == '__main__':
     if args.config_names:
         config_names = args.config_names.split(',')
     filename_configs = shared_submit_slurm.get_relevant_config_filenames(
-        config_names=args.config_names.split(','), build_only=False, config_regex=args.config_regex)
+        config_names=config_names, build_only=False, config_regex=args.config_regex)
 
     # Loop through configs and submit jobs
     for filename_config in filename_configs:
