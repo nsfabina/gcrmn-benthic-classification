@@ -68,6 +68,7 @@ def _raise() -> None:
         "1-2 hours, so don't worry!..."
         "Also, the directories are off and you need to get the raw data again"
     )
+    raise AssertionError('This script has not been tested since being updated, be careful')
 
 
 def create_response_quads() -> None:

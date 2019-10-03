@@ -15,6 +15,7 @@ SUFFIX_WATER = '_water.shp'
 
 
 def create_supplemental_response_rasters(recalculate: bool) -> None:
+    raise AssertionError('This script has not been tested since being updated, be careful')
     _logger.info('Create supplemental response rasters')
     filepaths_boundaries = sorted([
         os.path.join(paths.DIR_DATA_TRAIN_CLEAN, filename) for filename in os.listdir(paths.DIR_DATA_TRAIN_CLEAN)

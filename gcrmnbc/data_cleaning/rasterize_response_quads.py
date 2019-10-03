@@ -11,6 +11,7 @@ _logger = logs.get_logger(__file__)
 
 
 def rasterize_response_quads() -> None:
+    raise AssertionError('This script has not been tested since being updated, be careful')
     _assert_encoding_assumptions_hold()
     filenames = [filename for filename in os.listdir(paths.DIR_DATA_TRAIN_RAW) if filename.endswith('.shp')]
     for idx_filename, filename in enumerate(filenames):

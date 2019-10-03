@@ -8,6 +8,7 @@ _logger = logs.get_logger(__file__)
 
 
 def create_sampling_boundary_shapefiles() -> None:
+    raise AssertionError('This script has not been tested since being updated, be careful')
     _logger.info('Creating sampling boundary shapefiles')
     _assert_encoding_assumptions_hold()
     # Get list of completed responses rasters

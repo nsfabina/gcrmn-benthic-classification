@@ -3,6 +3,8 @@
 
 set -e
 
+echo "This script has not been tested since being updated, run carefully"
+raise
 
 DIR_BASE="/scratch/nfabina/gcrmn-benthic-classification/training_data"
 

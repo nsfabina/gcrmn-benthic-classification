@@ -13,6 +13,7 @@ FILENAMES_EXPECTED = ['lwr_3857.geojson', 'lwr_4326.geojson', 'lwr.geojson']
 
 
 def parse_responses() -> None:
+    raise AssertionError('This script has not been tested since being updated, be careful')
     filepaths_expected = [os.path.join(DIR_EXPECTED, filename) for filename in FILENAMES_EXPECTED]
     filepaths_exist = [filepath for filepath in filepaths_expected if os.path.exists(filepath)]
     assert filepaths_exist, 'Data is not available in expected locations'

@@ -10,6 +10,7 @@ _logger = logs.get_logger(__file__)
 
 
 def remove_feature_rasters_alpha_band() -> None:
+    raise AssertionError('This script has not been tested since being updated, be careful')
     _logger.info('Remove alpha band from feature rasters')
     filenames_raw = [filename for filename in os.listdir(paths.DIR_DATA_TRAIN_RAW) if filename.endswith('features.tif')]
     for idx, filename_raw in enumerate(filenames_raw):

@@ -10,6 +10,7 @@ _logger = logs.get_logger(__file__)
 
 
 def compress_feature_response_rasters() -> None:
+    raise AssertionError('This script has not been tested since being updated, be careful')
     _logger.info('Compress rasters')
     filepaths_rasters = [
         os.path.join(paths.DIR_DATA_TRAIN_CLEAN, fn) for fn in os.listdir(paths.DIR_DATA_TRAIN_CLEAN)

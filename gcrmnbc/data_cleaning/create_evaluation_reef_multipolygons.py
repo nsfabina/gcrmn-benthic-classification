@@ -22,6 +22,7 @@ SHAPEFILE_SCHEMA = {'geometry': 'Polygon', 'properties': OrderedDict([('class_co
 
 
 def create_evaluation_reef_multipolygons() -> None:
+    raise AssertionError('This script has not been tested since being updated, be careful')
     _logger.info('Create UQ reef multipolygons for model evaluation')
     dirs_reefs = sorted(os.listdir(paths.DIR_DATA_EVAL))
     crs = fiona.crs.from_epsg(3857)
