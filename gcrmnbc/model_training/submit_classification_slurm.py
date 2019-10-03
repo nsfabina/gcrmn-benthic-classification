@@ -56,17 +56,19 @@ if __name__ == '__main__':
                 command = 'squeue -u nfabina -o %j'
                 result = subprocess.run(shlex.split(command), capture_output=True)
                 is_in_job_queue = job_name in result.stdout.decode('utf-8')
-                if os.path.exists(filepath_lock):
-                    if is_in_job_queue:
-                        print('Classification in progress:  {} {}'.format(config_name, response_mapping))
-                        continue
-                    else:
-                        os.remove(filepath_lock)
-                if os.path.exists(filepath_complete):
-                    print('Classification complete:  {} {}'.format(config_name, response_mapping))
+                if not is_in_job_queue and os.path.exists(filepath_lock):
+                    os.remove(filepath_lock)
+                if is_in_job_queue:
+                    print('Classification in progress:  {} {} {}'.format(
+                        config_name, label_experiment, response_mapping))
                     continue
-                if os.path.exists(filepath_built) and args.build_only:
-                    print('Data build complete:  {} {}'.format(config_name, response_mapping))
+                elif os.path.exists(filepath_complete):
+                    print('Classification complete:  {} {} {}'.format(
+                        config_name, label_experiment, response_mapping))
+                    continue
+                elif os.path.exists(filepath_built) and args.build_only:
+                    print('Data build complete:  {} {} {}'.format(
+                        config_name, label_experiment, response_mapping))
                     continue
 
                 # Set dynamic SLURM arguments

@@ -1,5 +1,6 @@
 import argparse
 import os
+import shlex
 import subprocess
 
 from gcrmnbc.utils import paths, shared_configs, shared_submit_slurm
@@ -34,17 +35,24 @@ if __name__ == '__main__':
                 job_name = shared_submit_slurm.get_calval_calculate_job_name(
                     config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
 
-                # Do not submit jobs that do not have application data or are already complete
+                # Do not submit jobs that do not have application data, are already complete, or are already submitted
                 dir_results = paths.get_dir_calval_data_experiment_config(
                     label_experiment=label_experiment, response_mapping=response_mapping, config=config)
                 filepath_apply_complete = os.path.join(dir_results, paths.FILENAME_APPLY_CALVAL_COMPLETE)
                 filepath_stats = os.path.join(dir_results, paths.FILENAME_CALVAL_STATS)
                 filepath_report = os.path.join(dir_results, paths.FILENAME_CALVAL_FIGS)
+                command = 'squeue -u nfabina -o %j'
+                result = subprocess.run(shlex.split(command), capture_output=True)
+                is_in_job_queue = job_name in result.stdout.decode('utf-8')
+
                 if not os.path.exists(filepath_apply_complete):
                     print('Application not complete:  {} {} {}'.format(config_name, label_experiment, response_mapping))
                     continue
-                if os.path.exists(filepath_stats) and os.path.exists(filepath_report):
+                elif os.path.exists(filepath_stats) and os.path.exists(filepath_report):
                     print('Stats complete:  {} {} {}'.format(config_name, label_experiment, response_mapping))
+                    continue
+                elif is_in_job_queue:
+                    print('Stats already submitted:  {} {}'.format(config_name, response_mapping))
                     continue
 
                 # Set dynamic SLURM arguments
