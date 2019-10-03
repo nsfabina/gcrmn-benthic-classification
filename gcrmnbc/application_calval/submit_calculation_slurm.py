@@ -7,7 +7,7 @@ from gcrmnbc.utils import paths, shared_configs, shared_submit_slurm
 
 
 SLURM_COMMAND = \
-    'sbatch --mail-user=nfabina@asu.edu --mail-type=END,FAIL --time=4:00:00 --nodes=1 --cpus-per-task=1 ' + \
+    'sbatch --mail-user=nfabina@asu.edu --mail-type=FAIL --time=4:00:00 --nodes=1 --cpus-per-task=1 ' + \
     '--mem-per-cpu=20000 --ntasks=1 --wrap "python calculate_asu_statistics.py --config_name={config_name} ' + \
     '--label_experiment={label_experiment} --response_mapping={response_mapping}" {recalculate}'
 

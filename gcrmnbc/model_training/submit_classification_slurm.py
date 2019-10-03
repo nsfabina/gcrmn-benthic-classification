@@ -9,7 +9,7 @@ from gcrmnbc.utils import paths, shared_submit_slurm
 
 
 SLURM_COMMAND_CLASSIFY = \
-    '--mail-type=END,FAIL --time=8:00:00 --wrap ' + \
+    '--mail-type=FAIL --time=8:00:00 --wrap ' + \
     '"python run_classification.py --config_name={config_name} --label_experiment={label_experiment} ' + \
     '--response_mapping={response_mapping} {build_only}"'
 

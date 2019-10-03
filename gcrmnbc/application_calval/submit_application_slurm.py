@@ -6,7 +6,7 @@ from gcrmnbc.utils import paths, shared_configs, shared_submit_slurm
 
 
 SLURM_COMMAND_APPLY = \
-    '--mail-type=END,FAIL --time=2:00:00 --wrap "python run_calval_application.py ' + \
+    '--mail-type=FAIL --time=2:00:00 --wrap "python run_calval_application.py ' + \
     '--config_name={config_name} --label_experiment={label_experiment} --response_mapping={response_mapping}"'
 
 
