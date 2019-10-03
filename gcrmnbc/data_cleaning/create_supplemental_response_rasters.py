@@ -5,12 +5,11 @@ import re
 import gdal
 import osr
 
-from gcrmnbc.utils import encodings, logs
+from gcrmnbc.utils import encodings, logs, paths
 
 
 _logger = logs.get_logger(__file__)
 
-DIR_DATA = '/scratch/nfabina/gcrmn-benthic-classification/training_data/clean'
 SUFFIX_LAND = '_land.shp'
 SUFFIX_WATER = '_water.shp'
 
@@ -18,7 +17,7 @@ SUFFIX_WATER = '_water.shp'
 def create_supplemental_response_rasters(recalculate: bool) -> None:
     _logger.info('Create supplemental response rasters')
     filepaths_boundaries = sorted([
-        os.path.join(DIR_DATA, filename) for filename in os.listdir(DIR_DATA)
+        os.path.join(paths.DIR_DATA_TRAIN_CLEAN, filename) for filename in os.listdir(paths.DIR_DATA_TRAIN_CLEAN)
         if any([filename.endswith(suffix) for suffix in (SUFFIX_LAND, SUFFIX_WATER)])
     ])
     for idx, filepath_boundary in enumerate(filepaths_boundaries):

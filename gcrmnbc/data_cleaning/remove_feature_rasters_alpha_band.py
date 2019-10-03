@@ -3,24 +3,20 @@ import re
 
 import gdal
 
-from gcrmnbc.utils import gdal_command_line, logs
+from gcrmnbc.utils import gdal_command_line, logs, paths
 
 
 _logger = logs.get_logger(__file__)
 
-DIR_BASE = '/scratch/nfabina/gcrmn-benthic-classification/training_data'
-DIR_CLEAN = os.path.join(DIR_BASE, 'clean')
-DIR_TMP = os.path.join(DIR_BASE, 'tmp')
-
 
 def remove_feature_rasters_alpha_band() -> None:
     _logger.info('Remove alpha band from feature rasters')
-    filenames_raw = [filename for filename in os.listdir(DIR_TMP) if filename.endswith('features.tif')]
+    filenames_raw = [filename for filename in os.listdir(paths.DIR_DATA_TRAIN_RAW) if filename.endswith('features.tif')]
     for idx, filename_raw in enumerate(filenames_raw):
         _logger.debug('Removing alpha band for raster {} ({} total):  {}'.format(idx, len(filenames_raw), filename_raw))
-        filepath_raw = os.path.join(DIR_TMP, filename_raw)
-        filepath_tmp = os.path.join(DIR_TMP, re.sub('features.tif', 'features_tmp.tif', filename_raw))
-        filepath_clean = os.path.join(DIR_CLEAN, filename_raw)
+        filepath_raw = os.path.join(paths.DIR_DATA_TRAIN_RAW, filename_raw)
+        filepath_tmp = os.path.join(paths.DIR_DATA_TRAIN_RAW, re.sub('features.tif', 'features_tmp.tif', filename_raw))
+        filepath_clean = os.path.join(paths.DIR_DATA_TRAIN_CLEAN, filename_raw)
         # Write in nodata values
         command = 'gdal_calc.py -A {filepath_raw} --allBands=A -B {filepath_raw} --B_band=4 ' + \
                   '--outfile={filepath_tmp} --NoDataValue=-9999 --type=Int16 --co=COMPRESS=DEFLATE ' + \

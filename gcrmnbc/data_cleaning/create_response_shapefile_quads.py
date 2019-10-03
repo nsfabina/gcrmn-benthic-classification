@@ -65,7 +65,8 @@ def _raise() -> None:
         "and that other threads are patient when trying to access the same file. This'll be much easier than "
         "setting up multiple jobs to work in parallel and it's better because it'd be overkill to spin up multiple "
         "instances to just parse data from a file and write it to another file. Good luck! This should only take "
-        "1-2 hours, so don't worry!"
+        "1-2 hours, so don't worry!..."
+        "Also, the directories are off and you need to get the raw data again"
     )
 
 

@@ -1,25 +1,23 @@
 import os
 import re
 
-from gcrmnbc.utils import encodings, gdal_command_line, logs
+from gcrmnbc.utils import encodings, gdal_command_line, logs, paths
 
 
 _logger = logs.get_logger(__file__)
-
-DIR_DATA = '/scratch/nfabina/gcrmn-benthic-classification/training_data'
-DIR_DATA_TMP = os.path.join(DIR_DATA, 'tmp')
-DIR_DATA_CLEAN = os.path.join(DIR_DATA, 'clean')
 
 
 def create_sampling_boundary_shapefiles() -> None:
     _logger.info('Creating sampling boundary shapefiles')
     _assert_encoding_assumptions_hold()
     # Get list of completed responses rasters
-    filepath_reef_raster = os.path.join(DIR_DATA_TMP, 'tmp_reef_only.tif')
-    filepath_reef_outline = os.path.join(DIR_DATA_TMP, 'tmp_reef_outline.shp')
+    filepath_reef_raster = os.path.join(paths.DIR_DATA_TRAIN_RAW, 'tmp_reef_only.tif')
+    filepath_reef_outline = os.path.join(paths.DIR_DATA_TRAIN_RAW, 'tmp_reef_outline.shp')
     basename_reef_outline = os.path.splitext(os.path.basename(filepath_reef_outline))[0]
-    filepaths_responses = sorted([os.path.join(DIR_DATA_CLEAN, filename) for filename in os.listdir(DIR_DATA_CLEAN)
-                                  if filename.endswith('_responses.tif')])
+    filepaths_responses = sorted([
+        os.path.join(paths.DIR_DATA_TRAIN_CLEAN, filename) for filename in os.listdir(paths.DIR_DATA_TRAIN_CLEAN)
+        if filename.endswith('_responses.tif')
+    ])
     for idx_responses, filepath_responses in enumerate(filepaths_responses):
         _logger.debug('Creating boundaries for response file {} of {}'.format(idx_responses, len(filepaths_responses)))
         filepath_boundary = re.sub('responses.tif', 'boundaries.shp', filepath_responses)
@@ -51,10 +49,10 @@ def create_sampling_boundary_shapefiles() -> None:
         # Clean up
         _logger.debug('Remove temporary files')
         os.remove(filepath_reef_raster)
-        for filename_outline in os.listdir(DIR_DATA_TMP):
+        for filename_outline in os.listdir(paths.DIR_DATA_TRAIN_RAW):
             if not re.search(basename_reef_outline, filename_outline):
                 continue
-            os.remove(os.path.join(DIR_DATA_TMP, filename_outline))
+            os.remove(os.path.join(paths.DIR_DATA_TRAIN_RAW, filename_outline))
 
 
 def _assert_encoding_assumptions_hold():

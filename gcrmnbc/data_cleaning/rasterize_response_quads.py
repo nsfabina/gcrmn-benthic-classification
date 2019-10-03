@@ -4,25 +4,21 @@ import re
 import gdal
 import osr
 
-from gcrmnbc.utils import data_bucket, encodings, gdal_command_line, logs
+from gcrmnbc.utils import data_bucket, encodings, gdal_command_line, logs, paths
 
 
 _logger = logs.get_logger(__file__)
 
-DIR_DATA = '/scratch/nfabina/gcrmn-benthic-classification/training_data'
-DIR_DATA_TMP = os.path.join(DIR_DATA, 'tmp')
-DIR_DATA_CLEAN = os.path.join(DIR_DATA, 'clean')
-
 
 def rasterize_response_quads() -> None:
     _assert_encoding_assumptions_hold()
-    filenames = [filename for filename in os.listdir(DIR_DATA_TMP) if filename.endswith('.shp')]
+    filenames = [filename for filename in os.listdir(paths.DIR_DATA_TRAIN_RAW) if filename.endswith('.shp')]
     for idx_filename, filename in enumerate(filenames):
         print('\rRasterizing shapefile {} of {}'.format(1+idx_filename, len(filenames)))
         # Get quad and filepaths
         quad = re.search(r'L15-\d{4}E-\d{4}N', filename).group()
-        filepath_features = os.path.join(DIR_DATA_CLEAN, quad + data_bucket.FILENAME_SUFFIX_FEATURES)
-        filepath_source_responses = os.path.join(DIR_DATA_TMP, filename)
+        filepath_features = os.path.join(paths.DIR_DATA_TRAIN_CLEAN, quad + data_bucket.FILENAME_SUFFIX_FEATURES)
+        filepath_source_responses = os.path.join(paths.DIR_DATA_TRAIN_RAW, filename)
         filepath_dest_lwr = re.sub('features.tif', 'responses_lwr.tif', filepath_features)
         filepath_dest_lwrn = re.sub('features.tif', 'responses_lwrn.tif', filepath_features)
         assert os.path.exists(filepath_features), 'Download all feature quads before rasterizing response quads'
