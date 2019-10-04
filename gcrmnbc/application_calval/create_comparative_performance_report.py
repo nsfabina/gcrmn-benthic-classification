@@ -171,6 +171,7 @@ def create_comparative_performance_report(label_experiment: str, response_mappin
             lines.append('          {:<50}{:>30}'.format(config_name+':', string))
         lines.append('')
         lines.append('')
+        pages.append(lines)
 
     # Finalize figure and save
     filename_out = os.path.join(dir_experiment, _FILENAME_FIG_OUT.format(label_experiment, response_mapping))
@@ -178,7 +179,7 @@ def create_comparative_performance_report(label_experiment: str, response_mappin
         height_per_line = 0.145
         for page in pages:
             fig, ax = plt.subplots(figsize=(8.5, 2.0 + height_per_line * len(page)))
-            ax.text(0, 0, '\n'.join(lines), **{'fontsize': 8, 'fontfamily': 'monospace'})
+            ax.text(0, 0, '\n'.join(page), **{'fontsize': 8, 'fontfamily': 'monospace'})
             ax.axis('off')
             pdf.savefig(fig)
 
