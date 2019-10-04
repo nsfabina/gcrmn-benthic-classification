@@ -9,9 +9,9 @@ from gcrmnbc.utils import paths
 _SUFFIX_FEATURES = '_features.tif'
 
 _SUFFIXES_RESPONSES_BOUNDARIES = (
-    ('_responses_{}b.tif', '_boundaries.shp', True),  # Reef data, True/False denotes whether its required or not
-    ('_land.tif', '_land.shp', False),  # Land data
-    ('_water.tif', '_water.shp', False),  # Water data
+    ('_responses_{}b.tif', '_boundaries.shp'),  # Reef data
+    ('_land.tif', '_land.shp'),  # Land data
+    ('_water.tif', '_water.shp'),  # Water data
 )
 
 _RESPONSE_MAPPINGS = ('lwr', 'lwrn', )
@@ -36,7 +36,7 @@ def build_dynamic_config(config_name: str, label_experiment: str, response_mappi
 
         filepath_features = os.path.join(paths.DIR_DATA_TRAIN_CLEAN, filename)
 
-        for suffix_responses, suffix_boundaries, is_required in _SUFFIXES_RESPONSES_BOUNDARIES:
+        for suffix_responses, suffix_boundaries in _SUFFIXES_RESPONSES_BOUNDARIES:
             if 'responses' in suffix_responses:
                 filepath_responses = re.sub(
                     _SUFFIX_FEATURES, suffix_responses.format(response_mapping), filepath_features)
@@ -44,15 +44,6 @@ def build_dynamic_config(config_name: str, label_experiment: str, response_mappi
                 filepath_responses = re.sub(_SUFFIX_FEATURES, suffix_responses, filepath_features)
             filepath_boundaries = re.sub(_SUFFIX_FEATURES, suffix_boundaries, filepath_features)
 
-            if is_required:
-                assert os.path.exists(filepath_responses), \
-                    'Response file is not available at {}'.format(filepath_responses)
-                assert os.path.exists(filepath_boundaries), \
-                    'Boundary file is not available at {}'.format(filepath_boundaries)
-            if os.path.exists(filepath_responses):
-                assert os.path.exists(filepath_boundaries), \
-                    'Response file is available, but boundary file not found:  {} and {}'.format(
-                        filepath_responses, filepath_boundaries)
             if not os.path.exists(filepath_responses):
                 continue
             filepaths_features.append([filepath_features])
