@@ -18,7 +18,7 @@ def create_response_boundary_classes() -> None:
     _logger.info('Create response boundary classes')
     dir_data = os.path.join(paths.DIR_DATA_TRAIN, 'downsample_50')
     filepaths_srcs = [os.path.join(dir_data, fn) for fn in os.listdir(dir_data) if fn.endswith('responses_lwr.tif')]
-    for filepath_src in tqdm(filepaths_srcs, desc='Create boundary classes'):
+    for filepath_src in tqdm(sorted(filepaths_srcs), desc='Create boundary classes'):
         _logger.debug('Processing file:  {}'.format(filepath_src))
         filepath_dest = re.sub('.tif', 'b.tif', filepath_src)
         _create_response_boundary_classes_for_filepath(filepath_src, filepath_dest)
@@ -71,3 +71,8 @@ def _get_edges(arr):
     edges[skimage.segmentation.find_boundaries(edges, connectivity=2, mode='thick')] = _LABEL_EDGE
     edges[skimage.segmentation.find_boundaries(edges, connectivity=2, mode='thick')] = _LABEL_EDGE
     return edges
+
+
+if __name__ == '__main__':
+    create_response_boundary_classes()
+
