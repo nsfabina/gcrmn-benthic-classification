@@ -243,7 +243,7 @@ def _sort_models_by_average_fscore(all_statistics: dict) -> List[Tuple[str, dict
         if any([v is None for v in values]):
             continue
         fscores[model_name] = np.average(values, weights=weights)
-    names_sorted = [name for name, score in sorted(fscores.items(), key=lambda x: x[1])]
+    names_sorted = [name for name, score in sorted(fscores.items(), key=lambda x: x[1], reverse=True)]
     return [(model_name, all_statistics[model_name]) for model_name in names_sorted]
 
 
