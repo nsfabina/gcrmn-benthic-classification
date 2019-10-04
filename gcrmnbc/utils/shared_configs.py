@@ -34,8 +34,8 @@ def build_dynamic_config(config_name: str, label_experiment: str, response_mappi
         assert os.path.exists(filepath_features), 'Features file not found:  {}'.format(filepath_features)
         assert os.path.exists(filepath_boundaries), 'Boundaries file not found:  {}'.format(filepath_boundaries)
 
-        filepaths_features.append(filepath_features)
-        filepaths_responses.append(filepath_responses)
+        filepaths_features.append([filepath_features])
+        filepaths_responses.append([filepath_responses])
         filepaths_boundaries.append(filepath_boundaries)
 
     # Get regular response data
