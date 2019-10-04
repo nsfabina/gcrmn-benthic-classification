@@ -9,13 +9,13 @@ from gcrmnbc.utils import paths
 _SUFFIX_FEATURES = '_features.tif'
 
 _SUFFIXES_RESPONSES_BOUNDARIES = (
-    ('_responses_{}.tif', '_boundaries.shp', True),  # Reef data, True/False denotes whether its required or not
+    ('_responses_{}b.tif', '_boundaries.shp', True),  # Reef data, True/False denotes whether its required or not
     ('_land.tif', '_land.shp', False),  # Land data
     ('_water.tif', '_water.shp', False),  # Water data
 )
 
 _RESPONSE_MAPPINGS = ('lwr', 'lwrn', )
-_RESPONSE_MAPPING_CLASSES = {'lwr': 3, 'lwrn': 4, }
+_RESPONSE_MAPPING_CLASSES = {'lwr': 6, 'lwrn': 10, }
 
 
 def build_dynamic_config(config_name: str, label_experiment: str, response_mapping: str) -> configs.Config:
