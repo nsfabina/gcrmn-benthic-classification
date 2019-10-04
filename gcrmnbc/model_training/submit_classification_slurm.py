@@ -9,9 +9,9 @@ from gcrmnbc.utils import paths, shared_submit_slurm
 
 
 SLURM_COMMAND_CLASSIFY = \
-    '--mail-type=FAIL --time=8:00:00 --wrap ' + \
+    '--mail-type={mail_end}FAIL --time=8:00:00 --wrap ' + \
     '"python run_classification.py --config_name={config_name} --label_experiment={label_experiment} ' + \
-    '--response_mapping={response_mapping} {build_only}"'
+    '--response_mapping={response_mapping} {build_only} {run_all}"'
 
 
 if __name__ == '__main__':
@@ -21,6 +21,7 @@ if __name__ == '__main__':
     parser.add_argument('--labels_experiments', type=str, required=True)
     parser.add_argument('--response_mappings', type=str, required=True)
     parser.add_argument('--build_only', action='store_true')
+    parser.add_argument('--run_all', action='store_true')
     args = parser.parse_args()
 
     # Warning about usage and error checks
@@ -81,8 +82,9 @@ if __name__ == '__main__':
 
                 # Set dynamic python arguments
                 slurm_python_wrap = SLURM_COMMAND_CLASSIFY.format(
-                    config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping,
-                    build_only='--build_only' if args.build_only else ''
+                    mail_end='END,' if args.build_only else '', config_name=config_name,
+                    label_experiment=label_experiment, response_mapping=response_mapping,
+                    build_only='--build_only' if args.build_only else '', run_all='--run_all' if args.run_all else ''
                 )
 
                 print('Submitting job {}'.format(job_name))

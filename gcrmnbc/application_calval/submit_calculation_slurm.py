@@ -7,25 +7,23 @@ from gcrmnbc.utils import paths, shared_configs, shared_submit_slurm
 
 
 SLURM_COMMAND = \
-    'sbatch --mail-user=nfabina@asu.edu --mail-type=FAIL --time=4:00:00 --nodes=1 --cpus-per-task=1 ' + \
+    'sbatch --mail-user=nfabina@asu.edu --mail-type=END,FAIL --time=2:00:00 --nodes=1 --cpus-per-task=1 ' + \
     '--mem-per-cpu=20000 --ntasks=1 --wrap "python calculate_asu_statistics.py --config_name={config_name} ' + \
     '--label_experiment={label_experiment} --response_mapping={response_mapping}" {recalculate}'
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--labels_experiments', required=True)
-    parser.add_argument('--response_mappings', required=True)
-    parser.add_argument('--recalculate', action='store_true')
-    args = parser.parse_args()
-
+def submit_calculation_slurm(
+        labels_experiments: str,
+        response_mappings: str,
+        recalculate: bool = False,
+) -> None:
     # Get configs
     filename_configs = shared_submit_slurm.get_all_config_filenames()
 
     # Loop through configs and submit jobs
     for filename_config in filename_configs:
-        for label_experiment in args.labels_experiments.split(','):
-            for response_mapping in args.response_mappings.split(','):
+        for label_experiment in labels_experiments.split(','):
+            for response_mapping in response_mappings.split(','):
                 shared_submit_slurm.validate_label_experiment(label_experiment)
                 shared_submit_slurm.validate_response_mapping(response_mapping)
 
@@ -58,7 +56,7 @@ if __name__ == '__main__':
                 # Set dynamic SLURM arguments
                 slurm_command = SLURM_COMMAND.format(
                     config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping,
-                    recalculate='--recalculate' if args.recalculate else '')
+                    recalculate='--recalculate' if recalculate else '')
                 dir_model = paths.get_dir_model_experiment_config(
                     label_experiment=label_experiment, response_mapping=response_mapping, config=config)
                 slurm_args_dynamic = ' '.join([
@@ -71,3 +69,11 @@ if __name__ == '__main__':
                 command = ' '.join([slurm_command, slurm_args_dynamic])
                 # print(command)
                 subprocess.call(command, shell=True)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--labels_experiments', required=True)
+    parser.add_argument('--response_mappings', required=True)
+    parser.add_argument('--recalculate', action='store_true')
+    args = parser.parse_args()

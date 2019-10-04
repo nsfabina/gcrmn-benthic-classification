@@ -5,6 +5,7 @@ from bfgn.data_management import data_core, sequences
 from bfgn.reporting import reports
 from bfgn.experiments import experiments
 
+from gcrmnbc.application_calval import submit_application_slurm
 from gcrmnbc.utils import logs, paths, shared_configs
 
 
@@ -12,7 +13,8 @@ def run_classification(
         config_name: str,
         label_experiment: str,
         response_mapping: str,
-        build_only: bool = False
+        build_only: bool = False,
+        run_all: bool = False
 ) -> None:
     config = shared_configs.build_dynamic_config(
         config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
@@ -69,6 +71,12 @@ def run_classification(
 
         # Create complete file to avoid rerunning in the future, close and remove lock file
         open(filepath_complete, 'w')
+
+        # Start application if necessary
+        submit_application_slurm.submit_application_slurm(
+            labels_experiments=label_experiment, response_mappings=response_mapping, num_jobs=1,
+            config_names=config_name, run_all=run_all
+        )
     except Exception as error_:
         raise error_
     finally:
@@ -82,5 +90,6 @@ if __name__ == '__main__':
     parser.add_argument('--label_experiment', required=True)
     parser.add_argument('--response_mapping', required=True)
     parser.add_argument('--build_only', action='store_true')
+    parser.add_argument('--run_all', action='store_true')
     args = vars(parser.parse_args())
     run_classification(**args)

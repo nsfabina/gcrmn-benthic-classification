@@ -5,10 +5,11 @@ import os
 from bfgn.data_management import apply_model_to_data, data_core
 from bfgn.experiments import experiments
 
+from gcrmnbc.application_calval import submit_calculation_slurm
 from gcrmnbc.utils import encodings, gdal_command_line, logs, paths, shared_configs
 
 
-def run_application(config_name: str, label_experiment: str, response_mapping: str) -> None:
+def run_application(config_name: str, label_experiment: str, response_mapping: str, run_all: bool = False) -> None:
     _assert_encoding_assumptions_hold()
     config = shared_configs.build_dynamic_config(
         config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
@@ -46,6 +47,10 @@ def run_application(config_name: str, label_experiment: str, response_mapping: s
         filepath_model_complete = paths.get_filepath_calval_apply_complete(
             label_experiment=label_experiment, response_mapping=response_mapping, config=config)
         open(filepath_model_complete, 'w')
+        if run_all:
+            submit_calculation_slurm.submit_calculation_slurm(
+                labels_experiments=label_experiment, response_mappings=response_mapping, recalculate=False,
+                run_all=run_all)
 
 
 def _apply_to_raster(
@@ -167,5 +172,6 @@ if __name__ == '__main__':
     parser.add_argument('--config_name', required=True)
     parser.add_argument('--label_experiment', required=True)
     parser.add_argument('--response_mapping', required=True)
+    parser.add_argument('--run_all', action='store_true')
     args = vars(parser.parse_args())
     run_application(**args)

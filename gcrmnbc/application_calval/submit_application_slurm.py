@@ -7,29 +7,28 @@ from gcrmnbc.utils import paths, shared_configs, shared_submit_slurm
 
 SLURM_COMMAND_APPLY = \
     '--mail-type=FAIL --time=2:00:00 --wrap "python run_calval_application.py ' + \
-    '--config_name={config_name} --label_experiment={label_experiment} --response_mapping={response_mapping}"'
+    '--config_name={config_name} --label_experiment={label_experiment} --response_mapping={response_mapping} ' + \
+    '{run_all}"'
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--config_names')
-    parser.add_argument('--config_regex')
-    parser.add_argument('--labels_experiments', required=True)
-    parser.add_argument('--response_mappings', required=True)
-    parser.add_argument('--num_jobs', type=int, required=True)
-    args = parser.parse_args()
-
+def submit_application_slurm(
+        labels_experiments: str,
+        response_mappings: str,
+        num_jobs: int,
+        config_names: str = None,
+        config_regex: str = None,
+        run_all: bool = False
+) -> None:
     # Get config filenames
-    config_names = None
-    if args.config_names:
-        config_names = args.config_names.split(',')
+    if config_names:
+        config_names = config_names.split(',')
     filename_configs = shared_submit_slurm.get_relevant_config_filenames(
-        config_names=config_names, build_only=False, config_regex=args.config_regex)
+        config_names=config_names, build_only=False, config_regex=config_regex)
 
     # Loop through configs and submit jobs
     for filename_config in filename_configs:
-        for label_experiment in args.labels_experiments.split(','):
-            for response_mapping in args.response_mappings.split(','):
+        for label_experiment in labels_experiments.split(','):
+            for response_mapping in response_mappings.split(','):
                 shared_submit_slurm.validate_label_experiment(label_experiment)
                 shared_submit_slurm.validate_response_mapping(response_mapping)
 
@@ -63,10 +62,23 @@ if __name__ == '__main__':
 
                 # Set dynamic python arguments
                 slurm_python_wrap = SLURM_COMMAND_APPLY.format(
-                    config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
-
+                    config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping,
+                    run_all='--run_all' if run_all else ''
+                )
                 print('Submitting job {}'.format(job_name))
                 command = ' '.join([shared_submit_slurm.SLURM_COMMAND, slurm_args_dynamic, slurm_python_wrap])
                 # print(command)
-                for idx_job in range(args.num_jobs):
+                for idx_job in range(num_jobs):
                     subprocess.call(command, shell=True)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config_names')
+    parser.add_argument('--config_regex')
+    parser.add_argument('--labels_experiments', required=True)
+    parser.add_argument('--response_mappings', required=True)
+    parser.add_argument('--num_jobs', type=int, required=True)
+    parser.add_argument('--run_all', action='store_true')
+    args = vars(parser.parse_args())
+    submit_application_slurm(**args)
