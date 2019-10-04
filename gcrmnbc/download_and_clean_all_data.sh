@@ -27,14 +27,17 @@ python ./data_acquisition/download_feature_quads.py
 echo "Remove alpha band from features"
 python ./data_cleaning/remove_feature_rasters_alpha_band.py
 
+echo "Rasterize response shapefiles according to feature extents"
+python ./data_cleaning/rasterize_response_quads.py
+
 echo "Compress rasters for efficient reads"
 python ./data_cleaning/compress_feature_response_rasters.py
 
-echo "Create downsampled rasters for tests"
-python ./data_cleaning/downsample_feature_rasters.py
+echo "Create downsampled rasters"
+python ./data_cleaning/downsample_feature_response_rasters.py
 
-echo "Rasterize response shapefiles according to feature extents"
-python ./data_cleaning/rasterize_response_quads.py
+echo "Create class boundaries for response rasters"
+python ./data_cleaning/create_response_boundary_classes.py
 
 echo "Create shapefile boundaries for training data sampling"
 python ./data_cleaning/create_sampling_boundary_shapefiles.py
