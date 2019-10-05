@@ -102,14 +102,18 @@ def get_filepath_build_only_config_from_config(config: configs.Config) -> str:
 
 
 def _get_experiment_config_string(config: configs.Config) -> str:
-    str_blocks = str(config.architecture.block_structure[0]) + str(len(config.architecture.block_structure))
+    if config.model_training.architecture_name in ('dense_unet', 'unet'):
+        str_layers = str(config.architecture.block_structure[0]) + str(len(config.architecture.block_structure))
+        str_growth = '_growth' if config.architecture.use_growth else ''
+    elif config.model_training.architecture_name == 'flat_net':
+        str_layers = config.architecture.num_layers
+        str_growth = ''
     str_batch_norm = '_batch_norm' if config.architecture.use_batch_norm else ''
-    str_growth = '_growth' if config.architecture.use_growth else ''
     config_string = '_'.join([
         config.model_training.architecture_name,
         str(config.data_build.window_radius),
         str(config.data_build.loss_window_radius),
-        str_blocks,
+        str_layers,
         str(config.architecture.filters)
     ])
     config_string += str_batch_norm + str_growth
