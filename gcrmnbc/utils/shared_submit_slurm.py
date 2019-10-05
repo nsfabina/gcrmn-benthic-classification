@@ -9,7 +9,7 @@ SLURM_COMMAND = 'sbatch --mail-user=nsfabina@asu.edu --nodes=1 --cpus-per-task=1
 SLURM_GPUS = '--partition gpu --gres=gpu:1 --qos=wildfire '
 SLURM_GPUS_LARGE = SLURM_GPUS + '--constraint="V100_32" '
 
-VALID_LABELS_EXPERIMENTS = ('original', 'downsample_25', 'downsample_50')
+VALID_LABELS_EXPERIMENTS = ('original', 'downsample_25', 'downsample_50', 'downsample_50_aug')
 VALID_RESPONSE_MAPPINGS = ('lwr', 'lwrn')
 
 

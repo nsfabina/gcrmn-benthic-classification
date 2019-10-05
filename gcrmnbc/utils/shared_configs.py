@@ -40,7 +40,7 @@ def build_dynamic_config(config_name: str, label_experiment: str, response_mappi
 
     # Get regular response data
     response_suffix = '_responses_{}b.tif'.format(response_mapping)
-    dir_data = os.path.join(paths.DIR_DATA_TRAIN, label_experiment)
+    dir_data = paths.get_dir_training_data_experiment(label_experiment=label_experiment)
     assert os.path.exists(dir_data), 'Training data directory not found for label_experiment {}:  {}'.format(
         label_experiment, dir_data)
     for filename in os.listdir(dir_data):

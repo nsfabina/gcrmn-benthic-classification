@@ -30,6 +30,8 @@ FILENAME_CALVAL_FIGS = 'asu_statistics.pdf'
 
 
 def get_dir_built_data_experiment(label_experiment: str, response_mapping: str, config: configs.Config) -> str:
+    if label_experiment.endswith('_aug'):
+        label_experiment = label_experiment[:-4]
     return os.path.join(
         DIR_DATA_BUILT,
         label_experiment,
@@ -46,6 +48,18 @@ def get_dir_calval_data_experiment_config(label_experiment: str, response_mappin
         get_dir_calval_data_experiment(label_experiment, response_mapping),
         _get_experiment_config_string(config)
     )
+
+
+def get_dir_eval_data_experiment(reef: str, label_experiment: str) -> str:
+    if label_experiment.endswith('_aug'):
+        label_experiment = label_experiment[:-4]
+    return os.path.join(DIR_DATA_EVAL, reef, label_experiment)
+
+
+def get_dir_training_data_experiment(label_experiment: str) -> str:
+    if label_experiment.endswith('_aug'):
+        label_experiment = label_experiment[:-4]
+    return os.path.join(DIR_DATA_TRAIN, label_experiment)
 
 
 def get_dir_model_experiment(label_experiment: str) -> str:

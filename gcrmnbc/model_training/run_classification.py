@@ -48,8 +48,12 @@ def run_classification(
         data_container = data_core.DataContainer(config)
         data_container.build_or_load_rawfile_data()
         data_container.build_or_load_scalers()
-        # custom_augmentations = sequences.sample_custom_augmentations_constructor(1, config.data_build.window_radius)
-        data_container.load_sequences()  #custom_augmentations)
+        augs = None
+        if label_experiment.endswith('_aug'):
+            num_features = len(data_container.feature_band_types)
+            assert num_features == 3, 'Is this not just RGB?'
+            augs = sequences.sample_custom_augmentations_constructor(num_features, config.data_build.window_radius)
+        data_container.load_sequences(augs)
 
         # Build experiment
         experiment = experiments.Experiment(config)

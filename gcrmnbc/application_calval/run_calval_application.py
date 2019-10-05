@@ -11,6 +11,7 @@ from gcrmnbc.utils import encodings, gdal_command_line, logs, paths, shared_conf
 
 def run_application(config_name: str, label_experiment: str, response_mapping: str, run_all: bool = False) -> None:
     _assert_encoding_assumptions_hold()
+
     config = shared_configs.build_dynamic_config(
         config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
     logger = logs.get_model_logger(
@@ -34,7 +35,7 @@ def run_application(config_name: str, label_experiment: str, response_mapping: s
     reefs = sorted([reef for reef in os.listdir(paths.DIR_DATA_EVAL)])
     for idx_filepath, reef in enumerate(reefs):
         logger.debug('Applying model to reef {}'.format(reef))
-        dir_reef_in = os.path.join(paths.DIR_DATA_EVAL, reef, label_experiment)
+        dir_reef_in = paths.get_dir_eval_data_experiment(reef=reef, label_experiment=label_experiment)
         dir_reef_out = os.path.join(dir_model_out, reef)
         _apply_to_raster(experiment, data_container, dir_reef_in, dir_reef_out, logger)
 
