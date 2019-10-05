@@ -16,7 +16,7 @@ _LABEL_EDGE = -8888
 
 def create_response_boundary_classes() -> None:
     _logger.info('Create response boundary classes')
-    subdirs_data = ('downsample_50', 'original')
+    subdirs_data = ('downsample_50', 'originals')
     thicknesses = (3, 4)
     for subdir_data, thickness in zip(subdirs_data, thicknesses):
         dir_data = os.path.join(paths.DIR_DATA_TRAIN, subdir_data)
