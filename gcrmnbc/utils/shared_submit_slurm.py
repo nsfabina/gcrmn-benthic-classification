@@ -32,7 +32,7 @@ def get_global_apply_job_name(config_name: str, label_experiment: str, response_
 def get_all_config_filenames():
     return [
         filename for filename in os.listdir(paths.DIR_CONFIGS) if
-        filename.endswith('yaml') and filename != 'config_template.yaml' and not filename.startswith('build_only')
+        filename.endswith('yaml') and 'template' not in filename and not filename.startswith('build_only')
     ]
 
 
