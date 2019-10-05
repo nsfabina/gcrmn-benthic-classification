@@ -76,4 +76,5 @@ if __name__ == '__main__':
     parser.add_argument('--labels_experiments', required=True)
     parser.add_argument('--response_mappings', required=True)
     parser.add_argument('--recalculate', action='store_true')
-    args = parser.parse_args()
+    args = vars(parser.parse_args())
+    submit_calculation_slurm(**args)
