@@ -9,7 +9,7 @@ from gcrmnbc.utils import paths, shared_submit_slurm
 
 
 SLURM_COMMAND_CLASSIFY = \
-    '--mail-type={mail_end}FAIL --time=8:00:00 --wrap ' + \
+    '--mail-type={mail_end}FAIL --time=8:00:00 --chdir={dir_working} --wrap ' + \
     '"python run_classification.py --config_name={config_name} --label_experiment={label_experiment} ' + \
     '--response_mapping={response_mapping} {build_only} {run_all}"'
 
@@ -79,10 +79,10 @@ if __name__ == '__main__':
                     '--output={}/slurm.classify.%j.%t.OUT'.format(dir_model),
                     '--error={}/slurm.classify.%j.%t.ERROR'.format(dir_model),
                 ])
-
                 # Set dynamic python arguments
+                dir_working = os.path.dirname(os.path.abspath(__file__))
                 slurm_python_wrap = SLURM_COMMAND_CLASSIFY.format(
-                    mail_end='END,' if args.build_only else '', config_name=config_name,
+                    mail_end='END,' if args.build_only else '', config_name=config_name, dir_working=dir_working,
                     label_experiment=label_experiment, response_mapping=response_mapping,
                     build_only='--build_only' if args.build_only else '', run_all='--run_all' if args.run_all else ''
                 )

@@ -6,7 +6,7 @@ from gcrmnbc.utils import paths, shared_configs, shared_submit_slurm
 
 
 SLURM_COMMAND_APPLY = \
-    '--mail-type=FAIL --time=2:00:00 --wrap "python run_calval_application.py ' + \
+    '--mail-type=FAIL --time=2:00:00 --chdir={dir_working} --wrap "python run_calval_application.py ' + \
     '--config_name={config_name} --label_experiment={label_experiment} --response_mapping={response_mapping} ' + \
     '{run_all}"'
 
@@ -61,9 +61,10 @@ def submit_application_slurm(
                 ])
 
                 # Set dynamic python arguments
+                dir_working = os.path.dirname(os.path.abspath(__file__))
                 slurm_python_wrap = SLURM_COMMAND_APPLY.format(
-                    config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping,
-                    run_all='--run_all' if run_all else ''
+                    dir_working=dir_working, config_name=config_name, label_experiment=label_experiment,
+                    response_mapping=response_mapping, run_all='--run_all' if run_all else ''
                 )
                 print('Submitting job {}'.format(job_name))
                 command = ' '.join([shared_submit_slurm.SLURM_COMMAND, slurm_args_dynamic, slurm_python_wrap])

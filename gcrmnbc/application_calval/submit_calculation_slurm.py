@@ -8,8 +8,9 @@ from gcrmnbc.utils import paths, shared_configs, shared_submit_slurm
 
 SLURM_COMMAND = \
     'sbatch --mail-user=nfabina@asu.edu --mail-type=END,FAIL --time=2:00:00 --nodes=1 --cpus-per-task=1 ' + \
-    '--mem-per-cpu=20000 --ntasks=1 --wrap "python calculate_asu_statistics.py --config_name={config_name} ' + \
-    '--label_experiment={label_experiment} --response_mapping={response_mapping}" {recalculate}'
+    '--mem-per-cpu=20000 --ntasks=1 --dir_working={dir_working} --wrap "python calculate_asu_statistics.py ' + \
+    '--config_name={config_name} --label_experiment={label_experiment} --response_mapping={response_mapping} ' + \
+    '{recalculate}"'
 
 
 def submit_calculation_slurm(
@@ -54,9 +55,10 @@ def submit_calculation_slurm(
                     continue
 
                 # Set dynamic SLURM arguments
+                dir_working = os.path.dirname(os.path.abspath(__file__))
                 slurm_command = SLURM_COMMAND.format(
-                    config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping,
-                    recalculate='--recalculate' if recalculate else '')
+                    dir_working=dir_working, config_name=config_name, label_experiment=label_experiment,
+                    response_mapping=response_mapping, recalculate='--recalculate' if recalculate else '')
                 dir_model = paths.get_dir_model_experiment_config(
                     label_experiment=label_experiment, response_mapping=response_mapping, config=config)
                 slurm_args_dynamic = ' '.join([
