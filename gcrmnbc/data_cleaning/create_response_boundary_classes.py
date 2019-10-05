@@ -70,6 +70,7 @@ def _get_edges(arr):
     edges = arr.copy()
     edges[skimage.segmentation.find_boundaries(edges, connectivity=2, mode='thick')] = _LABEL_EDGE
     edges[skimage.segmentation.find_boundaries(edges, connectivity=2, mode='thick')] = _LABEL_EDGE
+    edges[skimage.segmentation.find_boundaries(edges, connectivity=2, mode='thick')] = _LABEL_EDGE
     return edges
 
 
