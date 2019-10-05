@@ -50,8 +50,7 @@ def run_application(config_name: str, label_experiment: str, response_mapping: s
         open(filepath_model_complete, 'w')
         if run_all:
             submit_calculation_slurm.submit_calculation_slurm(
-                labels_experiments=label_experiment, response_mappings=response_mapping, recalculate=False,
-                run_all=run_all)
+                labels_experiments=label_experiment, response_mappings=response_mapping, recalculate=False)
 
 
 def _apply_to_raster(
