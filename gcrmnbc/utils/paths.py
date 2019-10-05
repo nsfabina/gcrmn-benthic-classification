@@ -106,7 +106,7 @@ def _get_experiment_config_string(config: configs.Config) -> str:
         str_layers = str(config.architecture.block_structure[0]) + str(len(config.architecture.block_structure))
         str_growth = '_growth' if config.architecture.use_growth else ''
     elif config.model_training.architecture_name == 'flat_net':
-        str_layers = config.architecture.num_layers
+        str_layers = str(config.architecture.num_layers)
         str_growth = ''
     str_batch_norm = '_batch_norm' if config.architecture.use_batch_norm else ''
     config_string = '_'.join([
