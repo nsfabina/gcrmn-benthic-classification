@@ -279,7 +279,9 @@ def _calculate_recall(reef_statistics: dict) -> Union[float, None]:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--label_experiment', required=True)
-    parser.add_argument('--response_mapping', required=True)
-    args = vars(parser.parse_args())
-    create_comparative_performance_report(**args)
+    parser.add_argument('--labels_experiments', required=True)
+    parser.add_argument('--response_mappings', required=True)
+    args = parser.parse_args()
+    for label_experiment in args.labels_experiments.split(','):
+        for response_mapping in args.response_mappings.split(','):
+            create_comparative_performance_report(label_experiment, response_mapping)
