@@ -14,7 +14,8 @@ _FILENAME_PREFIX = 'down{}'.format(_DOWNSAMPLE_PCT)
 
 def downsample_global_rasters() -> None:
     _logger.info('Downsample rasters')
-    filenames = sorted([fn for fn in os.listdir(paths.DIR_DATA_GLOBAL) if not fn.startswith(_FILENAME_PREFIX)])
+    filenames = sorted([fn for fn in os.listdir(paths.DIR_DATA_GLOBAL) 
+                        if not fn.startswith(_FILENAME_PREFIX) and fn.endswith('.tif')])
 
     for filename in tqdm(filenames, desc='Downsampling rasters'):
         filepath_in = os.path.join(paths.DIR_DATA_GLOBAL, filename)
