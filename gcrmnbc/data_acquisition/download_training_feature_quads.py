@@ -7,8 +7,8 @@ from gcrmnbc.utils import data_bucket, logs, paths
 _logger = logs.get_logger(__file__)
 
 
-def download_feature_quads() -> None:
-    _logger.debug('Download feature quads')
+def download_training_feature_quads() -> None:
+    _logger.debug('Download training feature quads')
     filenames = [filename for filename in os.listdir(paths.DIR_DATA_TRAIN_RAW) if filename.endswith('.shp')]
     filenames.extend([filename for filename in os.listdir(paths.DIR_DATA_TRAIN_CLEAN) if filename.endswith('.shp')])
     quads = set([re.search(r'L15-\d{4}E-\d{4}N', filename).group() for filename in filenames])
@@ -19,4 +19,4 @@ def download_feature_quads() -> None:
 
 
 if __name__ == '__main__':
-    download_feature_quads()
+    download_training_feature_quads()

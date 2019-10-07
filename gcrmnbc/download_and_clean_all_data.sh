@@ -21,8 +21,11 @@ python ./data_cleaning/create_response_shapefile_quads.py
 echo "Remove response quads with no reef area"
 python ./data_cleaning/remove_quad_files_with_no_reef.py
 
-echo "Download feature quads"
-python ./data_acquisition/download_feature_quads.py
+echo "Download training feature quads"
+python ./data_acquisition/download_training_feature_quads.py
+
+echo "Download gloal feature quads"
+python ./data_acquisition/download_global_feature_quads.sh
 
 echo "Remove alpha band from features"
 python ./data_cleaning/remove_feature_rasters_alpha_band.py
