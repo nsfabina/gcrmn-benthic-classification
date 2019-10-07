@@ -9,7 +9,7 @@ _logger = logs.get_logger(__file__)
 
 
 _DOWNSAMPLE_PCT = 50
-_FILENAME_PREFIX = 'down{}'.format(_DOWNSAMPLE_PCT)
+_FILENAME_PREFIX = 'down{}_'.format(_DOWNSAMPLE_PCT)
 
 
 def downsample_global_rasters() -> None:

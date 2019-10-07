@@ -3,6 +3,7 @@ import os
 import re
 import shutil
 from typing import NamedTuple
+import zipfile
 
 from bfgn.data_management import data_core
 from bfgn.experiments import experiments
@@ -26,6 +27,7 @@ class QuadPaths(NamedTuple):
     filepath_prob: str
     filepath_mle: str
     filepath_shapefile: str
+    filepath_shapefile_archive: str
 
 
 def apply_model_to_quad(
@@ -36,12 +38,6 @@ def apply_model_to_quad(
         model_name: str,
         model_version: str
 ) -> None:
-    if not os.path.exists(paths.DIR_DATA_APPLY_GLOBAL):
-        try:
-            os.makedirs(paths.DIR_DATA_APPLY_GLOBAL)
-        except FileExistsError:
-            pass
-
     _logger.info('Apply model to quad {}'.format(quad_blob.quad_focal))
     quad_paths = _get_quad_paths(quad_blob)
 
@@ -232,20 +228,30 @@ def _scale_model_probabilities_raster(quad_paths: QuadPaths) -> None:
     os.rename(tmp_filepath, quad_paths.filepath_prob)
 
 
+def _zip_model_classification_shapefile(quad_paths: QuadPaths) -> None:
+    basename = os.path.splitext(os.path.basename(quad_paths.filepath_shapefile))[0]
+    with zipfile.ZipFile(quad_paths.filepath_shapefile_archive, 'w') as zipfile_out:
+        for extension in ('.dbf', '.prj', '.shp', '.shx'):
+            filepath_in = os.path.join(quad_paths.dir_quad, basename + extension)
+            zipfile_out.write(filepath_in, basename + extension)
+
+
 def _get_quad_paths(quad_blob: data_bucket.QuadBlob) -> QuadPaths:
     # Directories
-    dir_quad = os.path.join(paths.DIR_DATA_APPLY_GLOBAL, quad_blob.quad_focal)
+    dir_quad = os.path.join(paths.DIR_DATA_GLOBAL, quad_blob.quad_focal)
     dir_for_upload = os.path.join(dir_quad, 'for_upload')
     # Filepaths - for input files
-    filepath_lock = os.path.join(paths.DIR_DATA_APPLY_GLOBAL, '{}.lock'.format(quad_blob.quad_focal))
+    filepath_lock = os.path.join(paths.DIR_DATA_GLOBAL, '{}.lock'.format(quad_blob.quad_focal))
     filepath_focal_quad = os.path.join(dir_quad, quad_blob.quad_focal + data_bucket.FILENAME_SUFFIX_FOCAL)
     filepath_features = os.path.join(dir_quad, 'features.vrt')
     # Filepaths - for output files which are uploaded
     filepath_prob = os.path.join(dir_for_upload, '{}_model_probs.tif'.format(quad_blob.quad_focal))
     filepath_mle = os.path.join(dir_for_upload, '{}_model_class.tif'.format(quad_blob.quad_focal))
-    filepath_shapefile = os.path.join(dir_for_upload, '{}_model_class.shp'.format(quad_blob.quad_focal))
+    filepath_shapefile = os.path.join(dir_quad, '{}_model_class.shp'.format(quad_blob.quad_focal))  # Not uploaded
+    filepath_shapefile_archive = os.path.join(dir_for_upload, '{}_model_class.zip'.format(quad_blob.quad_focal))
     return QuadPaths(
         dir_quad=dir_quad, dir_for_upload=dir_for_upload, filepath_lock=filepath_lock,
         filepath_focal_quad=filepath_focal_quad, filepath_features=filepath_features, filepath_prob=filepath_prob,
         filepath_mle=filepath_mle, filepath_shapefile=filepath_shapefile,
+        filepath_shapefile_archive=filepath_shapefile_archive
     )

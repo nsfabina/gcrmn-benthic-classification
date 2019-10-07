@@ -18,7 +18,6 @@ DIR_DATA_TRAIN_RAW = os.path.join(DIR_DATA_TRAIN, 'raw')
 
 DIR_DATA_EVAL = os.path.join(DIR_DATA, 'evaluation_data')
 DIR_DATA_APPLY_CALVAL = os.path.join(DIR_DATA, 'applied_data')
-DIR_DATA_APPLY_GLOBAL = os.path.join(DIR_DATA, 'tmp_global_application')
 
 DIR_DATA_GLOBAL = os.path.join(DIR_DATA, 'global_data')
 
