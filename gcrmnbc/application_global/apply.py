@@ -2,7 +2,7 @@ import logging
 import os
 import re
 import shutil
-from typing import NamedTuple
+from typing import List, NamedTuple
 import zipfile
 
 from bfgn.data_management import data_core
@@ -17,17 +17,22 @@ from gcrmnbc.utils import data_bucket, gdal_command_line, paths
 _logger = logging.getLogger('model_global_application.apply')
 _logger.setLevel('DEBUG')
 
+_FILENAME_PREFIX_QUADS = 'down50_'
+
 
 class QuadPaths(NamedTuple):
     dir_quad: str
     dir_for_upload: str
     filepath_lock: str
     filepath_focal_quad: str
+    filepaths_contextual_quads: List[str]
     filepath_features: str
     filepath_prob: str
     filepath_mle: str
     filepath_shapefile: str
     filepath_shapefile_archive: str
+    filepath_corrupt: str
+    filepath_noapply: str
 
 
 def apply_model_to_quad(
@@ -41,11 +46,20 @@ def apply_model_to_quad(
     _logger.info('Apply model to quad {}'.format(quad_blob.quad_focal))
     quad_paths = _get_quad_paths(quad_blob)
 
-    _logger.debug('Check if application is already complete')
     is_complete = data_bucket.check_is_quad_model_application_complete(
         quad_blob, response_mapping, model_name, model_version)
     if is_complete:
         _logger.debug('Skipping application, is already complete')
+        return
+
+    is_corrupt = os.path.exists(quad_paths.filepath_corrupt)
+    if is_corrupt:
+        _logger.debug('Skipping application, is corrupt')
+        return
+
+    is_noapply = os.path.exists(quad_paths.filepath_noapply)
+    if is_noapply:
+        _logger.debug('Skipping application, is noapply')
         return
 
     _logger.debug('Acquire file lock')
@@ -60,9 +74,6 @@ def apply_model_to_quad(
 
     # Want to clean up if any of the following fail
     try:
-        _logger.debug('Download source data')
-        data_bucket.download_model_application_input_data_for_quad_blob(quad_paths.dir_quad, quad_blob)
-
         _logger.debug('Create feature VRT')
         buffer = int(2 * experiment.config.data_build.window_radius - experiment.config.data_build.loss_window_radius)
         _create_feature_vrt(quad_paths, buffer)
@@ -73,6 +84,8 @@ def apply_model_to_quad(
         except AttributeError:
             _logger.debug('Application unsuccessful, corrupt data found')
             data_bucket.upload_model_corrupt_data_notification_for_quad_blob(quad_blob)
+            with open(quad_paths.filepath_corrupt, 'w') as _:
+                pass
             return
 
         _logger.info('Format model probabilities')
@@ -87,6 +100,8 @@ def apply_model_to_quad(
         if not includes_reef:
             _logger.debug('Application stopped early, no reef area found')
             data_bucket.upload_model_no_apply_notification_for_quad_blob(quad_blob)
+            with open(quad_paths.filepath_noapply, 'w') as _:
+                pass
             return
 
         _logger.info('Generating shapefile from classifications')
@@ -94,14 +109,15 @@ def apply_model_to_quad(
 
         _logger.info('Compress model probabilities and classifications')
         _scale_model_probabilities_raster(quad_paths)
+        _zip_model_classification_shapefile(quad_paths)
 
         _logger.info('Uploading model results')
         data_bucket.upload_model_application_results_for_quad_blob(
             quad_paths.dir_for_upload, quad_blob, response_mapping, model_name, model_version)
 
         _logger.info('Application success for quad {}'.format(quad_blob.quad_focal))
-        _logger.debug('Delete model results from other versions and any outdated notifications')
         # TODO
+        #_logger.debug('Delete model results from other versions and any outdated notifications')
         #data_bucket.delete_model_application_results_for_other_versions(
         #    quad_blob, response_mapping, model_name, model_version)
         data_bucket.delete_model_corrupt_data_notification_if_exists(quad_blob)
@@ -142,11 +158,7 @@ def _create_feature_vrt(quad_paths: QuadPaths, buffer: int) -> None:
     # Build VRT
     focal_raster = gdal.Open(quad_paths.filepath_focal_quad)
     focal_srs = osr.SpatialReference(wkt=focal_raster.GetProjection())
-    filepaths_quads = [
-        os.path.join(quad_paths.dir_quad, filename) for filename in os.listdir(quad_paths.dir_quad)
-        if filename.endswith(data_bucket.FILENAME_SUFFIX_FOCAL)
-        or filename.endswith(data_bucket.FILENAME_SUFFIX_CONTEXT)
-    ]
+    filepaths_quads = [quad_paths.filepath_focal_quad] + quad_paths.filepaths_contextual_quads
     options_buildvrt = gdal.BuildVRTOptions(
         bandList=[1, 2, 3], outputBounds=(llx, lly, urx, ury), outputSRS=focal_srs, VRTNodata=-9999,
     )
@@ -242,16 +254,26 @@ def _get_quad_paths(quad_blob: data_bucket.QuadBlob) -> QuadPaths:
     dir_for_upload = os.path.join(dir_quad, 'for_upload')
     # Filepaths - for input files
     filepath_lock = os.path.join(paths.DIR_DATA_GLOBAL, '{}.lock'.format(quad_blob.quad_focal))
-    filepath_focal_quad = os.path.join(dir_quad, quad_blob.quad_focal + data_bucket.FILENAME_SUFFIX_FOCAL)
+    filepath_focal_quad = os.path.join(paths.DIR_DATA_GLOBAL, _FILENAME_PREFIX_QUADS + quad_blob.quad_focal + '.tif')
+    filepaths_contextual_quads = list()
+    for blob_context in quad_blob.blobs_context:
+        quad = data_bucket.get_quad_name_from_blob_name(blob_context.name)
+        filepath_context = os.path.join(paths.DIR_DATA_GLOBAL, _FILENAME_PREFIX_QUADS + quad + '.tif')
+        if os.path.exists(filepath_context):
+            filepaths_contextual_quads.append(filepath_context)
     filepath_features = os.path.join(dir_quad, 'features.vrt')
     # Filepaths - for output files which are uploaded
     filepath_prob = os.path.join(dir_for_upload, '{}_model_probs.tif'.format(quad_blob.quad_focal))
     filepath_mle = os.path.join(dir_for_upload, '{}_model_class.tif'.format(quad_blob.quad_focal))
     filepath_shapefile = os.path.join(dir_quad, '{}_model_class.shp'.format(quad_blob.quad_focal))  # Not uploaded
     filepath_shapefile_archive = os.path.join(dir_for_upload, '{}_model_class.zip'.format(quad_blob.quad_focal))
+    # Filepaths - for notifications
+    filepath_corrupt = os.path.join(paths.DIR_DATA_GLOBAL, quad_blob.quad_focal + '_corrupt')
+    filepath_noapply = os.path.join(paths.DIR_DATA_GLOBAL, quad_blob.quad_focal + '_no_apply')
     return QuadPaths(
         dir_quad=dir_quad, dir_for_upload=dir_for_upload, filepath_lock=filepath_lock,
-        filepath_focal_quad=filepath_focal_quad, filepath_features=filepath_features, filepath_prob=filepath_prob,
-        filepath_mle=filepath_mle, filepath_shapefile=filepath_shapefile,
-        filepath_shapefile_archive=filepath_shapefile_archive
+        filepath_focal_quad=filepath_focal_quad, filepaths_contextual_quads=filepaths_contextual_quads,
+        filepath_features=filepath_features, filepath_prob=filepath_prob, filepath_mle=filepath_mle,
+        filepath_shapefile=filepath_shapefile, filepath_shapefile_archive=filepath_shapefile_archive,
+        filepath_corrupt=filepath_corrupt, filepath_noapply=filepath_noapply
     )

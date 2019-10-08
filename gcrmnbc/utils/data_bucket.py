@@ -81,7 +81,7 @@ def _parse_blobs(raw_blobs: List[storage.Blob]) -> List[QuadBlob]:
             continue
         # Parse quad information
         region = _get_region_data_path_from_blob_name(raw_blob.name)
-        quad = _get_quad_name_from_blob_name(raw_blob.name)
+        quad = get_quad_name_from_blob_name(raw_blob.name)
         x, y = _get_x_and_y_from_blob_name(raw_blob.name)
         # Remove blobs which are in the test bucket
         if region == 'test':
@@ -157,7 +157,7 @@ def download_model_application_input_data_for_quad_blob(dir_dest: str, quad_blob
 
     _logger.debug('Download {} contextual quads'.format(len(quad_blob.blobs_context)))
     for blob_context in quad_blob.blobs_context:
-        quad_context = _get_quad_name_from_blob_name(blob_context.name)
+        quad_context = get_quad_name_from_blob_name(blob_context.name)
         filepath_context = os.path.join(dir_dest, quad_context + FILENAME_SUFFIX_CONTEXT)
         _logger.debug('Download contextual quad to {}'.format(filepath_context))
         blob_context.download_to_filename(filepath_context)
@@ -223,14 +223,14 @@ def _get_region_data_path_from_blob_name(blob_name: str) -> str:
     return '/'.join(split_region_quad[:-1])
 
 
-def _get_quad_name_from_blob_name(blob_name: str) -> str:
+def get_quad_name_from_blob_name(blob_name: str) -> str:
     name_region_quad = blob_name.split(_DATA_PATH_SOURCE)[1]
     split_region_quad = name_region_quad.split('/')
     return split_region_quad[-1].split('.tif')[0]
 
 
 def _get_x_and_y_from_blob_name(blob_name: str) -> Tuple[str, str]:
-    quad = _get_quad_name_from_blob_name(blob_name)
+    quad = get_quad_name_from_blob_name(blob_name)
     _, _, x, _, y, _ = re.split('-|[A-Z]', quad)
     return x, y
 
