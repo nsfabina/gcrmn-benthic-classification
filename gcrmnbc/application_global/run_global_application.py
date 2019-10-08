@@ -27,10 +27,13 @@ def run_application(config_name: str, label_experiment: str, response_mapping: s
     # Get quad blobs and apply model
     logger.info('Get quad blobs')
     quad_blobs = data_bucket.get_imagery_quad_blobs()
+    quad_blobs_sorted = dict()
+    for quad_blob in quad_blobs:
+        quad_blobs_sorted.setdefault(quad_blob.quad_focal, list()).append(quad_blob)
     logger.info('Apply model to quads')
-    for idx_quad, quad_blob in enumerate(quad_blobs):
-        logger.info('Apply model to quad blob {} of {}'.format(1+idx_quad, len(quad_blobs)))
-        apply.apply_model_to_quad(quad_blob, data_container, experiment, response_mapping, config_name, model_version)
+    for idx_quad, (focal_quad, quad_blobs) in enumerate(sorted(quad_blobs_sorted.items(), key=lambda x: x[0])):
+        logger.info('Apply model to quad {} ({} of {})'.format(focal_quad, 1+idx_quad, len(quad_blobs_sorted)))
+        apply.apply_model_to_quad(quad_blobs, data_container, experiment, response_mapping, config_name, model_version)
 
 
 def _load_dataset(config: configs.Config) -> data_core.DataContainer:

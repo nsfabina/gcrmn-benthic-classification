@@ -36,18 +36,21 @@ class QuadPaths(NamedTuple):
 
 
 def apply_model_to_quad(
-        quad_blob: data_bucket.QuadBlob,
+        quad_blobs: List[data_bucket.QuadBlob],
         data_container: data_core.DataContainer,
         experiment: experiments.Experiment,
         response_mapping: str,
         model_name: str,
         model_version: str
 ) -> None:
+    quad_blob = quad_blobs[0]
     _logger.info('Apply model to quad {}'.format(quad_blob.quad_focal))
     quad_paths = _get_quad_paths(quad_blob)
 
-    is_complete = data_bucket.check_is_quad_model_application_complete(
-        quad_blob, response_mapping, model_name, model_version)
+    is_complete = all([
+        data_bucket.check_is_quad_model_application_complete(qb, response_mapping, model_name, model_version)
+        for qb in quad_blobs
+    ])
     if is_complete:
         _logger.debug('Skipping application, is already complete')
         return
@@ -83,7 +86,8 @@ def apply_model_to_quad(
             _generate_model_probabilities_raster(quad_paths, data_container, experiment)
         except AttributeError:
             _logger.debug('Application unsuccessful, corrupt data found')
-            data_bucket.upload_model_corrupt_data_notification_for_quad_blob(quad_blob)
+            for qb in quad_blobs:
+                data_bucket.upload_model_corrupt_data_notification_for_quad_blob(qb)
             with open(quad_paths.filepath_corrupt, 'w') as _:
                 pass
             return
@@ -99,7 +103,8 @@ def apply_model_to_quad(
 
         if not includes_reef:
             _logger.debug('Application stopped early, no reef area found')
-            data_bucket.upload_model_no_apply_notification_for_quad_blob(quad_blob)
+            for qb in quad_blobs:
+                data_bucket.upload_model_no_apply_notification_for_quad_blob(qb)
             with open(quad_paths.filepath_noapply, 'w') as _:
                 pass
             return
@@ -112,15 +117,17 @@ def apply_model_to_quad(
         _zip_model_classification_shapefile(quad_paths)
 
         _logger.info('Uploading model results')
-        data_bucket.upload_model_application_results_for_quad_blob(
-            quad_paths.dir_for_upload, quad_blob, response_mapping, model_name, model_version)
+        for qb in quad_blobs:
+            data_bucket.upload_model_application_results_for_quad_blob(
+                quad_paths.dir_for_upload, qb, response_mapping, model_name, model_version)
 
         _logger.info('Application success for quad {}'.format(quad_blob.quad_focal))
         # TODO
         #_logger.debug('Delete model results from other versions and any outdated notifications')
         #data_bucket.delete_model_application_results_for_other_versions(
         #    quad_blob, response_mapping, model_name, model_version)
-        data_bucket.delete_model_corrupt_data_notification_if_exists(quad_blob)
+        for qb in quad_blobs:
+            data_bucket.delete_model_corrupt_data_notification_if_exists(qb)
 
     except Exception as error_:
         raise error_
