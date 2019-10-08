@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 
-DIR_DEST='/scratch/nfabina/gcrmn-benthic-classification/global_application'
+DIR_DEST='/scratch/nfabina/gcrmn-benthic-classification/global_data'
 
 if [[ ! -d "${DIR_DEST}" ]]; then
     mkdir -p "${DIR_DEST}"
