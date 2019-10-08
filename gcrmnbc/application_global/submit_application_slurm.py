@@ -25,7 +25,7 @@ if __name__ == '__main__':
         config_name=args.config_name, label_experiment=args.label_experiment, response_mapping=args.response_mapping)
     slurm_python_wrap = SLURM_COMMAND_APPLY.format(
         config_name=args.config_name, label_experiment=args.label_experiment, response_mapping=args.response_mapping,
-        mdoel_version=args.model_version
+        model_version=args.model_version
     )
 
     for idx_job in range(args.num_jobs):
