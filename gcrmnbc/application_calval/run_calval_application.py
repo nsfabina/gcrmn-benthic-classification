@@ -15,8 +15,8 @@ def run_application(config_name: str, label_experiment: str, response_mapping: s
     config = shared_configs.build_dynamic_config(
         config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
     logger = logs.get_model_logger(
-        'log_run_calval_application', label_experiment=label_experiment, response_mapping=response_mapping,
-        config=config
+        'log_run_calval_application', config_name=config_name, label_experiment=label_experiment,
+        response_mapping=response_mapping,
     )
 
     # Build dataset
@@ -31,7 +31,7 @@ def run_application(config_name: str, label_experiment: str, response_mapping: s
 
     # Apply model
     dir_model_out = paths.get_dir_calval_data_experiment_config(
-        label_experiment=label_experiment, response_mapping=response_mapping, config=config)
+        config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
     reefs = sorted([reef for reef in os.listdir(paths.DIR_DATA_EVAL)])
     for idx_filepath, reef in enumerate(reefs):
         logger.debug('Applying model to reef {}'.format(reef))
@@ -46,7 +46,7 @@ def run_application(config_name: str, label_experiment: str, response_mapping: s
         are_reefs_complete.append(os.path.exists(filepath_reef_complete))
     if all(are_reefs_complete):
         filepath_model_complete = paths.get_filepath_calval_apply_complete(
-            label_experiment=label_experiment, response_mapping=response_mapping, config=config)
+            config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
         open(filepath_model_complete, 'w')
         if run_all:
             submit_calculation_slurm.submit_calculation_slurm(

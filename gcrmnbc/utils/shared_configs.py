@@ -62,9 +62,9 @@ def build_dynamic_config(config_name: str, label_experiment: str, response_mappi
     config.raw_files.feature_files = filepaths_features
     config.raw_files.response_files = filepaths_responses
     config.raw_files.boundary_files = filepaths_boundaries
-    config.data_build.dir_out = paths.get_dir_built_data_experiment(label_experiment, response_mapping, config)
-    config.model_training.dir_out = paths.get_dir_model_experiment_config(label_experiment, response_mapping, config)
-    if config_name.startswith('build_only'):
-        config.model_training.dir_out = os.path.join(os.path.dirname(config.model_training.dir_out), config_name)
+    config.data_build.dir_out = paths.get_dir_built_data_experiment(
+        label_experiment=label_experiment, response_mapping=response_mapping, config=config)
+    config.model_training.dir_out = paths.get_dir_model_experiment_config(
+        config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
     config.architecture.n_classes = _RESPONSE_MAPPING_CLASSES[response_mapping]
     return config

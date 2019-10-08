@@ -9,7 +9,7 @@ import shapely.geometry
 import shapely.ops
 
 from gcrmnbc.application_calval import shared_report, shared_statistics
-from gcrmnbc.utils import logs, paths, shared_configs
+from gcrmnbc.utils import logs, paths
 
 
 _FILEPATH_UQ_OUTLINE = os.path.join(paths.DIR_DATA_EVAL, '{}/clean/reef_outline_union.shp')
@@ -23,16 +23,15 @@ def calculate_asu_statistics(
         response_mapping: str,
         recalculate: bool = False
 ) -> None:
-    config = shared_configs.build_dynamic_config(
-        config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
     logger = logs.get_model_logger(
-        logger_name='log_calculate_asu_statistics', label_experiment=label_experiment,
-        response_mapping=response_mapping, config=config
+        logger_name='log_calculate_asu_statistics', config_name=config_name, label_experiment=label_experiment,
+        response_mapping=response_mapping
     )
 
     logger.info('Calculate ASU statistics for {} {} {} with recalculate {}'.format(
         config_name, label_experiment, response_mapping, recalculate))
-    dir_model = paths.get_dir_calval_data_experiment_config(label_experiment, response_mapping, config)
+    dir_model = paths.get_dir_calval_data_experiment_config(
+        config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
     filepath_data_out = os.path.join(dir_model, paths.FILENAME_CALVAL_STATS)
     filepath_fig_out = os.path.join(dir_model, paths.FILENAME_CALVAL_FIGS)
 

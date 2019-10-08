@@ -19,8 +19,8 @@ def run_classification(
     config = shared_configs.build_dynamic_config(
         config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
     logger = logs.get_model_logger(
-        logger_name='log_run_classification', label_experiment=label_experiment, response_mapping=response_mapping,
-        config=config
+        logger_name='log_run_classification', config_name=config_name, label_experiment=label_experiment,
+        response_mapping=response_mapping,
     )
 
     # Create directories if necessary
@@ -31,13 +31,13 @@ def run_classification(
 
     # Exit early if classification already finished -- assume build is finished too
     filepath_complete = paths.get_filepath_classify_complete(
-        label_experiment=label_experiment, response_mapping=response_mapping, config=config)
+        config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
     if os.path.exists(filepath_complete):
         return
 
     # Exit early if classification in progress
     filepath_lock = paths.get_filepath_classify_lock(
-        label_experiment=label_experiment, response_mapping=response_mapping, config=config)
+        config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
     try:
         file_lock = open(filepath_lock, 'x')
     except OSError:
@@ -65,7 +65,7 @@ def run_classification(
         # reporter.create_model_report()
         if build_only:
             filepath_built = paths.get_filepath_build_complete(
-                label_experiment=label_experiment, response_mapping=response_mapping, config=config)
+                config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
             open(filepath_built, 'w')
             return
 

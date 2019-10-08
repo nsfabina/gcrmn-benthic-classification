@@ -3,8 +3,6 @@ import os
 import shlex
 import subprocess
 
-from bfgn.configuration import configs
-
 from gcrmnbc.utils import paths, shared_submit_slurm
 
 
@@ -42,18 +40,21 @@ if __name__ == '__main__':
                 shared_submit_slurm.validate_response_mapping(response_mapping)
 
                 config_name = os.path.splitext(filename_config)[0]
-                config = configs.create_config_from_file(paths.get_filepath_config(config_name))
                 job_name = shared_submit_slurm.get_classify_job_name(config_name, label_experiment, response_mapping)
 
                 # Create model directory
-                dir_model = paths.get_dir_model_experiment_config(label_experiment, response_mapping, config)
+                dir_model = paths.get_dir_model_experiment_config(
+                    config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
                 if not os.path.exists(dir_model):
                     os.makedirs(dir_model)
 
                 # Do not submit if classification is locked or complete, or if data is built and build_only is True
-                filepath_built = paths.get_filepath_build_complete(label_experiment, response_mapping, config)
-                filepath_complete = paths.get_filepath_classify_complete(label_experiment, response_mapping, config)
-                filepath_lock = paths.get_filepath_classify_lock(label_experiment, response_mapping, config)
+                filepath_built = paths.get_filepath_build_complete(
+                    config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
+                filepath_complete = paths.get_filepath_classify_complete(
+                    config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
+                filepath_lock = paths.get_filepath_classify_lock(
+                    config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
                 command = 'squeue -u nfabina -o %j'
                 result = subprocess.run(shlex.split(command), capture_output=True)
                 is_in_job_queue = job_name in result.stdout.decode('utf-8')

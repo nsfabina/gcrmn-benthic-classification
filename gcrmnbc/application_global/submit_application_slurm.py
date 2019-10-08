@@ -1,7 +1,7 @@
 import argparse
 import subprocess
 
-from gcrmnbc.utils import paths, shared_configs, shared_submit_slurm
+from gcrmnbc.utils import paths, shared_submit_slurm
 
 
 SLURM_COMMAND_APPLY = \
@@ -21,10 +21,8 @@ if __name__ == '__main__':
     # Prep for calling jobs
     shared_submit_slurm.validate_label_experiment(args.label_experiment)
     shared_submit_slurm.validate_response_mapping(args.response_mapping)
-    config = shared_configs.build_dynamic_config(
-        config_name=args.config_name, label_experiment=args.label_experiment, response_mapping=args.response_mapping)
     dir_model = paths.get_dir_model_experiment_config(
-        label_experiment=args.label_experiment, response_mapping=args.response_mapping, config=config)
+        config_name=args.config_name, label_experiment=args.label_experiment, response_mapping=args.response_mapping)
     slurm_python_wrap = SLURM_COMMAND_APPLY.format(
         config_name=args.config_name, label_experiment=args.label_experiment, response_mapping=args.response_mapping,
         mdoel_version=args.model_version

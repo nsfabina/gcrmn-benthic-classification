@@ -33,22 +33,17 @@ FILENAME_CALVAL_FIGS = 'asu_statistics.pdf'
 def get_dir_built_data_experiment(label_experiment: str, response_mapping: str, config: configs.Config) -> str:
     if label_experiment.endswith('_aug'):
         label_experiment = label_experiment[:-4]
-    return os.path.join(
-        DIR_DATA_BUILT,
-        label_experiment,
-        '_'.join([response_mapping, str(config.data_build.window_radius), str(config.data_build.loss_window_radius)])
-    )
+    window_radius = config.data_build.window_radius
+    loss_radius = config.data_build.loss_window_radius
+    return os.path.join(DIR_DATA_BUILT, label_experiment, '_'.join([response_mapping, window_radius, loss_radius]))
 
 
 def get_dir_calval_data_experiment(label_experiment: str, response_mapping: str) -> str:
     return os.path.join(DIR_DATA_APPLY_CALVAL, label_experiment, response_mapping)
 
 
-def get_dir_calval_data_experiment_config(label_experiment: str, response_mapping: str, config: configs.Config) -> str:
-    return os.path.join(
-        get_dir_calval_data_experiment(label_experiment, response_mapping),
-        _get_experiment_config_string(config)
-    )
+def get_dir_calval_data_experiment_config(config_name: str, label_experiment: str, response_mapping: str) -> str:
+    return os.path.join(get_dir_calval_data_experiment(label_experiment, response_mapping), config_name)
 
 
 def get_dir_eval_data_experiment(reef: str, label_experiment: str) -> str:
@@ -67,38 +62,34 @@ def get_dir_model_experiment(label_experiment: str) -> str:
     return os.path.join(DIR_MODELS, label_experiment)
 
 
-def get_dir_model_experiment_config(label_experiment: str, response_mapping: str, config: configs.Config) -> str:
-    return os.path.join(
-        get_dir_model_experiment(label_experiment),
-        response_mapping,
-        _get_experiment_config_string(config)
-    )
+def get_dir_model_experiment_config(config_name: str, label_experiment: str, response_mapping: str) -> str:
+    return os.path.join(get_dir_model_experiment(label_experiment), response_mapping, config_name)
 
 
-def get_filepath_build_complete(label_experiment: str, response_mapping: str, config: configs.Config) -> str:
+def get_filepath_build_complete(config_name: str, label_experiment: str, response_mapping: str) -> str:
     return os.path.join(
-        get_dir_model_experiment_config(label_experiment, response_mapping, config),
+        get_dir_model_experiment_config(config_name, label_experiment, response_mapping),
         FILENAME_BUILD_COMPLETE
     )
 
 
-def get_filepath_calval_apply_complete(label_experiment: str, response_mapping: str, config: configs.Config) -> str:
+def get_filepath_calval_apply_complete(config_name: str, label_experiment: str, response_mapping: str) -> str:
     return os.path.join(
-        get_dir_calval_data_experiment_config(label_experiment, response_mapping, config),
+        get_dir_calval_data_experiment_config(config_name, label_experiment, response_mapping),
         FILENAME_APPLY_CALVAL_COMPLETE
     )
 
 
-def get_filepath_classify_complete(label_experiment: str, response_mapping: str, config: configs.Config) -> str:
+def get_filepath_classify_complete(config_name: str, label_experiment: str, response_mapping: str) -> str:
     return os.path.join(
-        get_dir_model_experiment_config(label_experiment, response_mapping, config),
+        get_dir_model_experiment_config(config_name, label_experiment, response_mapping),
         FILENAME_CLASSIFY_COMPLETE
     )
 
 
-def get_filepath_classify_lock(label_experiment: str, response_mapping: str, config: configs.Config) -> str:
+def get_filepath_classify_lock(config_name: str, label_experiment: str, response_mapping: str) -> str:
     return os.path.join(
-        get_dir_model_experiment_config(label_experiment, response_mapping, config),
+        get_dir_model_experiment_config(config_name, label_experiment, response_mapping),
         FILENAME_CLASSIFY_LOCK
     )
 

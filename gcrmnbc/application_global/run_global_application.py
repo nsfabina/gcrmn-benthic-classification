@@ -14,8 +14,8 @@ def run_application(config_name: str, label_experiment: str, response_mapping: s
         config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
 
     logger = logs.get_model_logger(
-        logger_name='log_run_global_application', label_experiment=label_experiment, response_mapping=response_mapping,
-        config=config
+        logger_name='log_run_global_application', config_name=config_name, label_experiment=label_experiment,
+        response_mapping=response_mapping,
     )
 
     # Get data and model objects

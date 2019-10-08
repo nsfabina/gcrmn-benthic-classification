@@ -7,7 +7,7 @@ from gcrmnbc.utils import paths
 
 
 def compare_model_fits(label_experiment: str, response_mapping: str) -> None:
-    dir_model_version = paths.get_dir_model_version(label_experiment)
+    dir_model_version = paths.get_dir_model_experiment(label_experiment)
     raw_paths_histories = comparisons.walk_directories_for_model_histories([dir_model_version])
     paths_histories = list()
     for path_history in raw_paths_histories:

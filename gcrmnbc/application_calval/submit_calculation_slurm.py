@@ -3,7 +3,7 @@ import os
 import shlex
 import subprocess
 
-from gcrmnbc.utils import paths, shared_configs, shared_submit_slurm
+from gcrmnbc.utils import paths, shared_submit_slurm
 
 
 SLURM_COMMAND = \
@@ -29,14 +29,12 @@ def submit_calculation_slurm(
                 shared_submit_slurm.validate_response_mapping(response_mapping)
 
                 config_name = os.path.splitext(filename_config)[0]
-                config = shared_configs.build_dynamic_config(
-                    config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
                 job_name = shared_submit_slurm.get_calval_calculate_job_name(
                     config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
 
                 # Do not submit jobs that do not have application data, are already complete, or are already submitted
                 dir_results = paths.get_dir_calval_data_experiment_config(
-                    label_experiment=label_experiment, response_mapping=response_mapping, config=config)
+                    config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
                 filepath_apply_complete = os.path.join(dir_results, paths.FILENAME_APPLY_CALVAL_COMPLETE)
                 filepath_stats = os.path.join(dir_results, paths.FILENAME_CALVAL_STATS)
                 filepath_report = os.path.join(dir_results, paths.FILENAME_CALVAL_FIGS)
@@ -60,7 +58,7 @@ def submit_calculation_slurm(
                     dir_working=dir_working, config_name=config_name, label_experiment=label_experiment,
                     response_mapping=response_mapping, recalculate='--recalculate' if recalculate else '')
                 dir_model = paths.get_dir_model_experiment_config(
-                    label_experiment=label_experiment, response_mapping=response_mapping, config=config)
+                    config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
                 slurm_args_dynamic = ' '.join([
                     '--job-name={}'.format(job_name),
                     '--output={}/slurm.calc_stats.%j.%t.OUT'.format(dir_model),
