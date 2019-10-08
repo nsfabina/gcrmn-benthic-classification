@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import uuid
 
 from gcrmnbc.utils import paths
 
@@ -25,7 +26,7 @@ def get_model_logger(
         config_name: str,
         label_experiment: str,
         response_mapping: str,
-) -> logging.Logger:
+) -> logging.LoggerAdapter:
     log_out = os.path.join(
         paths.get_dir_model_experiment_config(config_name, label_experiment, response_mapping),
         logger_name
@@ -36,8 +37,9 @@ def get_model_logger(
         os.makedirs(os.path.dirname(log_out))
     logger = logging.getLogger()
     logger.setLevel('DEBUG')
-    formatter = logging.Formatter(fmt='%(asctime)s - %(processName)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter(
+        fmt='%(asctime)s - %(host_uuid) - %(processName)s - %(name)s - %(levelname)s - %(message)s')
     handler = logging.FileHandler(log_out)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    return logger
+    return logging.LoggerAdapter(logger, {'host_uuid': uuid.uuid1()})
