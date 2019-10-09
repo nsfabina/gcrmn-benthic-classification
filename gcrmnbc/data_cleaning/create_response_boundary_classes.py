@@ -16,11 +16,14 @@ _LABEL_EDGE = -8888
 
 def create_response_boundary_classes() -> None:
     _logger.info('Create response boundary classes')
-    subdirs_data = ('downsample_50', 'originals')
-    thicknesses = (3, 4)
+    subdirs_data = ('downsample_50', )
+    thicknesses = (3, )
     for subdir_data, thickness in zip(subdirs_data, thicknesses):
         dir_data = os.path.join(paths.DIR_DATA_TRAIN, subdir_data)
-        filepaths_srcs = [os.path.join(dir_data, fn) for fn in os.listdir(dir_data) if fn.endswith('responses_lwr.tif')]
+        filepaths_srcs = [
+            os.path.join(dir_data, fn) for fn in os.listdir(dir_data)
+            if fn.endswith('responses_lwr.tif') or fn.endswith('responses_lwrn.tif')
+        ]
         for filepath_src in tqdm(sorted(filepaths_srcs), desc='Create boundary classes for {}'.format(subdir_data)):
             _logger.debug('Processing file:  {}'.format(filepath_src))
             filepath_dest = re.sub('.tif', 'b.tif', filepath_src)

@@ -8,7 +8,7 @@ from gcrmnbc.utils import gdal_command_line, logs, paths
 
 _logger = logs.get_logger(__file__)
 
-_DOWNSAMPLE_PCTS = (50, 25)
+_DOWNSAMPLE_PCTS = (50, )
 
 
 def downsample_rasters() -> None:
