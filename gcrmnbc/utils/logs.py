@@ -38,8 +38,9 @@ def get_model_logger(
     logger = logging.getLogger()
     logger.setLevel('DEBUG')
     formatter = logging.Formatter(
-        fmt='%(asctime)s - %(host_uuid) - %(processName)s - %(name)s - %(levelname)s - %(message)s')
+        fmt='%(asctime)s - %(processName)s - %(name)s - %(levelname)s - %(message)s')
     handler = logging.FileHandler(log_out)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    return logging.LoggerAdapter(logger, {'host_uuid': uuid.uuid1()})
+    return logger
+    #return logging.LoggerAdapter(logger, {'host_uuid': uuid.uuid1()})
