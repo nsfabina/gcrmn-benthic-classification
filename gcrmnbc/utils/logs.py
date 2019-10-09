@@ -1,5 +1,6 @@
 import logging
 import os
+import socket
 import sys
 import uuid
 
@@ -36,11 +37,10 @@ def get_model_logger(
     if not os.path.exists(os.path.dirname(log_out)):
         os.makedirs(os.path.dirname(log_out))
     logger = logging.getLogger()
-    logger.setLevel('DEBUG')
+    logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter(
-        fmt='%(asctime)s - %(processName)s - %(name)s - %(levelname)s - %(message)s')
+        fmt='%(asctime)s - %(host_name)s -  %(host_uuid)s - %(processName)s - %(name)s - %(levelname)s - %(message)s')
     handler = logging.FileHandler(log_out)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    return logger
-    #return logging.LoggerAdapter(logger, {'host_uuid': uuid.uuid1()})
+    return logging.LoggerAdapter(logger, {'host_name': socket.gethostname(), 'host_uuid': uuid.uuid1()})
