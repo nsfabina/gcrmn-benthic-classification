@@ -2,6 +2,7 @@ import os
 import re
 
 import gdal
+from tqdm import tqdm
 
 from gcrmnbc.utils import gdal_command_line, logs, paths
 
@@ -10,14 +11,14 @@ _logger = logs.get_logger(__file__)
 
 
 def remove_feature_rasters_alpha_band() -> None:
-    raise AssertionError('This script has not been tested since being updated, be careful')
-    _logger.info('Remove alpha band from feature rasters')
     filenames_raw = [filename for filename in os.listdir(paths.DIR_DATA_TRAIN_RAW) if filename.endswith('features.tif')]
-    for idx, filename_raw in enumerate(filenames_raw):
-        _logger.debug('Removing alpha band for raster {} ({} total):  {}'.format(idx, len(filenames_raw), filename_raw))
+    for filename_raw in tqdm(filenames_raw, desc='Remove feature rasters alpha band'):
         filepath_raw = os.path.join(paths.DIR_DATA_TRAIN_RAW, filename_raw)
         filepath_tmp = os.path.join(paths.DIR_DATA_TRAIN_RAW, re.sub('features.tif', 'features_tmp.tif', filename_raw))
         filepath_clean = os.path.join(paths.DIR_DATA_TRAIN_CLEAN, filename_raw)
+        # Skip if file already exists
+        if os.path.exists(filepath_clean):
+            continue
         # Write in nodata values
         command = 'gdal_calc.py -A {filepath_raw} --allBands=A -B {filepath_raw} --B_band=4 ' + \
                   '--outfile={filepath_tmp} --NoDataValue=-9999 --type=Int16 --co=COMPRESS=DEFLATE ' + \
