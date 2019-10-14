@@ -49,7 +49,8 @@ echo "Download supplemental training data"
 ./data_acquisition/download_supplemental_shapefiles.sh
 
 echo "Create supplemental response rasters"
-python ./data_cleaning/create_supplemental_response_rasters.py
+python ./data_cleaning/create_supplemental_landwater_rasters.py
+python ./data_cleaning/create_supplemental_allclasses_rasters.py
 
 echo "Download UNEP evaluation data"
 ./data_acquisition/download_unep_from_fabina_gdrive.sh

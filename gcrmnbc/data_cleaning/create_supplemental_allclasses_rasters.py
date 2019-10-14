@@ -4,27 +4,27 @@ import re
 
 import gdal
 import osr
+from tqdm import tqdm
 
-from gcrmnbc.utils import encodings, logs, paths
+from gcrmnbc.utils import gdal_command_line, logs, paths
 
 
 _logger = logs.get_logger(__file__)
 
-SUFFIX_LAND = '_land.shp'
-SUFFIX_WATER = '_water.shp'
+SUFFIX_SUPPL = 'model_class.shp'
+SUFFIX_FEAT = 'features.tif'
+SUFFIX_RESP = 'model_class.tif'
 
 
-def create_supplemental_response_rasters(recalculate: bool) -> None:
-    raise AssertionError('This script has not been tested since being updated, be careful')
+def create_supplemental_allclasses_rasters(recalculate: bool) -> None:
     _logger.info('Create supplemental response rasters')
-    filepaths_boundaries = sorted([
+    filepaths_supplements = sorted([
         os.path.join(paths.DIR_DATA_TRAIN_CLEAN, filename) for filename in os.listdir(paths.DIR_DATA_TRAIN_CLEAN)
-        if any([filename.endswith(suffix) for suffix in (SUFFIX_LAND, SUFFIX_WATER)])
+        if filename.endswith(SUFFIX_SUPPL)
     ])
-    for idx, filepath_boundary in enumerate(filepaths_boundaries):
-        _logger.debug('Processing raster {} of {}'.format(1+idx, len(filepaths_boundaries)))
-        filepath_features = re.sub(r'_\w*\.shp', '_features.tif', filepath_boundary)
-        filepath_responses = re.sub(r'\.shp', '.tif', filepath_boundary)
+    for filepath_supplement in tqdm(filepaths_supplements, desc='Create supplemental training data rasters'):
+        filepath_features = re.sub(SUFFIX_SUPPL, SUFFIX_FEAT, filepath_supplement)
+        filepath_responses = re.sub(SUFFIX_SUPPL, SUFFIX_RESP, filepath_supplement)
         if os.path.exists(filepath_responses) and not recalculate:
             _logger.debug('Skipping, raster already processed')
             continue
@@ -39,23 +39,16 @@ def create_supplemental_response_rasters(recalculate: bool) -> None:
         lly = min([y0, y1])
         ury = max([y0, y1])
         output_bounds = (llx, lly, urx, ury)
-        if filepath_boundary.endswith(SUFFIX_LAND):
-            burn_value = encodings.MAPPINGS[encodings.LAND]
-        elif filepath_boundary.endswith(SUFFIX_WATER):
-            burn_value = encodings.MAPPINGS[encodings.WATER]
-        else:
-            raise AssertionError('Filepath does not end with land or water pattern, need to specify burn value')
         # Rasterize to responses filepath
         options_rasterize = gdal.RasterizeOptions(
             outputType=gdal.GDT_Int16, creationOptions=['COMPRESS=DEFLATE', 'TILED=YES'], outputBounds=output_bounds,
-            outputSRS=srs, xRes=xres, yRes=yres, noData=-9999, initValues=-9999, burnValues=burn_value,
+            outputSRS=srs, xRes=xres, yRes=yres, noData=-9999, initValues=-9999, attribute='dn',
         )
-        gdal.Rasterize(filepath_responses, filepath_boundary, options=options_rasterize)
+        gdal.Rasterize(filepath_responses, filepath_supplement, options=options_rasterize)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--recalculate', action='store_true')
     args = parser.parse_args()
-    create_supplemental_response_rasters(args.recalculate)
-
+    create_supplemental_allclasses_rasters(args.recalculate)
