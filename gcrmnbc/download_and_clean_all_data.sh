@@ -32,7 +32,7 @@ echo "Download UNEP evaluation data"
 
 # Data cleaning - order dependent
 
-# Cleaning feature files
+# Needs global and training feature quads to be downloaded
 
 echo "Copy feature quads for training and evaluation"
 python ./data_cleaning/copy_evaluation_feature_quads.py
@@ -40,34 +40,39 @@ python ./data_cleaning/copy_evaluation_feature_quads.py
 echo "Remove alpha band from features"
 python ./data_cleaning/remove_feature_rasters_alpha_band.py
 
-# Cleaning response files
-
-echo "Create shapefile 'quads' for responses to determine which feature quads are needed"
-python ./data_cleaning/create_response_shapefile_quads.py
+# Needs response geojson to be downloaded
 
 echo "Remove response quads with no reef area"
 python ./data_cleaning/remove_quad_files_with_no_reef.py
+
+echo "Create shapefile 'quads' for responses to determine which feature quads are needed"
+python ./data_cleaning/create_response_shapefile_quads.py
 
 echo "Rasterize UQ and supplemental response quads"
 python ./data_cleaning/create_response_rasters.py
 python ./data_cleaning/create_supplemental_landwater_rasters.py
 python ./data_cleaning/create_supplemental_allclasses_rasters.py
 
-echo "Create class boundaries for response rasters"
-python ./data_cleaning/create_response_boundary_classes.py
-
-# Cleaning boundary files
+# Needs evaluation feature data to be copied
 
 echo "Create shapefile boundaries for training data sampling"
 python ./data_cleaning/create_sampling_boundary_shapefiles.py
 
-# Misc stuff
-
-echo "Compress rasters for efficient reads"
-python ./data_cleaning/compress_feature_response_rasters.py
+# Needs all feature and response rasters to be cleaned
 
 echo "Create downsampled rasters"
 python ./data_cleaning/downsample_feature_response_rasters.py
 
+# Needs files to be downsampled
+
+echo "Create class boundaries for response rasters"
+python ./data_cleaning/create_response_boundary_classes.py
+
+# Needs everything complete
+
 echo "Create atlas reef multipolygons for evaluation"
 python ./data_cleaning/create_evaluation_reef_multipolygons.py
+
+echo "Compress rasters for efficient reads"
+python ./data_cleaning/compress_feature_response_rasters.py
+

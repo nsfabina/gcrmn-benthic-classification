@@ -9,21 +9,35 @@ from gcrmnbc.utils import gdal_command_line, logs, paths
 _logger = logs.get_logger(__file__)
 
 _DOWNSAMPLE_PCTS = (50, )
+_DIR_OUT = 'downsample_{}'
 
 
 def downsample_rasters() -> None:
     _logger.info('Downsample rasters')
-    filenames = [filename for filename in os.listdir(paths.DIR_DATA_TRAIN_CLEAN) if filename.endswith('.tif')]
+    for pct in _DOWNSAMPLE_PCTS:
+        dir_out = os.path.join(paths.DIR_DATA_TRAIN, _DIR_OUT.format(pct))
+        if not os.path.exists(dir_out):
+            os.makedirs(dir_out)
+
+    filenames = sorted([filename for filename in os.listdir(paths.DIR_DATA_TRAIN_CLEAN) if filename.endswith('.tif')])
 
     for filename in tqdm(filenames, desc='Downsampling rasters'):
         filepath_in = os.path.join(paths.DIR_DATA_TRAIN_CLEAN, filename)
-        resampling = 'bilinear' if re.search('features', filename) else 'nearest'
+        if filename.endswith('features.tif'):
+            resampling = 'bilinear'
+        elif re.search('responses', filename):
+            # Responses from UQ
+            resampling = 'nearest'
+        elif filename.endswith('model_class.tif'):
+            # Responses generated from model application
+            resampling = 'nearest'
+        else:
+            raise AssertionError('How to downsample this raster?:  {}'.format(filename))
 
         for pct in _DOWNSAMPLE_PCTS:
-            filepath_out = os.path.join(paths.DIR_DATA_TRAIN, 'downsample_{}'.format(pct), filename)
-            if not os.path.exists(os.path.dirname(filepath_out)):
-                os.makedirs(os.path.dirname(filepath_out))
-
+            filepath_out = os.path.join(paths.DIR_DATA_TRAIN, _DIR_OUT.format(pct), filename)
+            if os.path.exists(filepath_out):
+                continue
             command = 'gdal_translate -outsize {pct}% {pct}% -r {resampling} {path_in} {path_out}'.format(
                 pct=pct, resampling=resampling, path_in=filepath_in, path_out=filepath_out)
             gdal_command_line.run_gdal_command(command, _logger)
