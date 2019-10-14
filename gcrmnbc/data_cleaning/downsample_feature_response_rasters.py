@@ -23,17 +23,11 @@ def downsample_rasters() -> None:
 
     for filename in tqdm(filenames, desc='Downsampling rasters'):
         filepath_in = os.path.join(paths.DIR_DATA_TRAIN_CLEAN, filename)
-        if filename.endswith('features.tif'):
-            resampling = 'bilinear'
-        elif re.search('responses', filename):
-            # Responses from UQ
-            resampling = 'nearest'
-        elif filename.endswith('model_class.tif'):
-            # Responses generated from model application
-            resampling = 'nearest'
-        else:
-            raise AssertionError('How to downsample this raster?:  {}'.format(filename))
-
+        is_features = filename.endswith('features.tif')
+        is_responses = re.search('responses', filename) or filename.endswith('model_class.tif') \
+                       or filename.endswith('land.tif') or filename.endswith('water.tif')
+        assert is_features or is_responses, 'Unknown file type:  {}'.format(filename)
+        resampling = 'bilinear' if is_features else 'nearest'
         for pct in _DOWNSAMPLE_PCTS:
             filepath_out = os.path.join(paths.DIR_DATA_TRAIN, _DIR_OUT.format(pct), filename)
             if os.path.exists(filepath_out):
