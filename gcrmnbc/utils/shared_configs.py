@@ -24,21 +24,25 @@ def build_dynamic_config(config_name: str, label_experiment: str, response_mappi
     # Note that we need to grab land and water from the "clean" training data directory, and we need to grab general
     # response data from the appropriate folder
 
-    # Get land or water data
+    # Get supplemental response data
     for filename in os.listdir(paths.DIR_DATA_TRAIN_CLEAN):
-        if not filename.endswith('_land.tif') and not filename.endswith('_water.tif'):
+        is_landwater = filename.endswith('_land.tif') or filename.endswith('_water.tif')
+        is_other = filename.endswith('_model_class.tif')
+        if not is_landwater and not is_other:
             continue
         filepath_responses = os.path.join(paths.DIR_DATA_TRAIN_CLEAN, filename)
         filepath_features = re.sub('_\w*.tif', '_features.tif', filepath_responses)
-        filepath_boundaries = re.sub('.tif', '.shp', filepath_responses)
+        filepath_boundaries = re.sub('.tif', '.shp', filepath_responses) if is_landwater else None
+
         assert os.path.exists(filepath_features), 'Features file not found:  {}'.format(filepath_features)
-        assert os.path.exists(filepath_boundaries), 'Boundaries file not found:  {}'.format(filepath_boundaries)
+        if is_landwater:
+            assert os.path.exists(filepath_boundaries), 'Boundaries file not found:  {}'.format(filepath_boundaries)
 
         filepaths_features.append([filepath_features])
         filepaths_responses.append([filepath_responses])
         filepaths_boundaries.append(filepath_boundaries)
 
-    # Get regular response data
+    # Get UQ response data
     response_suffix = '_responses_{}b.tif'.format(response_mapping)
     dir_data = paths.get_dir_training_data_experiment(label_experiment=label_experiment)
     assert os.path.exists(dir_data), 'Training data directory not found for label_experiment {}:  {}'.format(
