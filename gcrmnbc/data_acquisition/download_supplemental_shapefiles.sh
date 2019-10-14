@@ -13,3 +13,4 @@ fi
 
 rclone copy "remote:${PATH_GDRIVE}/land" "${PATH_SCRATCH}"
 rclone copy "remote:${PATH_GDRIVE}/water" "${PATH_SCRATCH}"
+rclone copy "remote:${PATH_GDRIVE}/supplemental_training_data" "${PATH_SCRATCH}"
