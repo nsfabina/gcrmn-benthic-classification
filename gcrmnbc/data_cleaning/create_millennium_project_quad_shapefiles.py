@@ -45,8 +45,8 @@ class QuadFeatures(object):
             self._last_updated_by_quad.pop(quad)
 
 
-def create_millennium_project_quad_rasters() -> None:
-    _logger.info('Create Millennium Project response quads')
+def create_millennium_project_quad_shapefiles() -> None:
+    _logger.info('Create Millennium Project response quad shapefiles')
     filepaths_raw_polys = [
         os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename) for filename in os.listdir(paths.DIR_DATA_TRAIN_RAW_MP)
         if filename.endswith('.shp') and not filename.endswith('responses.shp')
@@ -72,10 +72,10 @@ def create_millennium_project_quad_rasters() -> None:
 def _fix_feature_code_collisions(feature: dict) -> dict:
     code_collision = 2
     attr_collided = 'bay exposed fringing'
-    code = feature['properties']['L4_CODE']
-    attr = feature['properties']['L4_ATTRIB']
-    if code == code_collision and attr == attr_collided:
-        new_code = [v for k, v in encodings_mp.MAPPINGS_L4.items() if k == attr_collided][0]
+    feature_code = feature['properties']['L4_CODE']
+    feature_attr = feature['properties']['L4_ATTRIB']
+    if feature_code == code_collision and feature_attr == attr_collided:
+        new_code = [code for code, attr in encodings_mp.MAPPINGS_L4.items() if attr == attr_collided][0]
         feature['properties']['L4_CODE'] = new_code
     return feature
 
@@ -99,4 +99,4 @@ def _write_features_to_quad_shapefile(features: List[dict], quad: str, schema: d
 
 
 if __name__ == '__main__':
-    create_millennium_project_quad_rasters()
+    create_millennium_project_quad_shapefiles()
