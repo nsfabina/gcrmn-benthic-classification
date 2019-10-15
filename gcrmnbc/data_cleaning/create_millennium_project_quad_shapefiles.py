@@ -1,4 +1,3 @@
-from collections import OrderedDict
 import os
 from typing import List
 
@@ -16,12 +15,6 @@ FILEPATH_QUAD_RASTER = os.path.join(paths.DIR_DATA_TRAIN_CLEAN_MP, '{}_responses
 
 SHAPEFILE_DRIVER = 'ESRI Shapefile'
 SHAPEFILE_EPSG = 3857
-SHAPEFILE_SCHEMA = {
-    'geometry': 'Polygon',
-    'properties': OrderedDict([
-        ('class_code', 'int'),
-    ])
-}
 
 WRITE_FEATURE_BUFFER = 1000
 WRITE_IDX_BUFFER = 10000
@@ -39,7 +32,7 @@ class QuadFeatures(object):
         self._features_by_quad.setdefault(quad, list()).append(feature)
         self._last_updated_by_quad[quad] = idx_feature
 
-    def write_quad_shapefiles(self, idx_feature, force_write=None) -> None:
+    def write_quad_shapefiles(self, idx_feature, schema, force_write=None) -> None:
         quads = sorted(list(self._features_by_quad.keys()))
         for quad in quads:
             features = self._features_by_quad[quad]
@@ -48,25 +41,23 @@ class QuadFeatures(object):
             too_many_indexes = (idx_feature - last_updated) > WRITE_IDX_BUFFER
             if not force_write and not too_many_features and not too_many_indexes:
                 continue
-            _write_features_to_quad_shapefile(features, quad)
+            _write_features_to_quad_shapefile(features, quad, schema)
             self._features_by_quad.pop(quad)
             self._last_updated_by_quad.pop(quad)
 
 
 def create_millennium_project_quad_rasters() -> None:
     _logger.info('Create Millennium Project response quads')
-    _create_quad_shapefiles()
-    _create_quad_rasters()
-
-
-def _create_quad_shapefiles() -> None:
     filepaths_raw_polys = [
         os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename) for filename in os.listdir(paths.DIR_DATA_TRAIN_RAW_MP)
         if filename.endswith('.shp') and not filename.endswith('responses.shp')
     ]
+    schema = None
     quad_features = QuadFeatures()
     for idx_feature, filepath_raw in tqdm(enumerate(filepaths_raw_polys)):
         features = fiona.open(filepath_raw)
+        if schema is None:
+            schema = features.schema
         for feature in features:
             feature = _fix_feature_code_collisions(feature)
             quads = mosaic_quads.determine_mosaic_quads_for_geometry(feature['geometry'])
@@ -90,7 +81,7 @@ def _fix_feature_code_collisions(feature: dict) -> dict:
     return feature
 
 
-def _write_features_to_quad_shapefile(features: List[dict], quad: str) -> None:
+def _write_features_to_quad_shapefile(features: List[dict], quad: str, schema: dict) -> None:
     # Get response quad filepath and determine whether we're writing a new file or appending to an existing file
     filepath = FILEPATH_QUAD_POLY.format(quad)
     if not os.path.exists(os.path.dirname(filepath)):
@@ -103,7 +94,7 @@ def _write_features_to_quad_shapefile(features: List[dict], quad: str) -> None:
     else:
         _logger.debug('Create new shapefile at {}'.format(filepath))
         crs = fiona.crs.from_epsg(SHAPEFILE_EPSG)
-        with fiona.open(filepath, 'w', driver=SHAPEFILE_DRIVER, crs=crs, schema=SHAPEFILE_SCHEMA) as file_:
+        with fiona.open(filepath, 'w', driver=SHAPEFILE_DRIVER, crs=crs, schema=schema) as file_:
             for feature in features:
                 file_.write(feature)
 
