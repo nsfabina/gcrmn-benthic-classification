@@ -7,7 +7,7 @@ from gcrmnbc.utils import paths
 
 
 _RESPONSE_MAPPINGS = ('lwr', 'lwrn', )
-_RESPONSE_MAPPING_CLASSES = {'lwr': 5, 'lwrn': 8, }
+_RESPONSE_MAPPING_CLASSES = {'lwr': 10, 'lwrn': 8, }
 
 
 def build_dynamic_config(config_name: str, label_experiment: str, response_mapping: str) -> configs.Config:
