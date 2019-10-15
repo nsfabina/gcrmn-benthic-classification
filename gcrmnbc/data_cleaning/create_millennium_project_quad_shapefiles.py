@@ -11,7 +11,6 @@ _logger = logs.get_logger(__file__)
 
 
 FILEPATH_QUAD_POLY = os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, '{}_responses.shp')
-FILEPATH_QUAD_RASTER = os.path.join(paths.DIR_DATA_TRAIN_CLEAN_MP, '{}_responses.tif')
 
 SHAPEFILE_DRIVER = 'ESRI Shapefile'
 SHAPEFILE_EPSG = 3857
@@ -64,8 +63,8 @@ def create_millennium_project_quad_rasters() -> None:
             assert quads, 'No quads found for feature {} in file {}'.format(idx_feature, filepath_raw)
             for quad in quads:
                 quad_features.add_feature_to_quad(feature, quad, idx_feature)
-                quad_features.write_quad_shapefiles(idx_feature, force_write=False)
-    quad_features.write_quad_shapefiles(idx_feature, force_write=True)
+                quad_features.write_quad_shapefiles(idx_feature, schema, force_write=False)
+    quad_features.write_quad_shapefiles(idx_feature, schema, force_write=True)
     remaining_features = sum([len(f) for f in quad_features._features_by_quad.values()])
     assert not remaining_features, 'Found {} remaining features'.format(remaining_features)
 
