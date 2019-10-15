@@ -27,8 +27,8 @@ def create_sampling_boundary_shapefiles() -> None:
         _logger.debug('Creating boundary file at:  {}'.format(filepath_boundary))
 
         _logger.debug('Creating valid sampling area raster')
-        command = 'gdal_rasterize -A {filepath_shape} --outfile={tmp_filepath_raster} --NoDataValue=-9999 ' + \
-                  '-init -9999 -burn 1 -tr 5 5'
+        command = 'gdal_rasterize -burn 1 -tr 5 5 -a_nodata -9999 -init -9999 ' + \
+                  '{filepath_shape} {tmp_filepath_raster}'
         command = command.format(filepath_shape=filepath_shape, tmp_filepath_raster=tmp_filepath_raster)
         gdal_command_line.run_gdal_command(command, _logger)
 
@@ -48,7 +48,7 @@ def create_sampling_boundary_shapefiles() -> None:
         _logger.debug('Remove temporary files')
         os.remove(tmp_filepath_raster)
         for extension in ('.dbf', '.prj', '.shp', '.shx'):
-            os.remove(os.path.join(paths.DIR_DATA_TRAIN_RAW, basename_polygon, extension))
+            os.remove(os.path.join(paths.DIR_DATA_TRAIN_RAW, basename_polygon + extension))
 
 
 if __name__ == '__main__':
