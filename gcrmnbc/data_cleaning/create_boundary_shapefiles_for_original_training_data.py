@@ -9,12 +9,12 @@ _logger = logs.get_logger(__file__)
 
 def create_sampling_boundary_shapefiles() -> None:
     raise AssertionError('This script has not been tested since being updated, be careful')
-    _logger.info('Creating sampling boundary shapefiles')
+    _logger.info('Creating sampling boundary shapefiles for original UQ training data')
     _assert_encoding_assumptions_hold()
     # Get list of completed responses rasters
-    filepath_reef_raster = os.path.join(paths.DIR_DATA_TRAIN_RAW, 'tmp_reef_only.tif')
-    filepath_reef_outline = os.path.join(paths.DIR_DATA_TRAIN_RAW, 'tmp_reef_outline.shp')
-    basename_reef_outline = os.path.splitext(os.path.basename(filepath_reef_outline))[0]
+    tmp_filepath_reef_raster = os.path.join(paths.DIR_DATA_TRAIN_RAW, 'tmp_reef_only.tif')
+    tmp_filepath_reef_outline = os.path.join(paths.DIR_DATA_TRAIN_RAW, 'tmp_reef_outline.shp')
+    basename_reef_outline = os.path.splitext(os.path.basename(tmp_filepath_reef_outline))[0]
     filepaths_responses = sorted([
         os.path.join(paths.DIR_DATA_TRAIN_CLEAN, filename) for filename in os.listdir(paths.DIR_DATA_TRAIN_CLEAN)
         if filename.endswith('_responses.tif')
@@ -32,24 +32,24 @@ def create_sampling_boundary_shapefiles() -> None:
         command = 'gdal_calc.py -A {filepath_responses} --outfile={filepath_reef} --NoDataValue=-9999 ' + \
                   '--calc="1*(A>={min_value}) + -9999*(A<{min_value})"'
         command = command.format(
-            filepath_responses=filepath_responses, filepath_reef=filepath_reef_raster, min_reef_value=min_reef_value)
+            filepath_responses=filepath_responses, filepath_reef=tmp_filepath_reef_raster, min_reef_value=min_reef_value)
         gdal_command_line.run_gdal_command(command, _logger)
         # Get shapefile of reef outline
         _logger.debug('Creating reef outline shapefile')
-        command = 'gdal_polygonize.py {} {}'.format(filepath_reef_raster, filepath_reef_outline)
+        command = 'gdal_polygonize.py {} {}'.format(tmp_filepath_reef_raster, tmp_filepath_reef_outline)
         gdal_command_line.run_gdal_command(command, _logger)
         # Get shapefile of sampling boundaries by buffering reef outline
         _logger.debug('Creating buffered outline for boundary file')
         command = 'ogr2ogr -f "ESRI Shapefile" {filepath_boundary} {filepath_outline} -dialect sqlite ' + \
                   '-sql "select ST_buffer(geometry, 64) as geometry from {basename_outline}"'
         command = command.format(
-            filepath_boundary=filepath_boundary, filepath_outline=filepath_reef_outline, 
+            filepath_boundary=filepath_boundary, filepath_outline=tmp_filepath_reef_outline,
             basename_outline=basename_reef_outline
         )
         gdal_command_line.run_gdal_command(command, _logger)
         # Clean up
         _logger.debug('Remove temporary files')
-        os.remove(filepath_reef_raster)
+        os.remove(tmp_filepath_reef_raster)
         for filename_outline in os.listdir(paths.DIR_DATA_TRAIN_RAW):
             if not re.search(basename_reef_outline, filename_outline):
                 continue

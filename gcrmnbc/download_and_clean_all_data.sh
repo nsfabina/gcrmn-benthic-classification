@@ -53,10 +53,9 @@ python ./data_cleaning/create_response_rasters.py
 python ./data_cleaning/create_supplemental_landwater_rasters.py
 python ./data_cleaning/create_supplemental_allclasses_rasters.py
 
-# Needs evaluation feature data to be copied
-
-echo "Create shapefile boundaries for training data sampling"
-python ./data_cleaning/create_sampling_boundary_shapefiles.py
+echo "Create shapefile boundaries for training data"
+python ./data_cleaning/create_boundary_shapefiles_for_original_training_data.py
+python ./data_cleaning/create_boundary_shapefiles_for_supplementary_training_data.py
 
 # Needs all feature and response rasters to be cleaned
 
@@ -68,10 +67,12 @@ python ./data_cleaning/downsample_feature_response_rasters.py
 echo "Create class boundaries for response rasters"
 python ./data_cleaning/create_response_boundary_classes.py
 
-# Needs everything complete
+# Needs evaluation feature data to be copied
 
 echo "Create atlas reef multipolygons for evaluation"
 python ./data_cleaning/create_evaluation_reef_multipolygons.py
+
+# Needs everything complete
 
 echo "Compress rasters for efficient reads"
 python ./data_cleaning/compress_feature_response_rasters.py
