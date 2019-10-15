@@ -13,5 +13,5 @@ fi
 rclone copy remote:${GDRIVE_PATH} ${DIR_DEST}
 
 for SHAPEFILE in ${DIR_DEST}/*; do
-    unzip ${SHAPEFILE}
+    unzip ${SHAPEFILE} -d ${DIR_DEST}
 done
