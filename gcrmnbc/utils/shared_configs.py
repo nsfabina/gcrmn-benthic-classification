@@ -24,20 +24,26 @@ def build_dynamic_config(config_name: str, label_experiment: str, response_mappi
     # Note that we need to grab land and water from the "clean" training data directory, and we need to grab general
     # response data from the appropriate folder
 
-    # Get supplemental response data
-    for filename in os.listdir(paths.DIR_DATA_TRAIN_CLEAN):
-        is_landwater = filename.endswith('_land.tif') or filename.endswith('_water.tif')
-        is_other = filename.endswith('_model_class.tif')
-        if not is_landwater and not is_other:
-            continue
+    # Get supplemental land/water response data
+    filenames = [f for f in os.listdir(paths.DIR_DATA_TRAIN_CLEAN) if f.endswith('land.tif') or f.endswith('water.tif')]
+    for filename in filenames:
         filepath_responses = os.path.join(paths.DIR_DATA_TRAIN_CLEAN, filename)
         filepath_features = re.sub('_\w*.tif', '_features.tif', filepath_responses)
-        filepath_boundaries = re.sub('.tif', '.shp', filepath_responses) if is_landwater else None
-
+        filepath_boundaries = re.sub('.tif', '.shp', filepath_responses)
         assert os.path.exists(filepath_features), 'Features file not found:  {}'.format(filepath_features)
-        if is_landwater:
-            assert os.path.exists(filepath_boundaries), 'Boundaries file not found:  {}'.format(filepath_boundaries)
+        assert os.path.exists(filepath_boundaries), 'Boundaries file not found:  {}'.format(filepath_boundaries)
+        filepaths_features.append([filepath_features])
+        filepaths_responses.append([filepath_responses])
+        filepaths_boundaries.append(filepath_boundaries)
 
+    # Get supplemental additional class response data
+    filenames = [f for f in os.listdir(paths.DIR_DATA_TRAIN_CLEAN) if f.endswith('_model_class.tif')]
+    for filename in filenames:
+        filepath_responses = os.path.join(paths.DIR_DATA_TRAIN_CLEAN, filename)
+        filepath_features = re.sub('_\w*.tif', '_features.tif', filepath_responses)
+        filepath_boundaries = re.sub('.tif', 'boundaries.shp', filepath_responses)
+        assert os.path.exists(filepath_features), 'Features file not found:  {}'.format(filepath_features)
+        assert os.path.exists(filepath_boundaries), 'Boundaries file not found:  {}'.format(filepath_boundaries)
         filepaths_features.append([filepath_features])
         filepaths_responses.append([filepath_responses])
         filepaths_boundaries.append(filepath_boundaries)
