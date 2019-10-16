@@ -3,6 +3,11 @@
 
 set -e
 
+echo "This script is all sorts of fucked up after I tried to reorganize it and forgot about a few dependencies. It'll
+be necessary to run things one-by-one to build this back up."
+
+raise
+
 echo "Download and clean all data"
 echo "Currently, it takes hours/days to parse the shapefiles for raster quads. Do you want to continue?"
 select yn in "Yes" "No"; do
@@ -13,10 +18,15 @@ select yn in "Yes" "No"; do
 done
 
 
-# Data acquisition - order independent
+# Data acquisition - order dependent
 
 echo "Download global feature quads"
 python ./data_acquisition/download_global_feature_quads.sh
+
+echo "Download Millennium Project training data"
+./data_acquisition/download_millennium_project_responses_from_fabina_gdrive.sh
+
+# Needs response files to be present
 
 echo "Download training feature quads"
 python ./data_acquisition/download_training_feature_quads.sh

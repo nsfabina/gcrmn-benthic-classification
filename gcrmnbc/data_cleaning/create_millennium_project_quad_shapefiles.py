@@ -1,10 +1,11 @@
 import os
+import re
 from typing import List
 
 import fiona.crs
 from tqdm import tqdm
 
-from gcrmnbc.utils import encodings_mp, logs, mosaic_quads, paths
+from gcrmnbc.utils import encodings_mp, gdal_command_line, logs, mosaic_quads, paths
 
 
 _logger = logs.get_logger(__file__)
@@ -47,9 +48,10 @@ class QuadFeatures(object):
 
 def create_millennium_project_quad_shapefiles() -> None:
     _logger.info('Create Millennium Project response quad shapefiles')
+    _reproject_shapefiles()
     filepaths_raw_polys = [
         os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename) for filename in os.listdir(paths.DIR_DATA_TRAIN_RAW_MP)
-        if filename.endswith('.shp') and not filename.endswith('responses.shp')
+        if filename.endswith('_3857.shp')
     ]
     schema = None
     quad_features = QuadFeatures()
@@ -67,6 +69,21 @@ def create_millennium_project_quad_shapefiles() -> None:
     quad_features.write_quad_shapefiles(idx_feature, schema, force_write=True)
     remaining_features = sum([len(f) for f in quad_features._features_by_quad.values()])
     assert not remaining_features, 'Found {} remaining features'.format(remaining_features)
+
+
+def _reproject_shapefiles() -> None:
+    filenames_raw_polys = [
+        filename for filename in os.listdir(paths.DIR_DATA_TRAIN_RAW_MP)
+        if filename.endswith('.shp') and not filename.endswith('responses.shp')
+    ]
+    for filename_raw in filenames_raw_polys:
+        filepath_raw = os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename_raw)
+        filename_reproj = re.sub('.shp', '_3857.shp', filename_raw)
+        filepath_reproj = os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename_reproj)
+        if os.path.exists(filepath_reproj):
+            continue
+        command = 'ogr2ogr -t_srs EPSG:3857 {reproj} {raw}'.format(reproj=filepath_reproj, raw=filepath_raw)
+        gdal_command_line.run_gdal_command(command, _logger)
 
 
 def _fix_feature_code_collisions(feature: dict) -> dict:
