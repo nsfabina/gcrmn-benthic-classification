@@ -49,10 +49,10 @@ class QuadFeatures(object):
 def create_millennium_project_quad_shapefiles() -> None:
     _logger.info('Create Millennium Project response quad shapefiles')
     _reproject_shapefiles()
-    filepaths_raw_polys = [
+    filepaths_raw_polys = sorted([
         os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename) for filename in os.listdir(paths.DIR_DATA_TRAIN_RAW_MP)
         if filename.endswith('_3857.shp')
-    ]
+    ])
     schema = None
     quad_features = QuadFeatures()
     for idx_filepath, filepath_raw in enumerate(filepaths_raw_polys):
@@ -67,7 +67,8 @@ def create_millennium_project_quad_shapefiles() -> None:
             assert quads, 'No quads found for feature {} in file {}'.format(idx_feature, filepath_raw)
             for quad in quads:
                 quad_features.add_feature_to_quad(feature, quad, idx_feature)
-                quad_features.write_quad_shapefiles(idx_feature, schema, force_write=False)
+                if idx_feature % 100 == 0:
+                    quad_features.write_quad_shapefiles(idx_feature, schema, force_write=False)
         quad_features.write_quad_shapefiles(idx_feature, schema, force_write=True)
     remaining_features = sum([len(f) for f in quad_features._features_by_quad.values()])
     assert not remaining_features, 'Found {} remaining features'.format(remaining_features)
