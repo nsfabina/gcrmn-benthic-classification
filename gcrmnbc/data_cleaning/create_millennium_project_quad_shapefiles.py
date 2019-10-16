@@ -55,11 +55,13 @@ def create_millennium_project_quad_shapefiles() -> None:
     ]
     schema = None
     quad_features = QuadFeatures()
-    for idx_feature, filepath_raw in tqdm(enumerate(filepaths_raw_polys)):
+    for idx_filepath, filepath_raw in enumerate(filepaths_raw_polys):
         features = fiona.open(filepath_raw)
+        total = len(features)
         if schema is None:
             schema = features.schema
-        for feature in features:
+        desc = 'Parsing shapefile {} ({} total)'.format(idx_filepath, len(filepaths_raw_polys))
+        for idx_feature, feature in tqdm(enumerate(features), desc=desc, total=total):
             feature = _fix_feature_code_collisions(feature)
             quads = mosaic_quads.determine_mosaic_quads_for_geometry(feature['geometry'])
             assert quads, 'No quads found for feature {} in file {}'.format(idx_feature, filepath_raw)
@@ -74,7 +76,8 @@ def create_millennium_project_quad_shapefiles() -> None:
 def _reproject_shapefiles() -> None:
     filenames_raw_polys = [
         filename for filename in os.listdir(paths.DIR_DATA_TRAIN_RAW_MP)
-        if filename.endswith('.shp') and not filename.endswith('responses.shp')
+        if filename.endswith('.shp') and not filename.endswith('_responses.shp')
+        and not filename.endswith('_3857.shp')
     ]
     for filename_raw in tqdm(filenames_raw_polys, desc='Reproject shapefiles'):
         filepath_raw = os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename_raw)
