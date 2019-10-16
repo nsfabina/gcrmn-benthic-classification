@@ -22,7 +22,7 @@ def delete_land_only_millennium_project_shapefiles() -> None:
             continue
         _logger.debug('Deleting land-only quad shapefile:  {}'.format(filepath_poly))
         basename = os.path.splitext(filepath_poly)[0]
-        for extension in ('.cpg', '.dbf', '.prf', '.shp', '.shx'):
+        for extension in ('.cpg', '.dbf', '.prj', '.shp', '.shx'):
             os.remove(basename + extension)
         num_deleted += 1
     _logger.info('Deleted {} land-only quad shapefiles'.format(num_deleted))
