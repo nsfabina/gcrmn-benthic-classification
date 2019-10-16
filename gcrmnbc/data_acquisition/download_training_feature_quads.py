@@ -1,6 +1,8 @@
 import os
 import re
 
+from tqdm import tqdm
+
 from gcrmnbc.utils import data_bucket, logs, paths
 
 
@@ -16,13 +18,20 @@ def download_training_feature_quads() -> None:
     # Get list of of response files from Millennium Project training data
     filenames.extend([fn for fn in os.listdir(paths.DIR_DATA_TRAIN_RAW_MP) if fn.endswith('responses.shp')])
     quads = set()
+
+    # Determine which quads are needed
     for filename in filenames:
         quad_name = re.search(r'L15-\d{4}E-\d{4}N', filename).group()
-        if quad_name:
-            quads.add(quad_name)
+        if not quad_name:
+            continue
+        filepath_clean = os.path.join(paths.DIR_DATA_TRAIN_CLEAN, quad_name + '_features.tif')
+        if os.path.exists(filepath_clean):
+            continue
+        quads.add(quad_name)
+
+    # Get quad blobs and download
     quad_blobs = [quad_blob for quad_blob in data_bucket.get_imagery_quad_blobs() if quad_blob.quad_focal in quads]
-    for idx_blob, quad_blob in enumerate(quad_blobs):
-        _logger.debug('Downloading blob {} of {}'.format(1+idx_blob, len(quad_blobs)))
+    for quad_blob in tqdm(quad_blobs, desc='Downloading training data feature quads'):
         data_bucket.download_model_training_input_data_for_quad_blob(paths.DIR_DATA_TRAIN_RAW, quad_blob)
 
 
