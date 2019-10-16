@@ -76,7 +76,7 @@ def _reproject_shapefiles() -> None:
         filename for filename in os.listdir(paths.DIR_DATA_TRAIN_RAW_MP)
         if filename.endswith('.shp') and not filename.endswith('responses.shp')
     ]
-    for filename_raw in filenames_raw_polys:
+    for filename_raw in tqdm(filenames_raw_polys, desc='Reproject shapefiles'):
         filepath_raw = os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename_raw)
         filename_reproj = re.sub('.shp', '_3857.shp', filename_raw)
         filepath_reproj = os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename_reproj)

@@ -9,4 +9,4 @@ def run_gdal_command(command: str, logger: logging.Logger = None) -> None:
         if logger:
             logger.error('gdal stdout:  {}'.format(completed.stdout.decode('utf-8')))
             logger.error('gdal stderr:  {}'.format(completed.stderr.decode('utf-8')))
-        raise AssertionError('See above log lines for unknown error in gdal command:  {}'.format(command))
+    assert completed.returncode == 0, 'See above log lines for unknown error in gdal command:  {}'.format(command)
