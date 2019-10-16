@@ -12,7 +12,7 @@ _logger = logs.get_logger(__file__)
 def delete_land_only_millennium_project_shapefiles() -> None:
     _logger.info('Delete land-only quad shapefiles')
     filepaths_polys = [
-        os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename) for filename in paths.DIR_DATA_TRAIN_RAW_MP
+        os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename) for filename in os.listdir(paths.DIR_DATA_TRAIN_RAW_MP)
         if filename.startswith('L15-') and filename.endswith('.shp')
     ]
     num_deleted = 0
@@ -33,7 +33,7 @@ def _check_is_land_only(filepath_poly: str) -> bool:
     num_found = 0
     num_needed = 10
     for feature in features:
-        if feature['properties']['DEPTHLEVEL'] != 'land':
+        if feature['properties']['DEPTHLABEL'] != 'land':
             num_found += 1
         is_not_land_only = num_found == num_needed
         if is_not_land_only:
