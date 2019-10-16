@@ -4,7 +4,7 @@ import re
 from osgeo import gdal, osr
 from tqdm import tqdm
 
-from gcrmnbc.utils import encodings_mp, gdal_command_line, logs, mosaic_quads, paths
+from gcrmnbc.utils import gdal_command_line, logs, paths
 
 
 _logger = logs.get_logger(__file__)

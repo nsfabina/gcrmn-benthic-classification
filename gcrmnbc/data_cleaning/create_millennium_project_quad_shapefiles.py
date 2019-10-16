@@ -66,7 +66,7 @@ def create_millennium_project_quad_shapefiles() -> None:
             for quad in quads:
                 quad_features.add_feature_to_quad(feature, quad, idx_feature)
                 quad_features.write_quad_shapefiles(idx_feature, schema, force_write=False)
-    quad_features.write_quad_shapefiles(idx_feature, schema, force_write=True)
+        quad_features.write_quad_shapefiles(idx_feature, schema, force_write=True)
     remaining_features = sum([len(f) for f in quad_features._features_by_quad.values()])
     assert not remaining_features, 'Found {} remaining features'.format(remaining_features)
 
