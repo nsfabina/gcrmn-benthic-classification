@@ -18,13 +18,19 @@ select yn in "Yes" "No"; do
 done
 
 
+# Millennium Project scripts
+
+echo "Download and clean Millennium Project data"
+python ./data_acquisition/download_millennium_project_responses_from_fabina_gdrive.sh
+python ./data_cleaning/create_millennium_project_quad_shapefiles.py
+python ./data_cleaning/delete_land_only_millennium_project_shapefiles.py
+python ./data_acquisition/download_training_feature_quads.py
+
+
 # Data acquisition - order dependent
 
 echo "Download global feature quads"
 python ./data_acquisition/download_global_feature_quads.sh
-
-echo "Download Millennium Project training data"
-./data_acquisition/download_millennium_project_responses_from_fabina_gdrive.sh
 
 # Needs response files to be present
 
