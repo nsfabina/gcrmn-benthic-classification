@@ -60,9 +60,13 @@ def create_millennium_project_quad_shapefiles() -> None:
         total = len(features)
         if schema is None:
             schema = features.schema
+            schema['properties'].pop('Shape_Area')
+            schema['properties'].pop('Shape_Leng')
         desc = 'Parsing shapefile {} ({} total)'.format(idx_filepath, len(filepaths_raw_polys))
         for idx_feature, feature in tqdm(enumerate(features), desc=desc, total=total):
             feature = _fix_feature_code_collisions(feature)
+            feature['properties'].pop('Shape_Area')
+            feature['properties'].pop('Shape_Leng')
             quads = mosaic_quads.determine_mosaic_quads_for_geometry(feature['geometry'])
             assert quads, 'No quads found for feature {} in file {}'.format(idx_feature, filepath_raw)
             for quad in quads:
