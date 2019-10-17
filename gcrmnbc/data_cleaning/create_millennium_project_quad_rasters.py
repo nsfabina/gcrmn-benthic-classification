@@ -12,23 +12,31 @@ _logger = logs.get_logger(__file__)
 
 def create_millennium_project_quad_rasters() -> None:
     _logger.info('Create Millennium Project response quad rasters')
+    if not os.path.exists(paths.DIR_DATA_TRAIN_CLEAN_MP):
+        os.makedirs(paths.DIR_DATA_TRAIN_CLEAN_MP)
     filenames_polys = [
         filename for filename in os.listdir(paths.DIR_DATA_TRAIN_RAW_MP)
         if filename.startswith('L15-') and filename.endswith('responses.shp')
     ]
-    for idx_filename, filename_poly in tqdm(enumerate(filenames_polys), desc='Create Millennium Project rasters'):
+    missing_features = list()
+    for idx_filename, filename_poly in enumerate(tqdm(filenames_polys, desc='Create Millennium Project rasters')):
         _logger.debug('Create raster {} ({} total):  {}'.format(idx_filename, len(filenames_polys), filename_poly))
         # Set filepaths
         filepath_src = os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename_poly)
         filename_raster = re.sub('.shp', '_{}.tif', filename_poly)
         filepath_dest = os.path.join(paths.DIR_DATA_TRAIN_CLEAN_MP, filename_raster)
-        quad_name = re.search(r'L15-\d{4}E-\d{4}N', filename_poly).group()
-        filepath_features = os.path.join(paths.DIR_DATA_TRAIN_RAW, quad_name + '_features.tif')
         if os.path.exists(filepath_dest):
             continue
-        assert os.path.exists(filepath_features), 'Features file not available at: {}'.format(filepath_features)
-        if not os.path.exists(os.path.dirname(filepath_dest)):
-            os.makedirs(os.path.dirname(filepath_dest))
+
+        # Try to find existing features file, may be either raw or clean, but also may not be available from Vulcan
+        filename_features = re.search(r'L15-\d{4}E-\d{4}N', filename_poly).group() + '_features.tif'
+        filepath_features = os.path.join(paths.DIR_DATA_TRAIN_RAW, filename_features)
+        if not os.path.exists(filepath_features):
+            filepath_features = os.path.join(paths.DIR_DATA_TRAIN_CLEAN, filename_features)
+        if not os.path.exists(filepath_features):
+            _logger.warning('Features file not available in raw or clean dirs: {}'.format(filename_features))
+            missing_features.append(filename_features)
+            continue
 
         # Get rasterize parameters
         raster_features = gdal.Open(filepath_features)
@@ -49,6 +57,8 @@ def create_millennium_project_quad_rasters() -> None:
                 src=filepath_src, dest=filepath_dest.format(attribute)
             )
             gdal_command_line.run_gdal_command(command, _logger)
+
+    assert not missing_features, 'Missing features files: {}'.format(', '.join(missing_features))
 
 
 if __name__ == '__main__':
