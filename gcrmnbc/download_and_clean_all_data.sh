@@ -25,6 +25,8 @@ python ./data_acquisition/download_millennium_project_responses_from_fabina_gdri
 python ./data_cleaning/create_millennium_project_quad_shapefiles.py
 python ./data_cleaning/delete_land_only_millennium_project_shapefiles.py
 python ./data_acquisition/download_training_feature_quads.py
+python ./data_cleaning/create_millennium_project_quad_rasters.py
+python ./data_cleaning/create_boundary_shapefiles_for_millennium_project_training_data.py
 
 
 # Data acquisition - order dependent
