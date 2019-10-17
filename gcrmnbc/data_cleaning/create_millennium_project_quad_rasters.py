@@ -25,7 +25,7 @@ def create_millennium_project_quad_rasters() -> None:
         filepath_src = os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename_poly)
         filename_raster = re.sub('.shp', '_{}.tif', filename_poly)
         filepath_dest = os.path.join(paths.DIR_DATA_TRAIN_CLEAN_MP, filename_raster)
-        if os.path.exists(filepath_dest):
+        if os.path.exists(filepath_dest.format('L3_CODE')) and os.path.exists(filepath_dest.format('L4_CODE')):
             continue
 
         # Try to find existing features file, may be either raw or clean, but also may not be available from Vulcan
