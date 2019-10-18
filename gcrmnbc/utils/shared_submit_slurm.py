@@ -9,8 +9,10 @@ SLURM_COMMAND = 'sbatch --mail-user=nsfabina@asu.edu --nodes=1 --cpus-per-task=1
 SLURM_GPUS = '--partition gpu --gres=gpu:1 --qos=wildfire '
 SLURM_GPUS_LARGE = SLURM_GPUS + '--constraint="V100_32" '
 
-VALID_LABELS_EXPERIMENTS = ('originals', 'downsample_25', 'downsample_50', 'downsample_50_aug')
-VALID_RESPONSE_MAPPINGS = ('lwr', 'lwrn')
+VALID_LABELS_EXPERIMENTS = (
+    'originals', 'downsample_25', 'downsample_50', 'downsample_50_aug', 'millennium', 'millennium_aug'
+)
+VALID_RESPONSE_MAPPINGS = ('lwr', 'lwrn', 'l3', 'l4')
 
 
 def get_classify_job_name(config_name: str, label_experiment: str, response_mapping: str) -> str:

@@ -6,13 +6,22 @@ from bfgn.configuration import configs
 from gcrmnbc.utils import paths
 
 
-_RESPONSE_MAPPINGS = ('lwr', 'lwrn', )
-_RESPONSE_MAPPING_CLASSES = {'lwr': 10, 'lwrn': 8, }
-
-
 def build_dynamic_config(config_name: str, label_experiment: str, response_mapping: str) -> configs.Config:
-    assert response_mapping in _RESPONSE_MAPPINGS, \
-        'response_mapping is {} but must be one of:  {}'.format(response_mapping, _RESPONSE_MAPPINGS)
+    if label_experiment in ('original', 'downsample_50', 'downsample_50_aug'):
+        builder = _build_dynamic_config_for_uq_experiments
+    elif label_experiment in ('millennium', 'millennium_aug'):
+        builder = _build_dynamic_config_for_mp_experiments
+    return builder(config_name, label_experiment, response_mapping)
+
+
+def _build_dynamic_config_for_uq_experiments(
+        config_name: str,
+        label_experiment: str,
+        response_mapping: str
+) -> configs.Config:
+    response_mapping_classes = {'lwr': 10, 'lwrn': 8, }
+    assert response_mapping in response_mapping_classes, \
+        'response_mapping is {} but must be one of:  {}'.format(response_mapping, response_mapping_classes.keys())
 
     filepaths_features = list()
     filepaths_responses = list()
@@ -76,5 +85,50 @@ def build_dynamic_config(config_name: str, label_experiment: str, response_mappi
         label_experiment=label_experiment, response_mapping=response_mapping, config=config)
     config.model_training.dir_out = paths.get_dir_model_experiment_config(
         config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
-    config.architecture.n_classes = _RESPONSE_MAPPING_CLASSES[response_mapping]
+    config.architecture.n_classes = response_mapping_classes[response_mapping]
+    return config
+
+
+def _build_dynamic_config_for_mp_experiments(
+        config_name: str,
+        label_experiment: str,
+        response_mapping: str
+) -> configs.Config:
+    response_mapping_classes = {'l3': 1, 'l4': 1}
+    assert response_mapping in response_mapping_classes, \
+        'response_mapping is {} but must be one of:  {}'.format(response_mapping, response_mapping_classes)
+
+    config_features = list()
+    config_responses = list()
+    config_boundaries = list()
+
+    # Get MP response data
+    dir_features = paths.DIR_DATA_TRAIN_CLEAN
+    dir_responses = os.path.join(paths.DIR_DATA_TRAIN, 'millenium_project_downsample_50')
+    dir_boundaries = os.path.join(paths.DIR_DATA_TRAIN, 'millenium_project')
+    filepaths_responses = sorted([
+        os.path.join(dir_responses, filename) for filename in os.listdir(dir_responses)
+        if filename.endswith('L3_CODE.tif') or filename.endswith('L4_code.tif')
+    ])
+    for filepath_response in filepaths_responses:
+        quad_name = re.search('L15-\d{4}E-\d{4}N', filepath_response).group()
+        filepath_feature = os.path.join(dir_features, quad_name + '_features.tif')
+        filepath_boundary = os.path.join(dir_features, quad_name + '_boundaries.shp')
+        assert os.path.exists(filepath_feature), 'Features file not found:  {}'.format(filepath_feature)
+        assert os.path.exists(filepath_boundary), 'Boundaries file not found:  {}'.format(filepath_boundary)
+
+        config_features.append([filepath_feature])
+        config_responses.append([filepath_response])
+        config_boundaries.append(filepath_boundary)
+
+    # Parse config and update dynamic values
+    config = configs.create_config_from_file(paths.get_filepath_config(config_name))
+    config.raw_files.feature_files = config_features
+    config.raw_files.response_files = config_responses
+    config.raw_files.boundary_files = config_boundaries
+    config.data_build.dir_out = paths.get_dir_built_data_experiment(
+        label_experiment=label_experiment, response_mapping=response_mapping, config=config)
+    config.model_training.dir_out = paths.get_dir_model_experiment_config(
+        config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
+    config.architecture.n_classes = response_mapping_classes[response_mapping]
     return config
