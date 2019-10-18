@@ -10,7 +10,7 @@ from gcrmnbc.utils import gdal_command_line, logs, paths
 _logger = logs.get_logger(__file__)
 
 
-ATTRIBUTES = ('L3_CODE', 'L4_CODE', 'DEPTHLABEL')
+ATTRIBUTES = ('L3_CODE', 'L4_CODE', 'DEPTH_CODE')
 
 
 def create_millennium_project_quad_rasters() -> None:
@@ -28,7 +28,7 @@ def create_millennium_project_quad_rasters() -> None:
         filepath_src = os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename_poly)
         filename_raster = re.sub('.shp', '_{}.tif', filename_poly)
         filepath_dest = os.path.join(paths.DIR_DATA_TRAIN_CLEAN_MP, filename_raster)
-        all_exist = all([os.path.exists(filepath_dest.format(attribute) for attribute in ATTRIBUTES)])
+        all_exist = all([os.path.exists(filepath_dest.format(attribute)) for attribute in ATTRIBUTES])
         if all_exist:
             continue
 
