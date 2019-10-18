@@ -9,5 +9,6 @@ __pycache__
 data/
 models/
 
+*.log
 *.yaml
 

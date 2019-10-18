@@ -20,8 +20,12 @@ def create_sampling_boundary_shapefiles() -> None:
     desc = 'Create sampling boundary shapefiles'
     for idx_filepath, filepath_depth in enumerate(tqdm(filepaths_depths, desc=desc)):
         filepath_boundary = re.sub('_responses_DEPTH_CODE.tif', '_boundaries.shp', filepath_depth)
-        tmp_filepath_raster = re.sub('_responses_DEPTH_CODE.tif', '_tmp_noland.tif', filepath_depth)
-        tmp_filepath_outline = re.sub('_responses_DEPTH_CODE.tif', '_tmp_noland.shp', filepath_depth)
+        filename_sqlvalid = re.sub('-', '_', os.path.basename(filepath_depth))
+        tmp_filename_raster = re.sub('_responses_DEPTH_CODE.tif', '_tmp_noland.tif', filename_sqlvalid)
+        tmp_filepath_raster = os.path.join(paths.DIR_DATA_TRAIN_CLEAN_MP, tmp_filename_raster)
+        tmp_filename_outline = re.sub('_responses_DEPTH_CODE.tif', '_tmp_noland.shp', filename_sqlvalid)
+        tmp_filepath_outline = os.path.join(paths.DIR_DATA_TRAIN_CLEAN_MP, tmp_filename_outline)
+        basename_outline = os.path.splitext(os.path.basename(tmp_filepath_outline))[0]
         filepath_lock = filepath_boundary + '.lock'
         if os.path.exists(filepath_boundary):
             _logger.debug('Boundary file already exists at:  {}'.format(filepath_boundary))
@@ -55,7 +59,6 @@ def create_sampling_boundary_shapefiles() -> None:
 
             # Get shapefile of sampling boundaries by buffering reef outline
             _logger.debug('Creating buffered outline for boundary file')
-            basename_outline = os.path.splitext(os.path.basename(tmp_filepath_outline))[0]
             command = 'ogr2ogr -f "ESRI Shapefile" {filepath_boundary} {tmp_outline} -dialect sqlite ' + \
                       '-sql "select ST_buffer(geometry, 64) as geometry from {basename_outline}"'
             command = command.format(
