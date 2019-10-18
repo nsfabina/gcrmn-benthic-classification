@@ -20,7 +20,6 @@ def remove_feature_rasters_alpha_band() -> None:
         # Skip if output file already exists or if lock file exists
         if os.path.exists(filepath_clean) or os.path.exists(filepath_lock):
             continue
-
         try:
             file_lock = open(filepath_lock, 'x')
         except OSError:
