@@ -12,8 +12,6 @@ _logger = logs.get_logger(__file__)
 def create_sampling_boundary_shapefiles() -> None:
     _logger.info('Creating sampling boundary shapefiles for Millennium Project training data')
     # Get list of completed depth rasters with associated responses
-    tmp_filepath_raster = os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, 'tmp_reef_only.tif')
-    tmp_filepath_outline = os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, 'tmp_reef_outline.shp')
     filepaths_depths = sorted([
         os.path.join(paths.DIR_DATA_TRAIN_CLEAN_MP, filename) for filename in os.listdir(paths.DIR_DATA_TRAIN_CLEAN_MP)
         if filename.endswith('_responses_DEPTH_CODE.tif')
@@ -22,6 +20,8 @@ def create_sampling_boundary_shapefiles() -> None:
     desc = 'Create sampling boundary shapefiles'
     for idx_filepath, filepath_depth in enumerate(tqdm(filepaths_depths, desc=desc)):
         filepath_boundary = re.sub('_responses_DEPTH_CODE.tif', '_boundaries.shp', filepath_depth)
+        tmp_filepath_raster = re.sub('_responses_DEPTH_CODE.tif', '_tmp_noland.tif', filepath_depth)
+        tmp_filepath_outline = re.sub('_responses_DEPTH_CODE.tif', '_tmp_noland.shp', filepath_depth)
         filepath_lock = filepath_boundary + '.lock'
         if os.path.exists(filepath_boundary):
             _logger.debug('Boundary file already exists at:  {}'.format(filepath_boundary))
