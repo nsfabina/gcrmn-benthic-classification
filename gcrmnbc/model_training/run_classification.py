@@ -51,7 +51,7 @@ def run_classification(
         augs = None
         if label_experiment.endswith('_aug'):
             num_features = len(data_container.feature_band_types)
-            assert num_features == 3, 'Is this not just RGB?'
+            assert num_features == 3, 'Is this not just RGB? Augmentations only work with RGB'
             augs = sequences.sample_custom_augmentations_constructor(num_features, config.data_build.window_radius)
         data_container.load_sequences(augs)
 

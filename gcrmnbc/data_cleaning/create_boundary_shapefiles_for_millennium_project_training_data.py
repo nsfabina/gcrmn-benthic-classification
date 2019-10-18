@@ -67,10 +67,10 @@ def create_sampling_boundary_shapefiles() -> None:
         finally:
             if os.path.exists(tmp_filepath_raster):
                 os.remove(tmp_filepath_raster)
-            for filename in os.listdir(paths.DIR_DATA_TRAIN_RAW):
+            for filename in os.listdir(paths.DIR_DATA_TRAIN_CLEAN_MP):
                 if not re.search(basename_outline, filename):
                     continue
-                os.remove(os.path.join(paths.DIR_DATA_TRAIN_RAW, filename))
+                os.remove(os.path.join(paths.DIR_DATA_TRAIN_CLEAN_MP, filename))
             file_lock.close()
             os.remove(filepath_lock)
 
