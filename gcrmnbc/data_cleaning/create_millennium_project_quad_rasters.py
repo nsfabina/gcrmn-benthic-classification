@@ -1,13 +1,16 @@
 import os
 import re
 
-from osgeo import gdal, osr
+from osgeo import gdal
 from tqdm import tqdm
 
 from gcrmnbc.utils import gdal_command_line, logs, paths
 
 
 _logger = logs.get_logger(__file__)
+
+
+ATTRIBUTES = ('L3_CODE', 'L4_CODE', 'DEPTHLABEL')
 
 
 def create_millennium_project_quad_rasters() -> None:
@@ -25,7 +28,8 @@ def create_millennium_project_quad_rasters() -> None:
         filepath_src = os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename_poly)
         filename_raster = re.sub('.shp', '_{}.tif', filename_poly)
         filepath_dest = os.path.join(paths.DIR_DATA_TRAIN_CLEAN_MP, filename_raster)
-        if os.path.exists(filepath_dest.format('L3_CODE')) and os.path.exists(filepath_dest.format('L4_CODE')):
+        all_exist = all([os.path.exists(filepath_dest.format(attribute) for attribute in ATTRIBUTES)])
+        if all_exist:
             continue
 
         # Try to find existing features file, may be either raw or clean, but also may not be available from Vulcan
@@ -49,12 +53,15 @@ def create_millennium_project_quad_rasters() -> None:
         ury = max([y0, y1])
 
         # Rasterize several attributes separately
-        for attribute in ('L3_CODE', 'L4_CODE'):
+        for attribute in ATTRIBUTES:
+            filepath_out = filepath_dest.format(attribute)
+            if os.path.exists(filepath_out):
+                continue
             command = 'gdal_rasterize -ot Int16 -co COMPRESS=DEFLATE -co TILED=YES -a_nodata -9999 -init -9999 ' \
                       '-a {attribute} -te {llx} {lly} {urx} {ury} -tr {xres} {yres} {src} {dest}'
             command = command.format(
                 attribute=attribute, llx=llx, lly=lly, urx=urx, ury=ury, xres=xres, yres=yres,
-                src=filepath_src, dest=filepath_dest.format(attribute)
+                src=filepath_src, dest=filepath_out
             )
             gdal_command_line.run_gdal_command(command, _logger)
 
