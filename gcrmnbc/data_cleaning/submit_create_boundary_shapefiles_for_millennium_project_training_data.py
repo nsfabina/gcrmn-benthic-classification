@@ -4,15 +4,15 @@ import subprocess
 
 SLURM_COMMAND = \
     'sbatch --mail-user=nfabina@asu.edu --mail-type=FAIL --time=2:00:00 --nodes=1 --cpus-per-task=1 ' + \
-    '--ntasks=1 --wrap "python remove_feature_rasters_alpha_band.py" '
+    '--ntasks=1 --wrap "python create_boundary_shapefiles_for_millennium_project_training_data.py" '
 
 
-def submit_remove_feature_rasters_alpha_band() -> None:
-    dir_logs = 'remove_alpha_bands'
+def submit_create_boundary_shapefiles_for_millennium_project_training_data() -> None:
+    dir_logs = 'create_boundary_shapefiles'
     if not os.path.exists(dir_logs):
         os.makedirs(dir_logs)
-    for idx_job in range(50):
-        job_name = 'remove_alpha_bands_{}'.format(idx_job)
+    for idx_job in range(10):
+        job_name = 'create_boundary_shapefiles_{}'.format(idx_job)
         slurm_args_dynamic = ' '.join([
             '--job-name={}'.format(job_name),
             '--output={}/slurm.calc_stats.%j.%t.OUT'.format(dir_logs),
@@ -25,4 +25,4 @@ def submit_remove_feature_rasters_alpha_band() -> None:
 
 
 if __name__ == '__main__':
-    submit_remove_feature_rasters_alpha_band()
+    submit_create_boundary_shapefiles_for_millennium_project_training_data()

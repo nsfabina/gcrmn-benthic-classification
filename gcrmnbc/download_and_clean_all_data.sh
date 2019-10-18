@@ -29,6 +29,12 @@ python ./data_cleaning/create_millennium_project_quad_rasters.py
 python ./data_cleaning/create_boundary_shapefiles_for_millennium_project_training_data.py
 
 
+# Shared feature scripts - need to be completely independent
+python ./data_cleaning/submit_create_boundary_shapefiles_for_millennium_project_training_data.py
+python ./data_cleaning/submit_remove_feature_rasters_alpha_band.py
+raise 'Stop here while the parallelized jobs finish'
+
+
 # Data acquisition - order dependent
 
 echo "Download global feature quads"
