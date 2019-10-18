@@ -14,6 +14,8 @@ MAPPINGS_L1 = {
     0: 'oceanic',
     1: 'continental',
     2: 'main land',
+    2000: 'deep water',  # Added manually to account for deep water
+    2001: 'clouds',  # Added manually to account for clouds
 }
 
 MAPPINGS_L2 = {
@@ -32,6 +34,8 @@ MAPPINGS_L2 = {
     14: 'cross shelf',
     1000: 'main land',
     1001: 'aquatic land features',
+    2000: 'deep water',  # Added manually to account for deep water
+    2001: 'clouds',  # Added manually to account for clouds
 }
 
 MAPPINGS_L3 = {
@@ -76,6 +80,8 @@ MAPPINGS_L3 = {
     40: 'Cross Shelf',
     1000: 'Main Land',
     1001: 'Aquatic Land Features',
+    2000: 'deep water',  # Added manually to account for deep water
+    2001: 'clouds',  # Added manually to account for clouds
 }
 
 MAPPINGS_L4 = {
@@ -141,6 +147,8 @@ MAPPINGS_L4 = {
     999: 'land on reef',
     1000: 'main land',
     1001: 'aquatic land features',
+    2000: 'deep water',  # Added manually to account for deep water
+    2001: 'clouds',  # Added manually to account for clouds
 }
 
 MAPPINGS_RB = {
@@ -163,6 +171,8 @@ MAPPINGS_DEPTH = {
     1: 'variable',
     2: 'deep',
     3: 'land',
+    2000: 'deep water',  # Added manually to account for deep water
+    2001: 'clouds',  # Added manually to account for clouds
 }
 
 
