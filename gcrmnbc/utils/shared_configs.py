@@ -94,7 +94,7 @@ def _build_dynamic_config_for_mp_experiments(
         label_experiment: str,
         response_mapping: str
 ) -> configs.Config:
-    response_mapping_classes = {'l3': 1, 'l4': 1}
+    response_mapping_classes = {'L3': 1, 'L4': 1}
     assert response_mapping in response_mapping_classes, \
         'response_mapping is {} but must be one of:  {}'.format(response_mapping, response_mapping_classes)
 
@@ -108,7 +108,7 @@ def _build_dynamic_config_for_mp_experiments(
     dir_boundaries = os.path.join(paths.DIR_DATA_TRAIN, 'millennium_project')
     filepaths_responses = sorted([
         os.path.join(dir_responses, filename) for filename in os.listdir(dir_responses)
-        if filename.endswith('L3_CODE.tif') or filename.endswith('L4_code.tif')
+        if filename.endswith('{}_CODE.tif'.format(response_mapping))
     ])
     for filepath_response in filepaths_responses:
         quad_name = re.search('L15-\d{4}E-\d{4}N', filepath_response).group()
