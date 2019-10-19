@@ -94,7 +94,7 @@ def _build_dynamic_config_for_mp_experiments(
         label_experiment: str,
         response_mapping: str
 ) -> configs.Config:
-    response_mapping_classes = {'L3': 1, 'L4': 1}
+    response_mapping_classes = {'L3': 39, 'L4': 56}
     assert response_mapping in response_mapping_classes, \
         'response_mapping is {} but must be one of:  {}'.format(response_mapping, response_mapping_classes)
 
