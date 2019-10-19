@@ -4,7 +4,7 @@ set -e
 
 
 GDRIVE_PATH="/data/millennium_project"
-DIR_DEST="/scratch/nfabina/gcrmn-benthic-classification/training_data/raw_millenium_project"
+DIR_DEST="/scratch/nfabina/gcrmn-benthic-classification/training_data/raw_millennium_project"
 
 if [[ ! -d ${DIR_DEST} ]]; then
     mkdir -p ${DIR_DEST}

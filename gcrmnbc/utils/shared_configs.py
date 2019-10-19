@@ -104,8 +104,8 @@ def _build_dynamic_config_for_mp_experiments(
 
     # Get MP response data
     dir_features = paths.DIR_DATA_TRAIN_CLEAN
-    dir_responses = os.path.join(paths.DIR_DATA_TRAIN, 'millenium_project_downsample_50')
-    dir_boundaries = os.path.join(paths.DIR_DATA_TRAIN, 'millenium_project')
+    dir_responses = os.path.join(paths.DIR_DATA_TRAIN, 'millennium_project_downsample_50')
+    dir_boundaries = os.path.join(paths.DIR_DATA_TRAIN, 'millennium_project')
     filepaths_responses = sorted([
         os.path.join(dir_responses, filename) for filename in os.listdir(dir_responses)
         if filename.endswith('L3_CODE.tif') or filename.endswith('L4_code.tif')
@@ -113,7 +113,7 @@ def _build_dynamic_config_for_mp_experiments(
     for filepath_response in filepaths_responses:
         quad_name = re.search('L15-\d{4}E-\d{4}N', filepath_response).group()
         filepath_feature = os.path.join(dir_features, quad_name + '_features.tif')
-        filepath_boundary = os.path.join(dir_features, quad_name + '_boundaries.shp')
+        filepath_boundary = os.path.join(dir_boundaries, quad_name + '_boundaries.shp')
         assert os.path.exists(filepath_feature), 'Features file not found:  {}'.format(filepath_feature)
         assert os.path.exists(filepath_boundary), 'Boundaries file not found:  {}'.format(filepath_boundary)
 

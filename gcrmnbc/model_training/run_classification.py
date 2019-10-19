@@ -61,8 +61,10 @@ def run_classification(
 
         # Create preliminary model report before training
         reporter = reports.Reporter(data_container, experiment, config)
-        # TODO:  fix subplots index error
-        # reporter.create_model_report()
+        try: 
+            reporter.create_model_report()
+        except:
+            pass
         if build_only:
             filepath_built = paths.get_filepath_build_complete(
                 config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
@@ -71,7 +73,10 @@ def run_classification(
 
         # Train model
         experiment.fit_model_with_data_container(data_container, resume_training=True)
-        # reporter.create_model_report()
+        try: 
+            reporter.create_model_report()
+        except:
+            pass
 
         # Create complete file to avoid rerunning in the future, close and remove lock file
         open(filepath_complete, 'w')
