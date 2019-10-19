@@ -1,0 +1,2 @@
+Using TensorFlow backend.
+Downsampling rasters:   0%|          | 0/4302 [00:00<?, ?it/s]Downsampling rasters:  25%|██▍       | 1058/4302 [00:00<00:00, 10574.09it/s]Downsampling rasters:  53%|█████▎    | 2265/4302 [00:00<00:00, 10981.84it/s]Downsampling rasters:  82%|████████▏ | 3512/4302 [00:00<00:00, 11387.75it/s]Downsampling rasters: 100%|██████████| 4302/4302 [00:00<00:00, 11798.47it/s]
