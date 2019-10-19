@@ -29,7 +29,7 @@ def downsample_rasters() -> None:
         filepaths.append((filepath_in, filepath_out))
     # Aggregate MP files
     for filename in os.listdir(paths.DIR_DATA_TRAIN_CLEAN_MP):
-        if not filename.endswith('L3_CODE.tif') or not filename.endswith('L4_CODE.tif'):
+        if not filename.endswith('L3_CODE.tif') and not filename.endswith('L4_CODE.tif'):
             continue
         filepath_in = os.path.join(paths.DIR_DATA_TRAIN_CLEAN_MP, filename)
         filepath_out = os.path.join(dir_out_mp, filename)
