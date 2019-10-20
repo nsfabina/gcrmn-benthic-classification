@@ -28,7 +28,6 @@ def submit_application_slurm(
     # Loop through configs and submit jobs
     for filename_config in filename_configs:
         for label_experiment in labels_experiments.split(','):
-            assert 'millennium' not in label_experiment, 'CalVal not yet possible for MP'
             for response_mapping in response_mappings.split(','):
                 shared_submit_slurm.validate_label_experiment(label_experiment)
                 shared_submit_slurm.validate_response_mapping(response_mapping)

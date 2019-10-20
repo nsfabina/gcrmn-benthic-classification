@@ -3,20 +3,8 @@
 
 set -e
 
-echo "This script is all sorts of fucked up after I tried to reorganize it and forgot about a few dependencies. It'll
-be necessary to run things one-by-one to build this back up."
-
-raise
-
-echo "Download and clean all data"
-echo "Currently, it takes hours/days to parse the shapefiles for raster quads. Do you want to continue?"
-select yn in "Yes" "No"; do
-    case ${yn} in
-        Yes ) break;;
-        No ) exit;;
-    esac
-done
-
+raise 'This script is not meant to be run from start to finish. Instead, it is a recipe for how to handle
+data management'
 
 # Millennium Project scripts
 
@@ -33,6 +21,10 @@ python ./data_cleaning/create_boundary_shapefiles_for_millennium_project_trainin
 python ./data_cleaning/submit_create_boundary_shapefiles_for_millennium_project_training_data.py
 python ./data_cleaning/submit_remove_feature_rasters_alpha_band.py
 raise 'Stop here while the parallelized jobs finish'
+
+
+# Shared scripts - depend on last step
+python ./data_cleaning/submit_downsample_feature_response_rasters.py
 
 
 # Data acquisition - order dependent
