@@ -9,7 +9,7 @@ from gcrmnbc.utils import paths
 def build_dynamic_config(config_name: str, label_experiment: str, response_mapping: str) -> configs.Config:
     if label_experiment in ('original', 'downsample_50', 'downsample_50_aug'):
         builder = _build_dynamic_config_for_uq_experiments
-    elif label_experiment in ('millennium', 'millennium_aug'):
+    elif label_experiment in ('millennium_25', 'millennium_aug'):
         builder = _build_dynamic_config_for_mp_experiments
     return builder(config_name, label_experiment, response_mapping)
 
@@ -106,13 +106,19 @@ def _build_dynamic_config_for_mp_experiments(
     dir_features = paths.DIR_DATA_TRAIN_CLEAN
     dir_responses = os.path.join(paths.DIR_DATA_TRAIN, 'millennium_project_downsample_50')
     dir_boundaries = os.path.join(paths.DIR_DATA_TRAIN, 'millennium_project')
+    if label_experiment == 'millennium_aug':
+        suffix_features = '_features.tif'
+        suffix_responses = 'responses_custom.tif'
+    elif label_experiment == 'millennium_25':
+        suffix_features = '_features_25.tif'
+        suffix_responses = 'responses_custom_25.tif'
     filepaths_responses = sorted([
         os.path.join(dir_responses, filename) for filename in os.listdir(dir_responses)
-        if filename.endswith('responses_custom.tif'.format(response_mapping))
+        if filename.endswith(suffix_responses)
     ])
     for filepath_response in filepaths_responses:
         quad_name = re.search('L15-\d{4}E-\d{4}N', filepath_response).group()
-        filepath_feature = os.path.join(dir_features, quad_name + '_features.tif')
+        filepath_feature = os.path.join(dir_features, quad_name + suffix_features)
         filepath_boundary = os.path.join(dir_boundaries, quad_name + '_boundaries.shp')
         assert os.path.exists(filepath_feature), 'Features file not found:  {}'.format(filepath_feature)
         assert os.path.exists(filepath_boundary), 'Boundaries file not found:  {}'.format(filepath_boundary)
