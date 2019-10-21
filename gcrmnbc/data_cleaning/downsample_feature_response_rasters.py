@@ -29,7 +29,10 @@ def downsample_rasters() -> None:
         filepaths.append((filepath_in, filepath_out))
     # Aggregate MP files
     for filename in os.listdir(paths.DIR_DATA_TRAIN_CLEAN_MP):
-        if not filename.endswith('L3_CODE.tif') and not filename.endswith('L4_CODE.tif'):
+        is_responses = any(
+            [filename.endswith(suffix) for suffix in ('L3_CODE.tif', 'L4_CODE.tif', 'responses_custom.tif')]
+        )
+        if not is_responses:
             continue
         filepath_in = os.path.join(paths.DIR_DATA_TRAIN_CLEAN_MP, filename)
         filepath_out = os.path.join(dir_out_mp, filename)
@@ -46,7 +49,9 @@ def downsample_rasters() -> None:
 
         try:
             is_features = filepath_in.endswith('features.tif')
-            response_suffixes = ('model_class.tif', 'land.tif', 'water.tif', 'L3_code.tif', 'L4_code.tif')
+            response_suffixes = (
+                'model_class.tif', 'land.tif', 'water.tif', 'L3_code.tif', 'L4_code.tif', 'responses_custom.tif'
+            )
             is_responses = re.search('responses', filepath_in) or \
                            any([filepath_in.endswith(suffix) for suffix in response_suffixes])
             assert is_features or is_responses, 'Unknown file type:  {}'.format(filename)
