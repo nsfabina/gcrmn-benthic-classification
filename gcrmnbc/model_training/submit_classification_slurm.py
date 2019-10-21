@@ -7,7 +7,7 @@ from gcrmnbc.utils import paths, shared_submit_slurm
 
 
 SLURM_COMMAND_CLASSIFY = \
-    '--mail-type={mail_end}FAIL --time=24:00:00 --chdir={dir_working} --wrap ' + \
+    '--mail-type={mail_end}FAIL --time=72:00:00 --chdir={dir_working} --wrap ' + \
     '"python run_classification.py --config_name={config_name} --label_experiment={label_experiment} ' + \
     '--response_mapping={response_mapping} {build_only} {run_all}"'
 
@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
                 # Set dynamic SLURM arguments
                 slurm_args_dynamic = ' '.join([
-                    '' if args.build_only else shared_submit_slurm.SLURM_GPUS,
+                    '' if args.build_only else shared_submit_slurm.SLURM_GPUS_LARGE,
                     '--job-name={}'.format(job_name),
                     '--output={}/slurm.classify.%j.%t.OUT'.format(dir_model),
                     '--error={}/slurm.classify.%j.%t.ERROR'.format(dir_model),

@@ -15,7 +15,7 @@ _logger = logs.get_logger(__file__)
 
 SHP_DRIVER = 'ESRI Shapefile'
 SHP_EPSG = 3857
-SHP_SCHEMA = {'properties': OrderedDict([('custom_class', 'int')]), 'geometry': 'Polygon'}
+SHP_SCHEMA = {'properties': OrderedDict([('custom', 'int')]), 'geometry': 'Polygon'}
 
 
 def create_millennium_project_quad_rasters_custom_classes() -> None:
@@ -31,7 +31,7 @@ def create_millennium_project_quad_rasters_custom_classes() -> None:
         _logger.debug('Create raster {} ({} total):  {}'.format(idx_filename, len(filenames_polys), filename_poly))
         # Set filepaths
         filepath_src = os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename_poly)
-        filename_custom = re.sub('responses.shp', 'responses_custom.shp', filename_poly)
+        filename_custom = re.sub('responses.shp', 'responses_tmp.shp', filename_poly)
         filepath_custom = os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename_custom)
         filename_dest = re.sub('.shp', '_custom.tif', filename_poly)
         filepath_dest = os.path.join(paths.DIR_DATA_TRAIN_CLEAN_MP, filename_dest)
@@ -61,7 +61,7 @@ def create_millennium_project_quad_rasters_custom_classes() -> None:
                     original_code = original_feature['properties']['L4_CODE']
                     custom_code = encodings_mp.MAPPINGS_CUSTOM[original_code]
                     custom_feature = {
-                        'properties': {'custom_class': custom_code},
+                        'properties': {'custom': custom_code},
                         'geometry': original_feature['geometry']
                     }
                     file_custom.write(custom_feature)
@@ -76,7 +76,7 @@ def create_millennium_project_quad_rasters_custom_classes() -> None:
             ury = max([y0, y1])
             # Rasterize
             command = 'gdal_rasterize -ot Int16 -co COMPRESS=DEFLATE -co TILED=YES -a_nodata -9999 -init -9999 ' \
-                      '-a custom_class -te {llx} {lly} {urx} {ury} -tr {xres} {yres} {filepath_src} {filepath_dest}'
+                      '-a custom -te {llx} {lly} {urx} {ury} -tr {xres} {yres} {filepath_custom} {filepath_dest}'
             command = command.format(
                 llx=llx, lly=lly, urx=urx, ury=ury, xres=xres, yres=yres, filepath_custom=filepath_custom,
                 filepath_dest=filepath_dest
