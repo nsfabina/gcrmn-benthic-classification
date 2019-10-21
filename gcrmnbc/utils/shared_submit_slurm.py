@@ -12,7 +12,7 @@ SLURM_GPUS_LARGE = SLURM_GPUS + '--constraint="V100_32" '
 VALID_LABELS_EXPERIMENTS = (
     'originals', 'downsample_25', 'downsample_50', 'downsample_50_aug', 'millennium', 'millennium_aug'
 )
-VALID_RESPONSE_MAPPINGS = ('lwr', 'lwrn', 'L3', 'L4')
+VALID_RESPONSE_MAPPINGS = ('lwr', 'lwrn', 'custom')
 
 
 def get_classify_job_name(config_name: str, label_experiment: str, response_mapping: str) -> str:
