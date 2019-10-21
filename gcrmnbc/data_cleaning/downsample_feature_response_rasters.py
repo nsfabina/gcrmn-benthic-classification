@@ -40,7 +40,10 @@ def downsample_rasters() -> None:
 
     for filepath_in, filepath_out in tqdm(filepaths, desc='Downsampling rasters'):
         filepath_lock = filepath_in + '.lock'
-        if os.path.exists(filepath_out) or os.path.exists(filepath_lock):
+        basename_out, extension = os.path.splitext(filepath_out)
+        filepath_out_25 = basename_out + '_25' + extension
+        filepath_out_50 = filepath_out
+        if (os.path.exists(filepath_out_25) and os.path.exists(filepath_out_50)) or os.path.exists(filepath_lock):
             continue
         try:
             file_lock = open(filepath_lock, 'x')
@@ -57,8 +60,11 @@ def downsample_rasters() -> None:
             assert is_features or is_responses, 'Unknown file type:  {}'.format(filename)
 
             resampling = 'bilinear' if is_features else 'nearest'
+            command = 'gdal_translate -outsize 25% 25% -r {resampling} {filepath_in} {filepath_out}'.format(
+                resampling=resampling, filepath_in=filepath_in, filepath_out=filepath_out_25)
+            gdal_command_line.run_gdal_command(command, _logger)
             command = 'gdal_translate -outsize 50% 50% -r {resampling} {filepath_in} {filepath_out}'.format(
-                resampling=resampling, filepath_in=filepath_in, filepath_out=filepath_out)
+                resampling=resampling, filepath_in=filepath_in, filepath_out=filepath_out_50)
             gdal_command_line.run_gdal_command(command, _logger)
         except Exception as error_:
             raise error_
