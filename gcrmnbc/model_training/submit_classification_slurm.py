@@ -12,30 +12,28 @@ SLURM_COMMAND_CLASSIFY = \
     '--response_mapping={response_mapping} {build_only} {run_all}"'
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--config_names', type=str)
-    parser.add_argument('--config_regex', type=str)
-    parser.add_argument('--labels_experiments', type=str, required=True)
-    parser.add_argument('--response_mappings', type=str, required=True)
-    parser.add_argument('--build_only', action='store_true')
-    parser.add_argument('--run_all', action='store_true')
-    args = parser.parse_args()
-
+def submit_classification_slurm(
+        labels_experiments: str,
+        response_mappings: str,
+        config_names: str = None,
+        config_regex: str = None,
+        build_only: bool = False,
+        run_all: bool = False
+) -> None:
     # Warning about usage and error checks
-    if args.build_only and args.config_names:
+    if build_only and config_names:
         print('WARNING:  build_only takes precedence over config_names, which is ignored')
 
     config_names = None
-    if args.config_names:
-        config_names = args.config_names.split(',')
+    if config_names:
+        config_names = config_names.split(',')
     filename_configs = shared_submit_slurm.get_relevant_config_filenames(
-        config_names, args.build_only, args.config_regex)
+        config_names, build_only, config_regex)
 
     # Loop through configs and submit jobs
     for filename_config in filename_configs:
-        for label_experiment in args.labels_experiments.split(','):
-            for response_mapping in args.response_mappings.split(','):
+        for label_experiment in labels_experiments.split(','):
+            for response_mapping in response_mappings.split(','):
                 shared_submit_slurm.validate_label_experiment(label_experiment)
                 shared_submit_slurm.validate_response_mapping(response_mapping)
 
@@ -68,14 +66,14 @@ if __name__ == '__main__':
                     print('Classification complete:  {} {} {}'.format(
                         config_name, label_experiment, response_mapping))
                     continue
-                elif os.path.exists(filepath_built) and args.build_only:
+                elif os.path.exists(filepath_built) and build_only:
                     print('Data build complete:  {} {} {}'.format(
                         config_name, label_experiment, response_mapping))
                     continue
 
                 # Set dynamic SLURM arguments
                 slurm_args_dynamic = ' '.join([
-                    '' if args.build_only else shared_submit_slurm.SLURM_GPUS_LARGE,
+                    '' if build_only else shared_submit_slurm.SLURM_GPUS_LARGE,
                     '--job-name={}'.format(job_name),
                     '--output={}/slurm.classify.%j.%t.OUT'.format(dir_model),
                     '--error={}/slurm.classify.%j.%t.ERROR'.format(dir_model),
@@ -83,12 +81,24 @@ if __name__ == '__main__':
                 # Set dynamic python arguments
                 dir_working = os.path.dirname(os.path.abspath(__file__))
                 slurm_python_wrap = SLURM_COMMAND_CLASSIFY.format(
-                    mail_end='END,' if args.build_only else '', config_name=config_name, dir_working=dir_working,
+                    mail_end='END,' if build_only else '', config_name=config_name, dir_working=dir_working,
                     label_experiment=label_experiment, response_mapping=response_mapping,
-                    build_only='--build_only' if args.build_only else '', run_all='--run_all' if args.run_all else ''
+                    build_only='--build_only' if build_only else '', run_all='--run_all' if run_all else ''
                 )
 
                 print('Submitting job {}'.format(job_name))
                 command = ' '.join([shared_submit_slurm.SLURM_COMMAND, slurm_args_dynamic, slurm_python_wrap])
                 # print(command)
                 subprocess.call(command, shell=True)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config_names', type=str)
+    parser.add_argument('--config_regex', type=str)
+    parser.add_argument('--labels_experiments', type=str, required=True)
+    parser.add_argument('--response_mappings', type=str, required=True)
+    parser.add_argument('--build_only', action='store_true')
+    parser.add_argument('--run_all', action='store_true')
+    args = vars(parser.parse_args())
+    submit_classification_slurm(**args)

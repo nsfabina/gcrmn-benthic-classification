@@ -6,6 +6,7 @@ from bfgn.reporting import reports
 from bfgn.experiments import experiments
 
 from gcrmnbc.application_calval import submit_application_slurm
+from gcrmnbc.model_training import submit_classification_slurm
 from gcrmnbc.utils import logs, paths, shared_configs
 
 
@@ -69,6 +70,11 @@ def run_classification(
             filepath_built = paths.get_filepath_build_complete(
                 config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
             open(filepath_built, 'w')
+            if run_all:
+                submit_classification_slurm.submit_classification_slurm(
+                    labels_experiments=label_experiment, response_mappings=response_mapping, config_names=None,
+                    config_regex=None, build_only=False, run_all=run_all
+                )
             return
 
         # Train model
