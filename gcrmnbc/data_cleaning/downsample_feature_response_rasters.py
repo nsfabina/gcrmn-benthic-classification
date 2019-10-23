@@ -20,7 +20,7 @@ def downsample_rasters() -> None:
 
 def _downsample_features() -> None:
     filenames_srcs = os.listdir(paths.DIR_DATA_TRAIN_FEATURES_CLEAN)
-    for filename_src in tqdm(filenames_srcs, desc='Downsampling rasters'):
+    for filename_src in tqdm(filenames_srcs, desc='Downsampling feature rasters'):
         filepath_src = os.path.join(paths.DIR_DATA_TRAIN_FEATURES_CLEAN, filename_src)
         filepath_lock = os.path.join(paths.DIR_DATA_TRAIN_FEATURES_CLEAN, filename_src + '.lock')
         try:
@@ -52,7 +52,7 @@ def _downsample_features() -> None:
 
 def _downsample_mp() -> None:
     filenames_srcs = [fn for fn in os.listdir(paths.DIR_DATA_TRAIN_MP_CLEAN) if fn.endswith('responses_custom.tif')]
-    for filename_src in tqdm(filenames_srcs, desc='Downsampling rasters'):
+    for filename_src in tqdm(filenames_srcs, desc='Downsampling MP rasters'):
         filepath_src = os.path.join(paths.DIR_DATA_TRAIN_MP_CLEAN, filename_src)
         filepath_lock = os.path.join(paths.DIR_DATA_TRAIN_MP_CLEAN, filename_src + '.lock')
         try:
