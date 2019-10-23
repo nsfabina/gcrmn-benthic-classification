@@ -21,9 +21,9 @@ DIR_DATA_TRAIN_FEATURES_RAW = os.path.join(DIR_DATA_TRAIN_FEATURES, 'raw')
 DIR_DATA_TRAIN_FEATURES_CLEAN = os.path.join(DIR_DATA_TRAIN_FEATURES, 'clean')
 
 DIR_DATA_TRAIN_MP = os.path.join(DIR_DATA_TRAIN, 'responses_mp')
-DIR_DATA_TRAIN_MP_RAW = os.path.join(DIR_DATA_TRAIN, 'raw')
-DIR_DATA_TRAIN_MP_CLEAN = os.path.join(DIR_DATA_TRAIN, 'clean')
-DIR_DATA_TRAIN_MP_BOUNDS = os.path.join(DIR_DATA_TRAIN, 'boundaries_mp')
+DIR_DATA_TRAIN_MP_RAW = os.path.join(DIR_DATA_TRAIN_MP, 'raw')
+DIR_DATA_TRAIN_MP_CLEAN = os.path.join(DIR_DATA_TRAIN_MP, 'clean')
+DIR_DATA_TRAIN_MP_BOUNDS = os.path.join(DIR_DATA_TRAIN_MP, 'boundaries_mp')
 
 DIR_DATA_TRAIN_UQ = os.path.join(DIR_DATA_TRAIN, 'responses_uq')
 DIR_DATA_TRAIN_UQ_RAW = os.path.join(DIR_DATA_TRAIN_UQ, 'raw')

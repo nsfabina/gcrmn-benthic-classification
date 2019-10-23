@@ -1,3 +1,4 @@
+import argparse
 import os
 import re
 
@@ -8,64 +9,72 @@ from gcrmnbc.utils import gdal_command_line, logs, paths
 
 _logger = logs.get_logger(__file__)
 
+DOWNSAMPLE_PCTS = (25, 50)
+
 
 def downsample_rasters() -> None:
     _logger.info('Downsample rasters')
-    dir_out = os.path.join(paths.DIR_DATA_TRAIN, 'downsample_50')
-    dir_out_mp = os.path.join(paths.DIR_DATA_TRAIN, 'millennium_project_downsample_50')
-    for dir_ in (dir_out, dir_out_mp):
-        try:
-            os.makedirs(dir_)
-        except:
-            pass
+    _downsample_features()
+    _downsample_mp()
 
-    filepaths = list()
-    # Aggregate feature and UQ files
-    for filename in os.listdir(paths.DIR_DATA_TRAIN_CLEAN):
-        if not filename.endswith('.tif'):
-            continue
-        filepath_in = os.path.join(paths.DIR_DATA_TRAIN_CLEAN, filename)
-        filepath_out = os.path.join(dir_out, filename)
-        filepaths.append((filepath_in, filepath_out))
-    # Aggregate MP files
-    for filename in os.listdir(paths.DIR_DATA_TRAIN_CLEAN_MP):
-        is_responses = any(
-            [filename.endswith(suffix) for suffix in ('L3_CODE.tif', 'L4_CODE.tif', 'responses_custom.tif')]
-        )
-        if not is_responses:
-            continue
-        filepath_in = os.path.join(paths.DIR_DATA_TRAIN_CLEAN_MP, filename)
-        filepath_out = os.path.join(dir_out_mp, filename)
-        filepaths.append((filepath_in, filepath_out))
 
-    for filepath_in, filepath_out in tqdm(filepaths, desc='Downsampling rasters'):
-        filepath_lock = filepath_in + '.lock'
-        basename_out, extension = os.path.splitext(filepath_out)
-        filepath_out_25 = basename_out + '_25' + extension
-        filepath_out_50 = filepath_out
-        if (os.path.exists(filepath_out_25) and os.path.exists(filepath_out_50)) or os.path.exists(filepath_lock):
-            continue
+def _downsample_features() -> None:
+    filenames_srcs = os.listdir(paths.DIR_DATA_TRAIN_FEATURES_CLEAN)
+    for filename_src in tqdm(filenames_srcs, desc='Downsampling rasters'):
+        filepath_src = os.path.join(paths.DIR_DATA_TRAIN_FEATURES_CLEAN, filename_src)
+        filepath_lock = os.path.join(paths.DIR_DATA_TRAIN_FEATURES_CLEAN, filename_src + '.lock')
         try:
             file_lock = open(filepath_lock, 'x')
         except OSError:
             continue
 
         try:
-            is_features = filepath_in.endswith('features.tif')
-            response_suffixes = (
-                'model_class.tif', 'land.tif', 'water.tif', 'L3_code.tif', 'L4_code.tif', 'responses_custom.tif'
-            )
-            is_responses = re.search('responses', filepath_in) or \
-                           any([filepath_in.endswith(suffix) for suffix in response_suffixes])
-            assert is_features or is_responses, 'Unknown file type:  {}'.format(filename)
+            for pct in DOWNSAMPLE_PCTS:
+                dir_dest = os.path.join(paths.DIR_DATA_TRAIN_FEATURES, paths.SUBDIR_DATA_TRAIN_DOWNSAMPLE.format(pct))
+                filename_dest = re.sub('features.tif', 'features_{}.tif'.format(pct), filename_src)
+                filepath_dest = os.path.join(dir_dest, filename_dest)
+                if os.path.exists(filepath_dest):
+                    continue
+                if not os.path.exists(dir_dest):
+                    try:
+                        os.makedirs(dir_dest)
+                    except:
+                        pass
+                command = 'gdal_translate -outsize {pct}% {pct}% -r bilinear {filepath_src} {filepath_dest}'.format(
+                    pct=pct, filepath_src=filepath_src, filepath_dest=filepath_dest)
+                gdal_command_line.run_gdal_command(command, _logger)
+        except Exception as error_:
+            raise error_
+        finally:
+            file_lock.close()
+            os.remove(filepath_lock)
 
-            resampling = 'bilinear' if is_features else 'nearest'
-            command = 'gdal_translate -outsize 25% 25% -r {resampling} {filepath_in} {filepath_out}'.format(
-                resampling=resampling, filepath_in=filepath_in, filepath_out=filepath_out_25)
-            gdal_command_line.run_gdal_command(command, _logger)
-            command = 'gdal_translate -outsize 50% 50% -r {resampling} {filepath_in} {filepath_out}'.format(
-                resampling=resampling, filepath_in=filepath_in, filepath_out=filepath_out_50)
-            gdal_command_line.run_gdal_command(command, _logger)
+
+def _downsample_mp() -> None:
+    filenames_srcs = [fn for fn in os.listdir(paths.DIR_DATA_TRAIN_MP_CLEAN) if fn.endswith('responses_custom.tif')]
+    for filename_src in tqdm(filenames_srcs, desc='Downsampling rasters'):
+        filepath_src = os.path.join(paths.DIR_DATA_TRAIN_MP_CLEAN, filename_src)
+        filepath_lock = os.path.join(paths.DIR_DATA_TRAIN_MP_CLEAN, filename_src + '.lock')
+        try:
+            file_lock = open(filepath_lock, 'x')
+        except OSError:
+            continue
+
+        try:
+            for pct in DOWNSAMPLE_PCTS:
+                dir_dest = os.path.join(paths.DIR_DATA_TRAIN_MP, paths.SUBDIR_DATA_TRAIN_DOWNSAMPLE.format(pct))
+                filename_dest = re.sub('responses_custom.tif', 'responses_custom_{}.tif'.format(pct), filename_src)
+                filepath_dest = os.path.join(dir_dest, filename_dest)
+                if os.path.exists(filepath_dest):
+                    continue
+                if not os.path.exists(dir_dest):
+                    try:
+                        os.makedirs(dir_dest)
+                    except:
+                        pass
+                command = 'gdal_translate -outsize {pct}% {pct}% -r nearest {filepath_src} {filepath_dest}'.format(
+                    pct=pct, filepath_src=filepath_src, filepath_dest=filepath_dest)
+                gdal_command_line.run_gdal_command(command, _logger)
         except Exception as error_:
             raise error_
         finally:
