@@ -14,7 +14,7 @@ data_build:
   filename_prefix_out: ''
   network_category: FCN
   random_seed: 1
-  max_samples: 100000
+  max_samples: 10000
   max_built_data_gb: 500.0
   number_folds: 10
   validation_fold: 0
@@ -22,7 +22,7 @@ data_build:
   loss_window_radius:
   feature_mean_centering: false
   feature_nodata_maximum_fraction: 0.25
-  response_nodata_maximum_fraction: 0.75
+  response_nodata_maximum_fraction: 0.90
   sparse_read: True
 data_samples:
   apply_random_transformations: true
