@@ -9,7 +9,7 @@ from gcrmnbc.utils import paths
 def build_dynamic_config(config_name: str, label_experiment: str, response_mapping: str) -> configs.Config:
     if label_experiment in ('original', 'downsample_50', 'downsample_50_aug'):
         builder = _build_dynamic_config_for_uq_experiments
-    elif label_experiment in ('millennium_25', 'millennium_aug'):
+    elif 'millennium' in label_experiment:
         builder = _build_dynamic_config_for_mp_experiments
     return builder(config_name, label_experiment, response_mapping)
 
@@ -19,6 +19,7 @@ def _build_dynamic_config_for_uq_experiments(
         label_experiment: str,
         response_mapping: str
 ) -> configs.Config:
+    raise AssertionError('You need to modify the paths for the UQ experiments, like the MP experiment paths')
     response_mapping_classes = {'lwr': 10, 'lwrn': 8, }
     assert response_mapping in response_mapping_classes, \
         'response_mapping is {} but must be one of:  {}'.format(response_mapping, response_mapping_classes.keys())
@@ -94,7 +95,7 @@ def _build_dynamic_config_for_mp_experiments(
         label_experiment: str,
         response_mapping: str
 ) -> configs.Config:
-    response_mapping_classes = {'custom': 13}
+    response_mapping_classes = {'custom': 11}
     assert response_mapping in response_mapping_classes, \
         'response_mapping is {} but must be one of:  {}'.format(response_mapping, response_mapping_classes)
 
@@ -102,23 +103,27 @@ def _build_dynamic_config_for_mp_experiments(
     config_responses = list()
     config_boundaries = list()
 
-    # Get MP response data
-    dir_features = paths.DIR_DATA_TRAIN_CLEAN
-    dir_responses = os.path.join(paths.DIR_DATA_TRAIN, 'millennium_project_downsample_50')
-    dir_boundaries = os.path.join(paths.DIR_DATA_TRAIN, 'millennium_project')
-    if label_experiment == 'millennium_aug':
-        suffix_features = '_features.tif'
-        suffix_responses = 'responses_custom.tif'
-    elif label_experiment == 'millennium_25':
-        suffix_features = '_features_25.tif'
-        suffix_responses = 'responses_custom_25.tif'
+    # Set source directories
+    dir_features = paths.DIR_DATA_TRAIN_FEATURES_CLEAN
+    if '25' in label_experiment:
+        dir_responses = os.path.join(paths.DIR_DATA_TRAIN_MP, paths.SUBDIR_DATA_TRAIN_DOWNSAMPLE.format('25'))
+        suffix = '_25'
+    elif '50' in label_experiment:
+        dir_responses = os.path.join(paths.DIR_DATA_TRAIN_MP, paths.SUBDIR_DATA_TRAIN_DOWNSAMPLE.format('50'))
+        suffix = '_50'
+    else:
+        dir_responses = paths.DIR_DATA_TRAIN_MP_CLEAN
+        suffix = ''
+    dir_boundaries = paths.DIR_DATA_TRAIN_MP_BOUNDS
+
+    # Get feature/response/boundary sets
     filepaths_responses = sorted([
         os.path.join(dir_responses, filename) for filename in os.listdir(dir_responses)
-        if filename.endswith(suffix_responses)
+        if filename.endswith('custom_response{}.tif'.format(suffix))
     ])
     for filepath_response in filepaths_responses:
         quad_name = re.search('L15-\d{4}E-\d{4}N', filepath_response).group()
-        filepath_feature = os.path.join(dir_features, quad_name + suffix_features)
+        filepath_feature = os.path.join(dir_features, quad_name + '_features{}.tif'.format(suffix))
         filepath_boundary = os.path.join(dir_boundaries, quad_name + '_boundaries.shp')
         assert os.path.exists(filepath_feature), 'Features file not found:  {}'.format(filepath_feature)
         assert os.path.exists(filepath_boundary), 'Boundaries file not found:  {}'.format(filepath_boundary)

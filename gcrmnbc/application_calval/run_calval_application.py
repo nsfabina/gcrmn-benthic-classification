@@ -46,7 +46,7 @@ def run_application(config_name: str, label_experiment: str, response_mapping: s
         filepath_model_complete = paths.get_filepath_calval_apply_complete(
             config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
         open(filepath_model_complete, 'w')
-        if run_all:
+        if run_all and 'millennium' not in label_experiment:
             submit_calculation_slurm.submit_calculation_slurm(
                 labels_experiments=label_experiment, response_mappings=response_mapping, recalculate=False)
 

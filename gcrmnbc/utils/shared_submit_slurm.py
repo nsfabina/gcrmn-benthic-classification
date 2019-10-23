@@ -10,7 +10,14 @@ SLURM_GPUS = '--partition gpu --gres=gpu:1 --qos=wildfire '
 SLURM_GPUS_LARGE = SLURM_GPUS + '--constraint="V100_32" '
 
 VALID_LABELS_EXPERIMENTS = (
-    'originals', 'downsample_25', 'downsample_50', 'downsample_50_aug', 'millennium_25_aug', 'millennium_aug'
+    # UQ data
+    'originals',
+    'downsample_25',
+    'downsample_50',
+    'downsample_50_aug'
+    # MP data
+    'millennium_25_aug',
+    'millennium_50_aug'
 )
 VALID_RESPONSE_MAPPINGS = ('lwr', 'lwrn', 'custom')
 
