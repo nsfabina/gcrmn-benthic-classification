@@ -12,7 +12,7 @@ _logger = logs.get_logger(__file__)
 def delete_land_only_millennium_project_shapefiles() -> None:
     _logger.info('Delete land-only quad shapefiles')
     filepaths_polys = [
-        os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename) for filename in os.listdir(paths.DIR_DATA_TRAIN_RAW_MP)
+        os.path.join(paths.DIR_DATA_TRAIN_MP_RAW, filename) for filename in os.listdir(paths.DIR_DATA_TRAIN_MP_RAW)
         if filename.startswith('L15-') and filename.endswith('.shp')
     ]
     num_deleted = 0

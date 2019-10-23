@@ -4,7 +4,7 @@
 set -e
 
 
-DIR_DEST="/scratch/nfabina/gcrmn-benthic-classification/training_data/raw"
+DIR_DEST="/scratch/nfabina/gcrmn-benthic-classification/training_data/responses_uq/raw"
 
 
 if [[ ! -d ${DIR_DEST} ]]; then

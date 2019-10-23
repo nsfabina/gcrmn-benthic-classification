@@ -184,109 +184,109 @@ MAPPINGS_DEPTH = {
 # Water within land features and other water features are distinct enough to have separate classes
 
 
-_CODE_LAND = 0  # Dark brown
-_CODE_WATER_TERRESTRIAL = 1  # Light brown
+CODE_LAND = 0  # Dark brown
+CODE_WATER_TERRESTRIAL = 1  # Light brown
 
-_CODE_WATER_SHALLOW = 10  # Light blue
-_CODE_WATER_DEEP = 11  # Dark blue
+CODE_WATER_SHALLOW = 10  # Light blue
+CODE_WATER_DEEP = 11  # Dark blue
 
-_CODE_FOREREEF = 20   # Medium green
-_CODE_REEFFLAT_SHALLOW = 21  # Light green
-_CODE_REEFFLAT_VARIABLE = 22  # Light green
-_CODE_PINNACLES = 23  # Medium green
-_CODE_CONSTRUCTIONS = 24  # Pink
+CODE_FOREREEF = 20   # Medium green
+CODE_REEFFLAT_SHALLOW = 21  # Light green
+CODE_REEFFLAT_VARIABLE = 22  # Light green
+CODE_PINNACLES = 23  # Medium green
+CODE_CONSTRUCTIONS = -9999  # Pink
 
-_CODE_NONREEF_SHALLOW = 30  # Light yellow
-_CODE_NONREEF_VARIABLE = 31  # Medium yellow
-_CODE_NONREEF_DEEP = 32  # Dark yellow
+CODE_NONREEF_SHALLOW = 30  # Light yellow
+CODE_NONREEF_VARIABLE = 31  # Medium yellow
+CODE_NONREEF_DEEP = 32  # Dark yellow
 
-_CODE_CLOUDS = 40  # Gray
+CODE_CLOUDS = 40  # Gray
 
-_CODE_REMOVE = -9999  # Either not many examples, not clear examples, or not in imagery (drowned classes)
-_CODE_UNKNOWN = -9999  # Pretty sure this class is unknown
+CODE_REMOVE = -9999  # Either not many examples, not clear examples, or not in imagery (drowned classes)
+CODE_UNKNOWN = -9999  # Pretty sure this class is unknown
 
 
 MAPPINGS_CUSTOM = {
-    999: _CODE_LAND,  # 'land on reef',  ~13000
-    1000: _CODE_LAND,  # 'main land',  ~35000
+    999: CODE_LAND,  # 'land on reef',  ~13000
+    1000: CODE_LAND,  # 'main land',  ~35000
 
-    2: _CODE_WATER_TERRESTRIAL,  # 'brackish atoll lagoon',  ~1000
-    1001: _CODE_WATER_TERRESTRIAL,  # 'aquatic land features',  ~7000
+    2: CODE_WATER_TERRESTRIAL,  # 'brackish atoll lagoon',  ~1000
+    1001: CODE_WATER_TERRESTRIAL,  # 'aquatic land features',  ~7000
 
-    4: _CODE_WATER_SHALLOW,  # 'channel',
-    21: _CODE_WATER_SHALLOW,  # 'enclosed basin',  ~1000
-    22: _CODE_WATER_SHALLOW,  # 'enclosed lagoon',  ~1000
-    23: _CODE_WATER_SHALLOW,  # 'enclosed lagoon or basin',  ~1000
-    27: _CODE_WATER_SHALLOW,  # 'faro enclosed lagoon',  ~ 1000
-    51: _CODE_WATER_SHALLOW,  # 'shallow lagoon',
+    4: CODE_WATER_SHALLOW,  # 'channel',
+    21: CODE_WATER_SHALLOW,  # 'enclosed basin',  ~1000
+    22: CODE_WATER_SHALLOW,  # 'enclosed lagoon',  ~1000
+    23: CODE_WATER_SHALLOW,  # 'enclosed lagoon or basin',  ~1000
+    27: CODE_WATER_SHALLOW,  # 'faro enclosed lagoon',  ~ 1000
+    51: CODE_WATER_SHALLOW,  # 'shallow lagoon',
 
-    8: _CODE_WATER_DEEP,  # 'deep lagoon',  ~1000
-    13: _CODE_WATER_DEEP,  # 'double barrier lagoon',
-    17: _CODE_WATER_DEEP,  # 'drowned lagoon',
-    33: _CODE_WATER_DEEP,  # 'haa enclosed lagoon',
-    43: _CODE_WATER_DEEP,  # 'pass',  ~1000
+    8: CODE_WATER_DEEP,  # 'deep lagoon',  ~1000
+    13: CODE_WATER_DEEP,  # 'double barrier lagoon',
+    17: CODE_WATER_DEEP,  # 'drowned lagoon',
+    33: CODE_WATER_DEEP,  # 'haa enclosed lagoon',
+    43: CODE_WATER_DEEP,  # 'pass',  ~1000
 
-    28: _CODE_FOREREEF,  # 'faro forereef',
-    30: _CODE_FOREREEF,  # 'forereef',  ~20000
+    28: CODE_FOREREEF,  # 'faro forereef',
+    30: CODE_FOREREEF,  # 'forereef',  ~20000
 
-    5: _CODE_REEFFLAT_SHALLOW,  # 'crest',
-    29: _CODE_REEFFLAT_SHALLOW,  # 'faro reef flat',  ~1300
-    32: _CODE_REEFFLAT_SHALLOW,  # 'fractal reef flat',
-    39: _CODE_REEFFLAT_SHALLOW,  # 'intermediate reef flat',
-    41: _CODE_REEFFLAT_SHALLOW,  # 'linear reef flat',
-    44: _CODE_REEFFLAT_SHALLOW,  # 'pass reef flat',
-    48: _CODE_REEFFLAT_SHALLOW,  # 'reef flat',  ~55000
-    50: _CODE_REEFFLAT_SHALLOW,  # 'ridge and fossil crest',
-    65: _CODE_REEFFLAT_SHALLOW,  # 'uplifted reef flat',
-    66: _CODE_REEFFLAT_SHALLOW,  # 'bay exposed fringing',  # Added manually due to collision
+    5: CODE_REEFFLAT_SHALLOW,  # 'crest',
+    29: CODE_REEFFLAT_SHALLOW,  # 'faro reef flat',  ~1300
+    32: CODE_REEFFLAT_SHALLOW,  # 'fractal reef flat',
+    39: CODE_REEFFLAT_SHALLOW,  # 'intermediate reef flat',
+    41: CODE_REEFFLAT_SHALLOW,  # 'linear reef flat',
+    44: CODE_REEFFLAT_SHALLOW,  # 'pass reef flat',
+    48: CODE_REEFFLAT_SHALLOW,  # 'reef flat',  ~55000
+    50: CODE_REEFFLAT_SHALLOW,  # 'ridge and fossil crest',
+    65: CODE_REEFFLAT_SHALLOW,  # 'uplifted reef flat',
+    66: CODE_REEFFLAT_SHALLOW,  # 'bay exposed fringing',  # Added manually due to collision
 
     # Reticulated fringing can be a bit poorly defined, e.g., Solomon Islands, where it looks much like nonreef features
     # and doesn't match the visual imagery well, removing to avoid contaminating dataset
-    49: _CODE_REMOVE,  # 'reticulated fringing',
+    49: CODE_REMOVE,  # 'reticulated fringing',
 
-    35: _CODE_REEFFLAT_VARIABLE,  # 'immature reef flat',  ~20000
-    63: _CODE_REEFFLAT_VARIABLE,  # 'subtidal reef flat',
+    35: CODE_REEFFLAT_VARIABLE,  # 'immature reef flat',  ~20000
+    63: CODE_REEFFLAT_VARIABLE,  # 'subtidal reef flat',
 
-    1: _CODE_PINNACLES,  # 'barrier reef pinnacle/patch',  ~22000
-    40: _CODE_PINNACLES,  # 'lagoon pinnacle',  ~3000
-    47: _CODE_PINNACLES,  # 'pinnacle',  ~2000
+    1: CODE_PINNACLES,  # 'barrier reef pinnacle/patch',  ~22000
+    40: CODE_PINNACLES,  # 'lagoon pinnacle',  ~3000
+    47: CODE_PINNACLES,  # 'pinnacle',  ~2000
 
-    9: _CODE_CONSTRUCTIONS,  # 'deep lagoon with constructions',
-    11: _CODE_CONSTRUCTIONS,  # 'deep terrace with constructions',
-    24: _CODE_CONSTRUCTIONS,  # 'enclosed lagoon or basin with constructions',
-    25: _CODE_CONSTRUCTIONS,  # 'enclosed lagoon with constructions',
-    52: _CODE_CONSTRUCTIONS,  # 'shallow lagoon with constructions',
-    54: _CODE_CONSTRUCTIONS,  # 'shallow lagoonal terrace with constructions',
-    57: _CODE_CONSTRUCTIONS,  # 'shallow terrace with constructions',
-    61: _CODE_CONSTRUCTIONS,  # 'shelf terrace with constructions',
+    9: CODE_CONSTRUCTIONS,  # 'deep lagoon with constructions',
+    11: CODE_CONSTRUCTIONS,  # 'deep terrace with constructions',
+    24: CODE_CONSTRUCTIONS,  # 'enclosed lagoon or basin with constructions',
+    25: CODE_CONSTRUCTIONS,  # 'enclosed lagoon with constructions',
+    52: CODE_CONSTRUCTIONS,  # 'shallow lagoon with constructions',
+    54: CODE_CONSTRUCTIONS,  # 'shallow lagoonal terrace with constructions',
+    57: CODE_CONSTRUCTIONS,  # 'shallow terrace with constructions',
+    61: CODE_CONSTRUCTIONS,  # 'shelf terrace with constructions',
 
-    12: _CODE_NONREEF_SHALLOW,  # 'diffuse fringing',  ~3000
+    12: CODE_NONREEF_SHALLOW,  # 'diffuse fringing',  ~3000
 
-    6: _CODE_NONREEF_VARIABLE,  # 'cross shelf',
-    37: _CODE_NONREEF_VARIABLE,  # 'inner slope',  ~1000
-    38: _CODE_NONREEF_VARIABLE,  # 'inner terrace',
-    42: _CODE_NONREEF_VARIABLE,  # 'outer terrace',
-    53: _CODE_NONREEF_VARIABLE,  # 'shallow lagoonal terrace',
-    56: _CODE_NONREEF_VARIABLE,  # 'shallow terrace',  ~12000
-    60: _CODE_NONREEF_VARIABLE,  # 'shelf terrace',  ~1000
+    6: CODE_NONREEF_VARIABLE,  # 'cross shelf',
+    37: CODE_NONREEF_VARIABLE,  # 'inner slope',  ~1000
+    38: CODE_NONREEF_VARIABLE,  # 'inner terrace',
+    42: CODE_NONREEF_VARIABLE,  # 'outer terrace',
+    53: CODE_NONREEF_VARIABLE,  # 'shallow lagoonal terrace',
+    56: CODE_NONREEF_VARIABLE,  # 'shallow terrace',  ~12000
+    60: CODE_NONREEF_VARIABLE,  # 'shelf terrace',  ~1000
 
-    58: _CODE_REMOVE,  # 'shelf hardground',
-    59: _CODE_NONREEF_DEEP,  # 'shelf slope',  ~2000
+    58: CODE_NONREEF_DEEP,  # 'shelf hardground',
+    59: CODE_NONREEF_DEEP,  # 'shelf slope',  ~2000
 
-    3: _CODE_REMOVE,  # 'bridge',
-    7: _CODE_REMOVE,  # 'deep drowned reef flat',
-    10: _CODE_REMOVE,  # 'deep terrace',
-    15: _CODE_REMOVE,  # 'drowned bank',
-    16: _CODE_REMOVE,  # 'drowned inner slope',
-    18: _CODE_REMOVE,  # 'drowned pass',
-    19: _CODE_REMOVE,  # 'drowned patch',
-    20: _CODE_REMOVE,  # 'drowned rim',
-    31: _CODE_REMOVE,  # 'forereef or terrace',
-    34: _CODE_REMOVE,  # 'haa subtidal reef flat',
+    3: CODE_REMOVE,  # 'bridge',
+    7: CODE_REMOVE,  # 'deep drowned reef flat',
+    10: CODE_REMOVE,  # 'deep terrace',
+    15: CODE_REMOVE,  # 'drowned bank',
+    16: CODE_REMOVE,  # 'drowned inner slope',
+    18: CODE_REMOVE,  # 'drowned pass',
+    19: CODE_REMOVE,  # 'drowned patch',
+    20: CODE_REMOVE,  # 'drowned rim',
+    31: CODE_REMOVE,  # 'forereef or terrace',
+    34: CODE_REMOVE,  # 'haa subtidal reef flat',
 
-    64: _CODE_UNKNOWN,  # 'undetermined envelope',
+    64: CODE_UNKNOWN,  # 'undetermined envelope',
 
-    2001: _CODE_CLOUDS,  # 'clouds', added manually to account for clouds
+    2001: CODE_CLOUDS,  # 'clouds', added manually to account for clouds
 }
 
 
@@ -301,10 +301,10 @@ def _parse_all_codes():
         for feature in features:
             properties = feature['properties']
             for meta in ('L1', 'L2', 'L3', 'L4', 'L5', 'RB'):
-                code = properties.get(meta + '_CODE')
+                code = properties.get(meta + 'CODE')
                 attr = properties.get(meta + '_ATTRIB')
                 all_codes.setdefault(meta, dict()).setdefault(code, Counter()).update([attr])
-            code = properties.get('DEPTH_CODE')
+            code = properties.get('DEPTHCODE')
             attr = properties.get('DEPTHLABEL')
             all_codes.setdefault('DEPTH', dict()).setdefault(code, Counter()).update([attr])
             all_codes.setdefault('VALIDATED', set()).update([properties.get('Validated')])

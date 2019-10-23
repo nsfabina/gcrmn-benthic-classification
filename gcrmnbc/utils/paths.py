@@ -10,18 +10,28 @@ DIR_MODELS = os.path.join(DIR_BFGN, 'models')
 
 DIR_DATA = '/scratch/nfabina/gcrmn-benthic-classification/'
 
-DIR_DATA_BUILT = os.path.join(DIR_DATA, 'built_data')
-
-DIR_DATA_TRAIN = os.path.join(DIR_DATA, 'training_data')
-DIR_DATA_TRAIN_CLEAN = os.path.join(DIR_DATA_TRAIN, 'originals')
-DIR_DATA_TRAIN_RAW = os.path.join(DIR_DATA_TRAIN, 'raw')
-DIR_DATA_TRAIN_CLEAN_MP = os.path.join(DIR_DATA_TRAIN, 'millennium_project')
-DIR_DATA_TRAIN_RAW_MP = os.path.join(DIR_DATA_TRAIN, 'raw_millennium_project')
-
-DIR_DATA_EVAL = os.path.join(DIR_DATA, 'evaluation_data')
 DIR_DATA_APPLY_CALVAL = os.path.join(DIR_DATA, 'applied_data')
-
+DIR_DATA_BUILT = os.path.join(DIR_DATA, 'built_data')
+DIR_DATA_EVAL = os.path.join(DIR_DATA, 'evaluation_data')
 DIR_DATA_GLOBAL = os.path.join(DIR_DATA, 'global_data')
+DIR_DATA_TRAIN = os.path.join(DIR_DATA, 'training_data')
+
+DIR_DATA_TRAIN_FEATURES = os.path.join(DIR_DATA_TRAIN, 'features')
+DIR_DATA_TRAIN_FEATURES_RAW = os.path.join(DIR_DATA_TRAIN_FEATURES, 'raw')
+DIR_DATA_TRAIN_FEATURES_CLEAN = os.path.join(DIR_DATA_TRAIN_FEATURES, 'clean')
+
+DIR_DATA_TRAIN_MP = os.path.join(DIR_DATA_TRAIN, 'responses_mp')
+DIR_DATA_TRAIN_MP_RAW = os.path.join(DIR_DATA_TRAIN, 'raw')
+DIR_DATA_TRAIN_MP_CLEAN = os.path.join(DIR_DATA_TRAIN, 'clean')
+DIR_DATA_TRAIN_MP_BOUNDS = os.path.join(DIR_DATA_TRAIN, 'boundaries_mp')
+
+DIR_DATA_TRAIN_UQ = os.path.join(DIR_DATA_TRAIN, 'responses_uq')
+DIR_DATA_TRAIN_UQ_RAW = os.path.join(DIR_DATA_TRAIN_UQ, 'raw')
+
+DIR_DATA_TRAIN_SUPP = os.path.join(DIR_DATA_TRAIN, 'responses_supp')
+DIR_DATA_TRAIN_SUPP_RAW = os.path.join(DIR_DATA_TRAIN_UQ, 'raw')
+
+SUBDIR_DATA_TRAIN_DOWNSAMPLE = 'resolution_{}'
 
 FILENAME_BUILD_COMPLETE = 'build.complete'
 FILENAME_CLASSIFY_LOCK = 'classify.lock'

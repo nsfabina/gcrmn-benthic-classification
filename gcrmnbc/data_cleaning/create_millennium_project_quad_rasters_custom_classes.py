@@ -20,21 +20,21 @@ SHP_SCHEMA = {'properties': OrderedDict([('custom', 'int')]), 'geometry': 'Polyg
 
 def create_millennium_project_quad_rasters_custom_classes() -> None:
     _logger.info('Create Millennium Project response quad rasters')
-    if not os.path.exists(paths.DIR_DATA_TRAIN_CLEAN_MP):
-        os.makedirs(paths.DIR_DATA_TRAIN_CLEAN_MP)
+    if not os.path.exists(paths.DIR_DATA_TRAIN_MP_CLEAN):
+        os.makedirs(paths.DIR_DATA_TRAIN_MP_CLEAN)
     filenames_polys = [
-        filename for filename in os.listdir(paths.DIR_DATA_TRAIN_RAW_MP)
+        filename for filename in os.listdir(paths.DIR_DATA_TRAIN_MP_RAW)
         if filename.startswith('L15-') and filename.endswith('responses.shp')
     ]
     missing_features = list()
     for idx_filename, filename_poly in enumerate(tqdm(filenames_polys, desc='Create Millennium Project rasters')):
         _logger.debug('Create raster {} ({} total):  {}'.format(idx_filename, len(filenames_polys), filename_poly))
         # Set filepaths
-        filepath_src = os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename_poly)
+        filepath_src = os.path.join(paths.DIR_DATA_TRAIN_MP_RAW, filename_poly)
         filename_custom = re.sub('responses.shp', 'responses_tmp.shp', filename_poly)
-        filepath_custom = os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename_custom)
+        filepath_custom = os.path.join(paths.DIR_DATA_TRAIN_MP_RAW, filename_custom)
         filename_dest = re.sub('.shp', '_custom.tif', filename_poly)
-        filepath_dest = os.path.join(paths.DIR_DATA_TRAIN_CLEAN_MP, filename_dest)
+        filepath_dest = os.path.join(paths.DIR_DATA_TRAIN_MP_CLEAN, filename_dest)
         filepath_lock = filepath_dest + '.lock'
         if os.path.exists(filepath_dest) or os.path.exists(filepath_lock):
             continue
@@ -47,9 +47,9 @@ def create_millennium_project_quad_rasters_custom_classes() -> None:
         try:
             # Try to find existing features file, may be either raw or clean, but also may not be available from Vulcan
             filename_features = re.search(r'L15-\d{4}E-\d{4}N', filename_poly).group() + '_features.tif'
-            filepath_features = os.path.join(paths.DIR_DATA_TRAIN_RAW, filename_features)
+            filepath_features = os.path.join(paths.DIR_DATA_TRAIN_FEATURES, filename_features)
             if not os.path.exists(filepath_features):
-                filepath_features = os.path.join(paths.DIR_DATA_TRAIN_CLEAN, filename_features)
+                filepath_features = os.path.join(paths.DIR_DATA_TRAIN_FEATURES_CLEAN, filename_features)
             if not os.path.exists(filepath_features):
                 _logger.warning('Features file not available in raw or clean dirs: {}'.format(filename_features))
                 missing_features.append(filename_features)
@@ -85,9 +85,9 @@ def create_millennium_project_quad_rasters_custom_classes() -> None:
         except Exception as error_:
             raise error_
         finally:
-            for filename in os.listdir(paths.DIR_DATA_TRAIN_CLEAN_MP):
+            for filename in os.listdir(os.path.dirname(filepath_custom)):
                 if re.search(os.path.splitext(filename_custom)[0], filename):
-                    os.remove(os.path.join(paths.DIR_DATA_TRAIN_CLEAN_MP, filename))
+                    os.remove(os.path.join(os.path.dirname(filepath_custom), filename))
             file_lock.close()
             os.remove(filepath_lock)
 

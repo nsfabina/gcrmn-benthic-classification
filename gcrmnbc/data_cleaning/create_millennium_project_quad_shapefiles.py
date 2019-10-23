@@ -11,7 +11,7 @@ from gcrmnbc.utils import encodings_mp, gdal_command_line, logs, mosaic_quads, p
 _logger = logs.get_logger(__file__)
 
 
-FILEPATH_QUAD_POLY = os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, '{}_responses.shp')
+FILEPATH_QUAD_POLY = os.path.join(paths.DIR_DATA_TRAIN_MP_RAW, '{}_responses.shp')
 
 SHAPEFILE_DRIVER = 'ESRI Shapefile'
 SHAPEFILE_EPSG = 3857
@@ -50,7 +50,7 @@ def create_millennium_project_quad_shapefiles() -> None:
     _logger.info('Create Millennium Project response quad shapefiles')
     _reproject_shapefiles()
     filepaths_raw_polys = sorted([
-        os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename) for filename in os.listdir(paths.DIR_DATA_TRAIN_RAW_MP)
+        os.path.join(paths.DIR_DATA_TRAIN_MP_RAW, filename) for filename in os.listdir(paths.DIR_DATA_TRAIN_MP_RAW)
         if filename.endswith('_3857.shp')
     ])
     schema = None
@@ -80,14 +80,14 @@ def create_millennium_project_quad_shapefiles() -> None:
 
 def _reproject_shapefiles() -> None:
     filenames_raw_polys = [
-        filename for filename in os.listdir(paths.DIR_DATA_TRAIN_RAW_MP)
+        filename for filename in os.listdir(paths.DIR_DATA_TRAIN_MP_RAW)
         if filename.endswith('.shp') and not filename.endswith('_responses.shp')
         and not filename.endswith('_3857.shp')
     ]
     for filename_raw in tqdm(filenames_raw_polys, desc='Reproject shapefiles'):
-        filepath_raw = os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename_raw)
+        filepath_raw = os.path.join(paths.DIR_DATA_TRAIN_MP_RAW, filename_raw)
         filename_reproj = re.sub('.shp', '_3857.shp', filename_raw)
-        filepath_reproj = os.path.join(paths.DIR_DATA_TRAIN_RAW_MP, filename_reproj)
+        filepath_reproj = os.path.join(paths.DIR_DATA_TRAIN_MP_RAW, filename_reproj)
         if os.path.exists(filepath_reproj):
             continue
         command = 'ogr2ogr -t_srs EPSG:3857 {reproj} {raw}'.format(reproj=filepath_reproj, raw=filepath_raw)

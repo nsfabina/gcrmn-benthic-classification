@@ -11,12 +11,13 @@ _logger = logs.get_logger(__file__)
 
 
 def remove_feature_rasters_alpha_band() -> None:
-    filenames_raw = [filename for filename in os.listdir(paths.DIR_DATA_TRAIN_RAW) if filename.endswith('features.tif')]
+    filenames_raw = [fn for fn in os.listdir(paths.DIR_DATA_TRAIN_FEATURES_RAW) if fn.endswith('features.tif')]
     for filename_raw in tqdm(filenames_raw, desc='Remove feature rasters alpha band'):
-        filepath_lock = os.path.join(paths.DIR_DATA_TRAIN_RAW, filename_raw + '.lock')
-        filepath_raw = os.path.join(paths.DIR_DATA_TRAIN_RAW, filename_raw)
-        filepath_tmp = os.path.join(paths.DIR_DATA_TRAIN_RAW, re.sub('features.tif', 'features_tmp.tif', filename_raw))
-        filepath_clean = os.path.join(paths.DIR_DATA_TRAIN_CLEAN, filename_raw)
+        filepath_lock = os.path.join(paths.DIR_DATA_TRAIN_FEATURES_RAW, filename_raw + '.lock')
+        filepath_raw = os.path.join(paths.DIR_DATA_TRAIN_FEATURES_RAW, filename_raw)
+        filename_tmp = re.sub('features.tif', 'features_tmp.tif', filename_raw)
+        filepath_tmp = os.path.join(paths.DIR_DATA_TRAIN_FEATURES_RAW, filename_tmp)
+        filepath_clean = os.path.join(paths.DIR_DATA_TRAIN_FEATURES_CLEAN, filename_raw)
         # Skip if output file already exists or if lock file exists
         if os.path.exists(filepath_clean) or os.path.exists(filepath_lock):
             continue
