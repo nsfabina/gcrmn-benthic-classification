@@ -14,10 +14,10 @@ VALID_LABELS_EXPERIMENTS = (
     'originals',
     'downsample_25',
     'downsample_50',
-    'downsample_50_aug'
+    'downsample_50_aug',
     # MP data
     'millennium_25_aug',
-    'millennium_50_aug'
+    'millennium_50_aug',
 )
 VALID_RESPONSE_MAPPINGS = ('lwr', 'lwrn', 'custom')
 

@@ -104,34 +104,43 @@ def _build_dynamic_config_for_mp_experiments(
     config_boundaries = list()
 
     # Set source directories
-    dir_features = paths.DIR_DATA_TRAIN_FEATURES_CLEAN
     if '25' in label_experiment:
+        dir_features = os.path.join(paths.DIR_DATA_TRAIN_FEATURES, paths.SUBDIR_DATA_TRAIN_DOWNSAMPLE.format('25'))
         dir_responses = os.path.join(paths.DIR_DATA_TRAIN_MP, paths.SUBDIR_DATA_TRAIN_DOWNSAMPLE.format('25'))
         suffix = '_25'
     elif '50' in label_experiment:
+        dir_features = os.path.join(paths.DIR_DATA_TRAIN_FEATURES, paths.SUBDIR_DATA_TRAIN_DOWNSAMPLE.format('50'))
         dir_responses = os.path.join(paths.DIR_DATA_TRAIN_MP, paths.SUBDIR_DATA_TRAIN_DOWNSAMPLE.format('50'))
         suffix = '_50'
     else:
+        dir_features = paths.DIR_DATA_TRAIN_FEATURES_CLEAN
         dir_responses = paths.DIR_DATA_TRAIN_MP_CLEAN
         suffix = ''
     dir_boundaries = paths.DIR_DATA_TRAIN_MP_BOUNDS
 
     # Get feature/response/boundary sets
+    missing_features = list()
+    missing_boundaries = list()
     filepaths_responses = sorted([
         os.path.join(dir_responses, filename) for filename in os.listdir(dir_responses)
-        if filename.endswith('custom_response{}.tif'.format(suffix))
+        if filename.endswith('responses_custom{}.tif'.format(suffix))
     ])
     for filepath_response in filepaths_responses:
         quad_name = re.search('L15-\d{4}E-\d{4}N', filepath_response).group()
         filepath_feature = os.path.join(dir_features, quad_name + '_features{}.tif'.format(suffix))
         filepath_boundary = os.path.join(dir_boundaries, quad_name + '_boundaries.shp')
-        assert os.path.exists(filepath_feature), 'Features file not found:  {}'.format(filepath_feature)
-        assert os.path.exists(filepath_boundary), 'Boundaries file not found:  {}'.format(filepath_boundary)
+        if not os.path.exists(filepath_feature):
+            missing_features.append(filepath_feature)
+        if not os.path.exists(filepath_boundary):
+            missing_boundaries.append(filepath_boundary)
 
         config_features.append([filepath_feature])
         config_responses.append([filepath_response])
         config_boundaries.append(filepath_boundary)
 
+    assert not missing_features and not missing_boundaries, \
+        'Missing feature and boundary files:  \n\n{} \n\n{}'.format(missing_features, missing_boundaries)
+        
     # Parse config and update dynamic values
     config = configs.create_config_from_file(paths.get_filepath_config(config_name))
     config.raw_files.feature_files = config_features

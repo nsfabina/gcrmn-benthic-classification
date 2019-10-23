@@ -18,6 +18,7 @@ def create_sampling_boundary_shapefiles() -> None:
     desc = 'Create sampling boundary shapefiles'
     for idx_filepath, filename_response in enumerate(tqdm(filenames_responses, desc=desc)):
         filepath_response = os.path.join(paths.DIR_DATA_TRAIN_MP_CLEAN, filename_response)
+        filename_sqlvalid = re.sub('-', '_', os.path.basename(filepath_response))
         tmp_filename_raster = re.sub('_responses_custom.tif', '_tmp_noland.tif', filename_sqlvalid)
         tmp_filepath_raster = os.path.join(paths.DIR_DATA_TRAIN_MP_BOUNDS, tmp_filename_raster)
         tmp_filename_outline = re.sub('_responses_custom.tif', '_tmp_noland.shp', filename_sqlvalid)
@@ -25,7 +26,6 @@ def create_sampling_boundary_shapefiles() -> None:
         basename_outline = os.path.splitext(os.path.basename(tmp_filepath_outline))[0]
         filename_boundary = re.sub('_responses_custom.tif', '_boundaries.shp', filename_response)
         filepath_boundary = os.path.join(paths.DIR_DATA_TRAIN_MP_BOUNDS, filename_boundary)
-        filename_sqlvalid = re.sub('-', '_', os.path.basename(filepath_response))
         filepath_lock = filepath_boundary + '.lock'
         if os.path.exists(filepath_boundary):
             _logger.debug('Boundary file already exists at:  {}'.format(filepath_boundary))
@@ -40,7 +40,7 @@ def create_sampling_boundary_shapefiles() -> None:
             continue
 
         _logger.debug('Creating boundary file {} ({} total):  {}'.format(
-            idx_filepath, len(filepaths_responses), filepath_response
+            idx_filepath, len(filenames_responses), filepath_response
         ))
 
         try:
