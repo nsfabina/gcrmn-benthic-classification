@@ -19,7 +19,7 @@ def downsample_rasters() -> None:
     _logger.debug('Downsample MP responses')
     _downsample_dir(paths.DIR_DATA_TRAIN_MP_CLEAN)
     _logger.debug('Downsample MP supplemental responses')
-    _downsample_dir(paths.DIR_DATA_TRAIN_MP_SUPP)
+    _downsample_dir(paths.DIR_DATA_TRAIN_MP_SUPP_CLEAN)
 
 
 def _downsample_dir(dir_src: str) -> None:
@@ -35,7 +35,7 @@ def _downsample_dir(dir_src: str) -> None:
         try:
             for pct in DOWNSAMPLE_PCTS:
                 dir_dest = os.path.join(os.path.dirname(dir_src), paths.SUBDIR_DATA_TRAIN_DOWNSAMPLE.format(pct))
-                filename_dest = re.sub('.tif', '{}.tif'.format(pct), filename_src)
+                filename_dest = re.sub('.tif', '_{}.tif'.format(pct), filename_src)
                 filepath_dest = os.path.join(dir_dest, filename_dest)
                 if os.path.exists(filepath_dest):
                     continue
