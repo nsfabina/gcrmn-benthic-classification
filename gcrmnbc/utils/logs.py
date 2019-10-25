@@ -17,11 +17,8 @@ def get_logger(logger_name: str) -> logging.Logger:
 
 
 def get_model_logger(
-        logger_name: str,
-        config_name: str,
-        label_experiment: str,
-        response_mapping: str,
-) -> logging.LoggerAdapter:
+        logger_name: str, config_name: str, label_experiment: str, response_mapping: str
+) -> logging.Logger:
     log_out = os.path.join(
         paths.get_dir_model_experiment_config(config_name, label_experiment, response_mapping),
         logger_name
