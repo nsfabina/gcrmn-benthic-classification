@@ -38,6 +38,20 @@ def create_new_memmap_arrays_without_waves_or_human(filepath_responses: str, dir
         create_new_memmap_array(filepath_in, idxs_remove, filepath_out)
 
 
+def get_idxs_only_water_clouds(filepath_responses: str) -> set:
+    responses = np.load(filepath_responses, mmap_mode='r')
+    # Get homogenous samples
+    idxs = {'water': set(), 'waterclouds': set()}
+    for idx, sample in enumerate(tqdm(responses, desc='Get indices for water and clouds')):
+        codes = np.argmax(sample, axis=-1)
+        unique = np.unique(codes)
+        if len(unique) == 1 and 1 in unique:
+            idxs['water'].add(idx)
+        elif len(unique) == 2 and 1 in unique and 7 in unique:
+            idxs['waterclouds'].add(idx)
+    return idxs
+
+
 def get_idxs_remove_homogenous(filepath_responses: str) -> set:
     responses = np.load(filepath_responses, mmap_mode='r')
     # Get homogenous samples
@@ -87,7 +101,7 @@ def get_idxs_remove_oversampled_cloudslandwater_human(filepath_responses: str) -
 
 
 
-def create_new_memmap_array(filepath_in: str, idxs_remove: set, filepath_out: str) -> None:
+def create_new_memmap_array_removing_idxs(filepath_in: str, idxs_remove: set, filepath_out: str) -> None:
     data = np.load(filepath_in, mmap_mode='r')
     num_samples = data.shape[0] - len(idxs_remove)
     shape_new = tuple([num_samples] + list(data.shape[1:]))
@@ -107,6 +121,27 @@ def create_new_memmap_array(filepath_in: str, idxs_remove: set, filepath_out: st
     np.save(filepath_out, data_new)
     del data_new
     os.remove('tmp.npy')
+
+
+
+def create_new_memmap_array_keeping_idxs(filepath_in: str, idxs_keep: set, filepath_out: str) -> None:
+    data = np.load(filepath_in, mmap_mode='r')
+    shape_new = tuple([len(idxs_keep)] + list(data.shape[1:]))
+    data_new = np.memmap('tmp.npy', dtype=np.float32, mode='w+', shape=shape_new)
+    idx_insert = 0
+    for idx_keep in tqdm(idxs_keep, desc='Write new memmap array'):
+        if 'responses' in filepath_in:
+            idxs_human = np.logical_or(sample[..., -1] == 1, sample[..., -2] == 1)
+            sample = sample.copy()
+            sample[idxs_human, 0] = 1  # Land
+            sample[idxs_human, -1] = 0  # Human 1
+            sample[idxs_human, -2] = 0  # Human 2
+        data_new[idx_insert] = sample
+        idx_insert += 1
+    np.save(filepath_out, data_new)
+    del data_new
+    os.remove('tmp.npy')
+
 
 
 tofix = [os.path.join(dir_out, fn) for fn in os.listdir(dir_out) if fn.startswith('response')]

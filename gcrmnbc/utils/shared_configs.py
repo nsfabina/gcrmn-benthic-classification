@@ -107,14 +107,17 @@ def _build_dynamic_config_for_mp_experiments(
     if '25' in label_experiment:
         dir_features = os.path.join(paths.DIR_DATA_TRAIN_FEATURES, paths.SUBDIR_DATA_TRAIN_DOWNSAMPLE.format('25'))
         dir_responses = os.path.join(paths.DIR_DATA_TRAIN_MP, paths.SUBDIR_DATA_TRAIN_DOWNSAMPLE.format('25'))
+        dir_supps = os.path.join(paths.DIR_DATA_TRAIN_MP_SUPP, paths.SUBDIR_DATA_TRAIN_DOWNSAMPLE.format('25'))
         suffix = '_25'
     elif '50' in label_experiment:
         dir_features = os.path.join(paths.DIR_DATA_TRAIN_FEATURES, paths.SUBDIR_DATA_TRAIN_DOWNSAMPLE.format('50'))
         dir_responses = os.path.join(paths.DIR_DATA_TRAIN_MP, paths.SUBDIR_DATA_TRAIN_DOWNSAMPLE.format('50'))
+        dir_supps = os.path.join(paths.DIR_DATA_TRAIN_MP_SUPP, paths.SUBDIR_DATA_TRAIN_DOWNSAMPLE.format('50'))
         suffix = '_50'
     else:
         dir_features = paths.DIR_DATA_TRAIN_FEATURES_CLEAN
         dir_responses = paths.DIR_DATA_TRAIN_MP_CLEAN
+        dir_supps = paths.DIR_DATA_TRAIN_MP_SUPP_CLEAN
         suffix = ''
     dir_boundaries = paths.DIR_DATA_TRAIN_MP_BOUNDS
 
@@ -138,9 +141,21 @@ def _build_dynamic_config_for_mp_experiments(
         config_responses.append([filepath_response])
         config_boundaries.append(filepath_boundary)
 
+    # Get supplemental sets
+    filepaths_responses = sorted([os.path.join(dir_supps, filename) for filename in os.listdir(dir_supps)])
+    for filepath_response in filepaths_responses:
+        quad_name = re.search('L15-\d{4}E-\d{4}N', filepath_response).group()
+        filepath_feature = os.path.join(dir_features, quad_name + '_features{}.tif'.format(suffix))
+        if not os.path.exists(filepath_feature):
+            missing_features.append(filepath_feature)
+
+        config_features.append([filepath_feature])
+        config_responses.append([filepath_response])
+        config_boundaries.append(None)
+
     assert not missing_features and not missing_boundaries, \
         'Missing feature and boundary files:  \n\n{} \n\n{}'.format(missing_features, missing_boundaries)
-        
+
     # Parse config and update dynamic values
     config = configs.create_config_from_file(paths.get_filepath_config(config_name))
     config.raw_files.feature_files = config_features

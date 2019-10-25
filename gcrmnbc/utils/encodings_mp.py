@@ -186,9 +186,11 @@ MAPPINGS_DEPTH = {
 
 CODE_LAND = 0  # Dark brown
 CODE_WATER_TERRESTRIAL = 1  # Light brown
+CODE_LAND_SUPP = 2000  # Dark brown
 
 CODE_WATER_SHALLOW = 10  # Light blue
 CODE_WATER_DEEP = 11  # Dark blue
+CODE_WATER_SUPP = 2001  # Dark blue
 
 CODE_FOREREEF = 20   # Medium green
 CODE_REEFFLAT_SHALLOW = 21  # Light green
@@ -200,7 +202,7 @@ CODE_NONREEF_SHALLOW = 30  # Light yellow
 CODE_NONREEF_VARIABLE = 31  # Medium yellow
 CODE_NONREEF_DEEP = 32  # Dark yellow
 
-CODE_CLOUDS = 40  # Gray
+CODE_CLOUDS_SUPP = 2002  # Gray
 
 CODE_REMOVE = -9999  # Either not many examples, not clear examples, or not in imagery (drowned classes)
 CODE_UNKNOWN = -9999  # Pretty sure this class is unknown
@@ -285,8 +287,6 @@ MAPPINGS_CUSTOM = {
     34: CODE_REMOVE,  # 'haa subtidal reef flat',
 
     64: CODE_UNKNOWN,  # 'undetermined envelope',
-
-    2001: CODE_CLOUDS,  # 'clouds', added manually to account for clouds
 }
 
 
