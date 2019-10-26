@@ -16,6 +16,9 @@ DIR_DATA_EVAL = os.path.join(DIR_DATA, 'evaluation_data')
 DIR_DATA_GLOBAL = os.path.join(DIR_DATA, 'global_data')
 DIR_DATA_TRAIN = os.path.join(DIR_DATA, 'training_data')
 
+DIR_DATA_GLOBAL_APPLY_TMP = os.path.join(DIR_DATA_GLOBAL, 'tmp_apply')
+DIR_DATA_GLOBAL_NOAPPLY = os.path.join(DIR_DATA_GLOBAL, 'no_apply')
+
 DIR_DATA_TRAIN_FEATURES = os.path.join(DIR_DATA_TRAIN, 'features')
 DIR_DATA_TRAIN_FEATURES_RAW = os.path.join(DIR_DATA_TRAIN_FEATURES, 'raw')
 DIR_DATA_TRAIN_FEATURES_CLEAN = os.path.join(DIR_DATA_TRAIN_FEATURES, 'clean')
@@ -38,7 +41,8 @@ SUBDIR_DATA_TRAIN_DOWNSAMPLE = 'resolution_{}'
 FILENAME_BUILD_COMPLETE = 'build.complete'
 FILENAME_CLASSIFY_LOCK = 'classify.lock'
 FILENAME_CLASSIFY_COMPLETE = 'classify.complete'
-FILENAME_APPLY_CALVAL_COMPLETE = 'calval_application.complete'
+FILENAME_APPLY_LOCK = 'application.lock'
+FILENAME_APPLY_COMPLETE = 'application.complete'
 
 FILENAME_CALVAL_STATS = 'asu_statistics.json'
 FILENAME_CALVAL_FIGS = 'asu_statistics.pdf'
