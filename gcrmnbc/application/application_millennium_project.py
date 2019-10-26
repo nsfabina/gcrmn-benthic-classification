@@ -20,7 +20,7 @@ def apply_to_raster(
         dir_out: str
 ) -> None:
     # Set filepaths
-    filepath_probs_detail = os.path.join(dir_out, '_probs_detail.tif')
+    filepath_probs_detail = os.path.join(dir_out, 'probs_detail.tif')
     filepath_probs_coarse = os.path.join(dir_out, 'probs_coarse.tif')
     filepath_mle_detail = os.path.join(dir_out, 'mle_detail.tif')
     filepath_mle_coarse = os.path.join(dir_out, 'mle_coarse.tif')
@@ -62,9 +62,7 @@ def apply_to_raster(
         _create_reef_only_heatmap(filepath_probs_coarse, filepath_heat, _logger)
         # Mask and compress files
         _mask_and_compress_probs_raster(filepath_probs_detail, filepath_features, _logger)
-        _mask_and_compress_probs_raster(filepath_probs_coarse, filepath_features, _logger)
         _mask_and_compress_mle_raster(filepath_mle_detail, filepath_features, _logger)
-        _mask_and_compress_mle_raster(filepath_mle_coarse, filepath_features, _logger)
         _logger.debug('Application success, removing lock file and placing complete file')
         open(filepath_complete, 'w')
     except Exception as error_:
@@ -128,14 +126,14 @@ def _create_probs_coarse(filepath_probs_detail: str, filepath_probs_coarse: str,
     # Write to file
     driver = raster_src.GetDriver()
     raster_dest = driver.Create(
-        filepath_probs_coarse, raster_src.RasterXSize, raster_src.RasterYSize, len(probabilities), gdal.GDT_Int16
+        filepath_probs_coarse, raster_src.RasterXSize, raster_src.RasterYSize, len(probabilities), gdal.GDT_Byte
     )
     raster_dest.SetProjection(raster_src.GetProjection())
     raster_dest.SetGeoTransform(raster_src.GetGeoTransform())
     for idx_code, probs in enumerate(probabilities):
         band_dest = raster_dest.GetRasterBand(idx_code + 1)
         band_dest.WriteArray(probs)
-        band_dest.SetNoDataValue(-9999)
+        band_dest.SetNoDataValue(255)
     del band_dest, raster_dest
 
 
@@ -151,13 +149,13 @@ def _create_mle_coarse(filepath_probs_coarse: str, filepath_mle_coarse: str, _lo
     # Write to file
     driver = raster_src.GetDriver()
     raster_dest = driver.Create(
-        filepath_mle_coarse, raster_src.RasterXSize, raster_src.RasterYSize, 1, gdal.GDT_Int16
+        filepath_mle_coarse, raster_src.RasterXSize, raster_src.RasterYSize, 1, gdal.GDT_Byte
     )
     raster_dest.SetProjection(raster_src.GetProjection())
     raster_dest.SetGeoTransform(raster_src.GetGeoTransform())
     band_dest = raster_dest.GetRasterBand(1)
     band_dest.WriteArray(classes)
-    band_dest.SetNoDataValue(-9999)
+    band_dest.SetNoDataValue(255)
     del band_dest, raster_dest
 
 
@@ -172,10 +170,10 @@ def _create_reef_only_heatmap(filepath_probs_coarse: str, filepath_heat: str, _l
     probs = band.ReadAsArray()
     # Write to file
     driver = raster_src.GetDriver()
-    raster_dest = driver.Create(filepath_heat, raster_src.RasterXSize, raster_src.RasterYSize, 1, gdal.GDT_Int16)
+    raster_dest = driver.Create(filepath_heat, raster_src.RasterXSize, raster_src.RasterYSize, 1, gdal.GDT_Byte)
     raster_dest.SetProjection(raster_src.GetProjection())
     raster_dest.SetGeoTransform(raster_src.GetGeoTransform())
     band_dest = raster_dest.GetRasterBand(1)
     band_dest.WriteArray(probs)
-    band_dest.SetNoDataValue(-9999)
+    band_dest.SetNoDataValue(255)
     del band_dest, raster_dest
