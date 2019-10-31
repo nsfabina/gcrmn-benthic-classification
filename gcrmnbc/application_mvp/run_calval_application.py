@@ -1,16 +1,12 @@
 from argparse import ArgumentParser
-from logging import Logger
 import os
 
-import gdal
-import numpy as np
-
-from bfgn.data_management import apply_model_to_data, data_core
+from bfgn.data_management import data_core
 from bfgn.experiments import experiments
 
 from gcrmnbc.application import application_millennium_project
-from gcrmnbc.application_calval import submit_calculation_slurm
-from gcrmnbc.utils import encodings_mp, gdal_command_line, logs, paths, shared_configs
+from gcrmnbc.application_mvp import submit_calculation_slurm
+from gcrmnbc.utils import logs, paths, shared_configs
 
 
 def run_application(config_name: str, label_experiment: str, response_mapping: str, run_all: bool = False) -> None:

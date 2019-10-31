@@ -5,7 +5,7 @@ from bfgn.data_management import data_core, sequences
 from bfgn.reporting import reports
 from bfgn.experiments import experiments
 
-from gcrmnbc.application_calval import submit_application_slurm
+from gcrmnbc.application_mvp import submit_application_slurm
 from gcrmnbc.model_training import submit_classification_slurm
 from gcrmnbc.utils import logs, paths, shared_configs
 

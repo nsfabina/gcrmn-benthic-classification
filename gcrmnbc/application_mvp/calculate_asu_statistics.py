@@ -8,7 +8,7 @@ import fiona
 import shapely.geometry
 import shapely.ops
 
-from gcrmnbc.application_calval import shared_report, shared_statistics
+from gcrmnbc.application_mvp import shared_report, shared_statistics
 from gcrmnbc.utils import logs, paths
 
 
