@@ -42,8 +42,10 @@ def run_validation(
         filepath_targets = paths.get_filepath_applied_validation_targets(
             config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
         model_targets = np.load(filepath_targets, mmap_mode='r')
-        _fit_and_validate_fixed_samples_per_class_classifier(model_probs=model_probs, model_targets=model_targets)
-        _fit_and_validate_fixed_total_samples_classifier(model_probs=model_probs, model_targets=model_targets)
+        dir_out = paths.get_dir_validate_data_experiment_config(
+            config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
+        _fit_and_validate_fixed_samples_per_class_classifier(model_probs=model_probs, model_targets=model_targets, dir_out=dir_out)
+        _fit_and_validate_fixed_total_samples_classifier(model_probs=model_probs, model_targets=model_targets, dir_out=dir_out)
 
         # Create complete file to avoid rerunning in the future
         open(filepath_complete, 'w')
@@ -63,7 +65,8 @@ def run_validation(
 
 def _fit_and_validate_fixed_samples_per_class_classifier(
         model_probs: np.array,
-        model_targets: np.array
+        model_targets: np.array,
+        dir_out: str
 ) -> None:
     # Get training indices
     num_classes = model_targets.shape[-1]
@@ -77,13 +80,14 @@ def _fit_and_validate_fixed_samples_per_class_classifier(
     # Fit and validate
     _fit_and_validate_classifier(
         model_probs=model_probs, model_targets=model_targets, idx_train=idx_train,
-        filepath_basename_out=os.path.join(os.path.dirname(model_probs), '_classifier_sample_by_class')
+        filepath_basename_out=os.path.join(dir_out, 'classifier_sample_by_class')
     )
 
 
 def _fit_and_validate_fixed_total_samples_classifier(
         model_probs: np.array,
-        model_targets: np.array
+        model_targets: np.array,
+        dir_out: str
 ) -> None:
     # Get training indices
     num_samples = np.prod(model_probs.shape[:-1])
@@ -92,7 +96,7 @@ def _fit_and_validate_fixed_total_samples_classifier(
     # Fit and validate
     _fit_and_validate_classifier(
         model_probs=model_probs, model_targets=model_targets, idx_train=idx_train,
-        filepath_basename_out=os.path.join(os.path.dirname(model_probs), '_classifier_total_samples')
+        filepath_basename_out=os.path.join(dir_out, 'classifier_total_samples')
     )
 
 
