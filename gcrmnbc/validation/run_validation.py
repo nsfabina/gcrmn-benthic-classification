@@ -1,23 +1,13 @@
 from argparse import ArgumentParser
 import joblib
 import os
-from typing import Tuple
 
-from bfgn.configuration import configs
-from bfgn.data_management import data_core
-from bfgn.experiments import experiments
 import numpy as np
 import sklearn.ensemble
 import sklearn.metrics
-from tqdm import tqdm
 
 from gcrmnbc.application_mvp import submit_application_slurm
-from gcrmnbc.utils import encodings_mp, logs, paths, shared_configs
-
-
-config_name = 'dense_unet_128_64_42_16'
-label_experiment = 'millennium_50_aug'
-response_mapping = 'custom'
+from gcrmnbc.utils import encodings_mp, logs, paths
 
 
 def run_validation(
@@ -26,8 +16,6 @@ def run_validation(
         response_mapping: str,
         run_all: bool = False
 ) -> None:
-    config = shared_configs.build_dynamic_config(
-        config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
     logger = logs.get_model_logger(
         logger_name='log_run_classification', config_name=config_name, label_experiment=label_experiment,
         response_mapping=response_mapping,
@@ -132,7 +120,7 @@ def _fit_and_validate_classifier(
     y = np.any(model_targets.reshape(-1, num_classes)[:, idx_reef_classes], axis=-1)[idx_train, ...]
     forest.fit(x, y)
     # Validate model and calculate performance
-    num_samples = np.prod(model_probs.shape[:-1])
+    num_samples = int(np.prod(model_probs.shape[:-1]))
     idx_test = np.array(list(set(np.arange(num_samples)).difference(idx_train)))
     x = model_probs.reshape(-1, num_classes)[idx_test, ...]
     test_predictions = forest.predict(x.copy())
