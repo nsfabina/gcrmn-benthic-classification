@@ -47,6 +47,9 @@ FILENAME_CLASSIFY_LOCK = 'classify.lock'
 FILENAME_VALIDATE_COMPLETE = 'validation.complete'
 FILENAME_VALIDATE_LOCK = 'validation.lock'
 
+FILENAME_VALIDATE_PROBS = 'validation_probs.npy'
+FILENAME_VALIDATE_TARGETS = 'validation_targets.npy'
+
 FILENAME_CALVAL_STATS = 'asu_statistics.json'
 FILENAME_CALVAL_FIGS = 'asu_statistics.pdf'
 
@@ -125,6 +128,16 @@ def get_filepath_classify_lock(config_name: str, label_experiment: str, response
         get_dir_model_experiment_config(config_name, label_experiment, response_mapping),
         FILENAME_CLASSIFY_LOCK
     )
+
+
+def get_filepath_applied_validation_probs(config_name: str, label_experiment: str, response_mapping: str) -> str:
+    dir_out = get_dir_validate_data_experiment_config(config_name, label_experiment, response_mapping)
+    return os.path.join(dir_out, FILENAME_VALIDATE_PROBS)
+
+
+def get_filepath_applied_validation_targets(config_name: str, label_experiment: str, response_mapping: str) -> str:
+    dir_out = get_dir_validate_data_experiment_config(config_name, label_experiment, response_mapping)
+    return os.path.join(dir_out, FILENAME_VALIDATE_TARGETS)
 
 
 def get_filepath_validation_complete(config_name: str, label_experiment: str, response_mapping: str) -> str:

@@ -4,8 +4,9 @@ import os
 from bfgn.data_management import data_core, sequences
 from bfgn.reporting import reports
 from bfgn.experiments import experiments
+import numpy as np
 
-from gcrmnbc.application_mvp import submit_application_slurm
+from gcrmnbc.validation import submit_validation_slurm
 from gcrmnbc.model_training import submit_classification_slurm
 from gcrmnbc.utils import logs, paths, shared_configs
 
@@ -79,6 +80,17 @@ def run_classification(
 
         # Train model
         experiment.fit_model_with_data_container(data_container, resume_training=True)
+
+        # Apply model to validation data
+        filepath_probs = paths.get_filepath_applied_validation_probs(
+            config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
+        filepath_targets = paths.get_filepath_applied_validation_targets(
+            config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
+        _apply_model_to_validation_data(
+            data_container=data_container, experiment=experiment, filepath_probs=filepath_probs,
+            filepath_targets=filepath_targets
+        )
+
         try: 
             reporter.create_model_report()
         except:
@@ -87,16 +99,59 @@ def run_classification(
         # Create complete file to avoid rerunning in the future, close and remove lock file
         open(filepath_complete, 'w')
 
-        # Start application if necessary
-        submit_application_slurm.submit_application_slurm(
-            labels_experiments=label_experiment, response_mappings=response_mapping, num_jobs=1,
-            config_names=config_name, run_all=run_all
-        )
+        # Start validation if necessary
+        if run_all:
+            submit_validation_slurm.submit_validation_slurm(
+                labels_experiments=label_experiment, response_mappings=response_mapping, config_names=config_name,
+                run_all=run_all
+            )
     except Exception as error_:
         raise error_
     finally:
         file_lock.close()
         os.remove(filepath_lock)
+
+
+def _apply_model_to_validation_data(
+        data_container: data_core.DataContainer,
+        experiment: experiments.Experiment,
+        filepath_probs: str,
+        filepath_targets: str
+) -> None:
+    # Prepare filepaths
+    filepath_probs_tmp = filepath_probs + '.tmp'
+    filepath_targets_tmp = filepath_targets + '.tmp'
+    if not os.path.exists(os.path.dirname(filepath_probs)):
+        os.makedirs(os.path.dirname(filepath_probs))
+    # Prepare arrays for validation
+    buffer = int(data_container.config.data_build.window_radius - data_container.config.data_build.loss_window_radius)
+    validation_shape = list(data_container.validation_sequence.responses[0].shape)
+    validation_shape[1] = int(validation_shape[1] - 2 * buffer)
+    validation_shape[2] = int(validation_shape[2] - 2 * buffer)
+    validation_shape = tuple(validation_shape)
+    model_probs = np.memmap(filepath_probs_tmp, dtype=np.float32, mode='w+', shape=validation_shape)
+    model_targets = np.memmap(filepath_targets_tmp, dtype=np.float32, mode='w+', shape=validation_shape)
+    # Apply to validation data, process in chunks and store results in memmap arrays
+    idx_start = 0
+    num_batches = data_container.validation_sequence.__len__()
+    for idx_batch in range(num_batches):
+        # Get features and responses
+        batch = data_container.validation_sequence.__getitem__(idx_batch)
+        features = batch[0][0]
+        responses = batch[1][0][:, buffer:-buffer, buffer:-buffer, :-1]
+        # Predict
+        probs = experiment.model.predict_on_batch(features)[:, buffer:-buffer, buffer:-buffer, :]
+        # Insert into arrays
+        idx_finish = idx_start + features.shape[0]
+        model_probs[idx_start:idx_finish, ...] = probs
+        model_targets[idx_start:idx_finish, ...] = responses
+        idx_start = idx_finish
+    # Save memmap arrays
+    np.save(filepath_probs, model_probs)
+    np.save(filepath_targets, model_targets)
+    del model_probs, model_targets
+    os.remove(filepath_probs_tmp)
+    os.remove(filepath_targets_tmp)
 
 
 if __name__ == '__main__':

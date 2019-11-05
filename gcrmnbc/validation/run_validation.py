@@ -48,13 +48,14 @@ def run_validation(
         return
 
     try:
-        dir_out = paths.get_dir_validate_data_experiment_config(
+        filepath_probs = paths.get_filepath_applied_validation_probs(
             config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
-        logger.debug('Apply model to validation data')
-        model_probs, model_targets = _apply_model_to_validation_data(config, dir_out)
-        logger.debug('Fit classifiers to model output and validate results')
-        _fit_and_validate_classifiers_to_validation_probs_and_targets(
-            model_probs=model_probs, model_targets=model_targets, dir_out=dir_out)
+        model_probs = np.load(filepath_probs, mmap_mode='r')
+        filepath_targets = paths.get_filepath_applied_validation_targets(
+            config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
+        model_targets = np.load(filepath_targets, mmap_mode='r')
+        _fit_and_validate_fixed_samples_per_class_classifier(model_probs=model_probs, model_targets=model_targets)
+        _fit_and_validate_fixed_total_samples_classifier(model_probs=model_probs, model_targets=model_targets)
 
         # Create complete file to avoid rerunning in the future
         open(filepath_complete, 'w')
@@ -72,71 +73,9 @@ def run_validation(
         os.remove(filepath_lock)
 
 
-def _apply_model_to_validation_data(config: configs.Config, dir_out: str) -> Tuple[np.array, np.array]:
-    # Prepare filepaths for validation
-    filepath_probs_tmp = os.path.join(dir_out, 'probs.npy.tmp')
-    filepath_probs = os.path.join(dir_out, 'probs.npy')
-    filepath_targets_tmp = os.path.join(dir_out, 'targets.npy.tmp')
-    filepath_targets = os.path.join(dir_out, 'targets.npy')
-    if not os.path.exists(dir_out):
-        os.makedirs(dir_out)
-    if os.path.exists(filepath_probs) and os.path.exists(filepath_targets):
-        return np.load(filepath_probs, mmap_mode='r'), np.load(filepath_targets, mmap_mode='r')
-    # Build dataset
-    data_container = data_core.DataContainer(config)
-    data_container.build_or_load_rawfile_data()
-    data_container.build_or_load_scalers()
-    data_container.load_sequences()
-    # Build experiment
-    experiment = experiments.Experiment(config)
-    experiment.build_or_load_model(data_container)
-    # Prepare arrays for validation
-    buffer = int(config.data_build.window_radius - config.data_build.loss_window_radius)
-    validation_shape = list(data_container.validation_sequence.responses[0].shape)
-    validation_shape[1] = int(validation_shape[1] - 2 * buffer)
-    validation_shape[2] = int(validation_shape[2] - 2 * buffer)
-    validation_shape = tuple(validation_shape)
-    model_probs = np.memmap(filepath_probs_tmp, dtype=np.float32, mode='w+', shape=validation_shape)
-    model_targets = np.memmap(filepath_targets_tmp, dtype=np.float32, mode='w+', shape=validation_shape)
-    # Apply to validation data, process in chunks and store results in memmap arrays
-    idx_start = 0
-    num_batches = data_container.validation_sequence.__len__()
-    for idx_batch in tqdm(range(num_batches), desc='Predict validation data'):
-        # Get features and responses
-        batch = data_container.validation_sequence.__getitem__(idx_batch)
-        features = batch[0][0]
-        responses = batch[1][0][:, buffer:-buffer, buffer:-buffer, :-1]
-        # Predict
-        probs = experiment.model.predict_on_batch(features)[:, buffer:-buffer, buffer:-buffer, :]
-        # Insert into arrays
-        idx_finish = idx_start + features.shape[0]
-        model_probs[idx_start:idx_finish, ...] = probs
-        model_targets[idx_start:idx_finish, ...] = responses
-        idx_start = idx_finish
-    # Save memmap arrays
-    np.save(filepath_probs, model_probs)
-    np.save(filepath_targets, model_targets)
-    del model_probs, model_targets
-    os.remove(filepath_probs_tmp)
-    os.remove(filepath_targets_tmp)
-    return np.load(filepath_probs, mmap_mode='r'), np.load(filepath_targets, mmap_mode='r')
-
-
-def _fit_and_validate_classifiers_to_validation_probs_and_targets(
-        model_probs: np.array,
-        model_targets: np.array,
-        dir_out: str
-) -> None:
-    _fit_and_validate_fixed_samples_per_class_classifier(
-        model_probs=model_probs, model_targets=model_targets, dir_out=dir_out)
-    _fit_and_validate_fixed_total_samples_classifier(
-        model_probs=model_probs, model_targets=model_targets, dir_out=dir_out)
-
-
 def _fit_and_validate_fixed_samples_per_class_classifier(
         model_probs: np.array,
-        model_targets: np.array,
-        dir_out: str
+        model_targets: np.array
 ) -> None:
     # Get training indices
     num_classes = model_targets.shape[-1]
@@ -150,14 +89,13 @@ def _fit_and_validate_fixed_samples_per_class_classifier(
     # Fit and validate
     _fit_and_validate_classifier(
         model_probs=model_probs, model_targets=model_targets, idx_train=idx_train,
-        filepath_basename_out=os.path.join(dir_out, 'classifier_sample_by_class')
+        filepath_basename_out=os.path.join(os.path.dirname(model_probs), '_classifier_sample_by_class')
     )
 
 
 def _fit_and_validate_fixed_total_samples_classifier(
         model_probs: np.array,
-        model_targets: np.array,
-        dir_out: str
+        model_targets: np.array
 ) -> None:
     # Get training indices
     num_samples = np.prod(model_probs.shape[:-1])
@@ -166,7 +104,7 @@ def _fit_and_validate_fixed_total_samples_classifier(
     # Fit and validate
     _fit_and_validate_classifier(
         model_probs=model_probs, model_targets=model_targets, idx_train=idx_train,
-        filepath_basename_out=os.path.join(dir_out, 'classifier_total_samples')
+        filepath_basename_out=os.path.join(os.path.dirname(model_probs), '_classifier_total_samples')
     )
 
 
