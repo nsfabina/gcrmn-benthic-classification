@@ -1,11 +1,11 @@
 from logging import Logger
 import os
 
-import gdal
-import numpy as np
-
 from bfgn.data_management import apply_model_to_data, data_core
 from bfgn.experiments import experiments
+import gdal
+import numpy as np
+import sklearn.ensemble
 
 from gcrmnbc.utils import encodings_mp, gdal_command_line, logs, paths
 
@@ -16,6 +16,7 @@ _logger = logs.get_logger(__file__)
 def apply_to_raster(
         experiment: experiments.Experiment,
         data_container: data_core.DataContainer,
+        classifier: sklearn.ensemble.RandomForestClassifier,
         filepath_features: str,
         dir_out: str
 ) -> None:
@@ -25,6 +26,7 @@ def apply_to_raster(
     filepath_mle_detail = os.path.join(dir_out, 'mle_detail.tif')
     filepath_mle_coarse = os.path.join(dir_out, 'mle_coarse.tif')
     filepath_heat = os.path.join(dir_out, 'reef_heat.tif')
+    filepath_outline = os.path.join(dir_out, 'reef_outline.tif')
     filepaths_out = (
         filepath_probs_detail, filepath_probs_coarse, filepath_mle_detail, filepath_mle_coarse, filepath_heat
     )
@@ -60,11 +62,15 @@ def apply_to_raster(
         _create_probs_coarse(filepath_probs_detail, filepath_probs_coarse, _logger)
         _create_mle_coarse(filepath_probs_coarse, filepath_mle_coarse, _logger)
         _create_reef_only_heatmap(filepath_probs_coarse, filepath_heat, _logger)
+        _create_reef_only_outline(filepath_probs_detail, filepath_outline, classifier, _logger)
         # Mask and compress files
+        # TODO:  mask and compress probs detail doesn't work! end up with 0s
         _mask_and_compress_raster(filepath_probs_detail, filepath_features, _logger)
         _mask_and_compress_raster(filepath_probs_coarse, filepath_features, _logger)
         _mask_and_compress_raster(filepath_mle_detail, filepath_features, _logger)
         _mask_and_compress_raster(filepath_mle_coarse, filepath_features, _logger)
+        _mask_and_compress_raster(filepath_heat, filepath_features, _logger)
+        _mask_and_compress_raster(filepath_outline, filepath_features, _logger)
         _logger.debug('Application success, removing lock file and placing complete file')
         open(filepath_complete, 'w')
     except Exception as error_:
@@ -75,7 +81,7 @@ def apply_to_raster(
         _logger.debug('Lock file removed')
 
 
-def _mask_and_compress_raster(filepath_probs: str, filepath_features: str, _logger: Logger) -> None:
+def _mask_and_compress_raster(filepath_src: str, filepath_features: str, _logger: Logger) -> None:
     raster = gdal.Open(filepath_features)
     if raster.RasterCount == 3:
         band_nodata = 1
@@ -83,11 +89,11 @@ def _mask_and_compress_raster(filepath_probs: str, filepath_features: str, _logg
     elif raster.RasterCount == 4:
         band_nodata = 4
         value_nodata = 0
-    command = 'gdal_calc.py -A {filepath_probs} --allBands=A -B {filepath_features} --B_band={band_nodata} ' + \
+    command = 'gdal_calc.py -A {filepath_src} --allBands=A -B {filepath_features} --B_band={band_nodata} ' + \
               '--outfile={filepath_probs} --NoDataValue=255 --type=Byte --co=COMPRESS=DEFLATE --co=TILED=YES ' + \
               '--overwrite --calc="A * (B != {value_nodata}) + 255 * (B == {value_nodata})"'
     command = command.format(
-        filepath_probs=filepath_probs, filepath_features=filepath_features, band_nodata=band_nodata,
+        filepath_src=filepath_src, filepath_features=filepath_features, band_nodata=band_nodata,
         value_nodata=value_nodata
     )
     gdal_command_line.run_gdal_command(command, _logger)
@@ -157,5 +163,34 @@ def _create_reef_only_heatmap(filepath_probs_coarse: str, filepath_heat: str, _l
     raster_dest.SetGeoTransform(raster_src.GetGeoTransform())
     band_dest = raster_dest.GetRasterBand(1)
     band_dest.WriteArray(probs)
+    band_dest.SetNoDataValue(-9999)
+    del band_dest, raster_dest
+
+
+def _create_reef_only_outline(
+        filepath_probs_detail: str,
+        filepath_outline: str,
+        classifier: sklearn.ensemble.RandomForestClassifier,
+        _logger: Logger
+) -> None:
+    _logger.debug('Create reef outline raster')
+    # Get reef class probs
+    model_probabilities = list()
+    raster_src = gdal.Open(filepath_probs_detail)
+    num_bands = raster_src.RasterCount
+    for idx_band in range(num_bands):
+        band = raster_src.GetRasterBand(idx_band + 1)
+        model_probabilities.append(band.ReadAsArray())
+    # Predict classes
+    shape = model_probabilities[0].shape[:2]
+    model_probabilities = np.dstack(model_probabilities).reshape(-1, num_bands)
+    model_predictions = classifier.predict(model_probabilities).astype(int).reshape(shape)
+    # Write to file
+    driver = raster_src.GetDriver()
+    raster_dest = driver.Create(filepath_outline, raster_src.RasterXSize, raster_src.RasterYSize, 1, gdal.GDT_Byte)
+    raster_dest.SetProjection(raster_src.GetProjection())
+    raster_dest.SetGeoTransform(raster_src.GetGeoTransform())
+    band_dest = raster_dest.GetRasterBand(1)
+    band_dest.WriteArray(model_predictions)
     band_dest.SetNoDataValue(-9999)
     del band_dest, raster_dest

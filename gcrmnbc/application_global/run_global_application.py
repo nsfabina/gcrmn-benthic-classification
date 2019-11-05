@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+import joblib
 import logging
 import os
 import re
@@ -10,26 +11,29 @@ from bfgn.data_management import data_core
 from bfgn.experiments import experiments
 import numpy as np
 from osgeo import gdal, osr
+import sklearn.ensemble
 
 from gcrmnbc.application import application_millennium_project
-from gcrmnbc.utils import data_bucket, encodings_mp, logs, paths, shared_configs
+from gcrmnbc.utils import data_bucket, logs, paths, shared_configs
+
+
+# Hardcoded, too lazy to pass in as variable, don't know whether it'll always be the best model, whatever, handle later
+FILENAME_BEST_CLASSIFIER = 'classifier_total_samples_model.joblib'
 
 
 def run_application(config_name: str, label_experiment: str, response_mapping: str, model_version: str) -> None:
     config = shared_configs.build_dynamic_config(
         config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
-
     logger = logs.get_model_logger(
         logger_name='log_run_global_application', config_name=config_name, label_experiment=label_experiment,
         response_mapping=response_mapping,
     )
-
     # Get data and model objects
     logger.info('Create data and model objects')
     data_container = _load_dataset(config)
     experiment = _load_experiment(config, data_container)
+    classifier = _load_classifier(config_name, label_experiment, response_mapping)
     logging.getLogger('bfgn').setLevel(logging.WARNING)  # Turn down BFGN logging
-
     # Get quad blobs and apply model
     logger.info('Get quad blobs')
     quad_blobs = data_bucket.get_imagery_quad_blobs()
@@ -40,7 +44,7 @@ def run_application(config_name: str, label_experiment: str, response_mapping: s
     for idx_quad, (focal_quad, quad_blobs) in enumerate(sorted(quad_blobs_sorted.items(), key=lambda x: x[0])):
         logger.info('Apply model to quad {} ({} of {})'.format(focal_quad, 1+idx_quad, len(quad_blobs_sorted)))
         _apply_model_to_quad(
-            quad_blobs=quad_blobs, data_container=data_container, experiment=experiment,
+            quad_blobs=quad_blobs, data_container=data_container, experiment=experiment, classifier=classifier,
             label_experiment=label_experiment, response_mapping=response_mapping, model_name=config_name,
             model_version=model_version, logger=logger
         )
@@ -60,10 +64,22 @@ def _load_experiment(config: configs.Config, data_container: data_core.DataConta
     return experiment
 
 
+def _load_classifier(
+        config_name: str,
+        label_experiment: str,
+        response_mapping: str
+) -> sklearn.ensemble.RandomForestClassifier:
+    dir_classifier = paths.get_dir_validate_data_experiment_config(
+        config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
+    filepath_classifier = os.path.join(dir_classifier, FILENAME_BEST_CLASSIFIER)
+    return joblib.load(filepath_classifier)
+
+
 def _apply_model_to_quad(
         quad_blobs: List[data_bucket.QuadBlob],
         data_container: data_core.DataContainer,
         experiment: experiments.Experiment,
+        classifier: sklearn.ensemble.RandomForestClassifier,
         label_experiment: str,
         response_mapping: str,
         model_name: str,
@@ -124,12 +140,12 @@ def _apply_model_to_quad(
 
         logger.debug('Apply model')
         application_millennium_project.apply_to_raster(
-            experiment=experiment, data_container=data_container, filepath_features=filepath_features,
-            dir_out=dir_for_upload
+            experiment=experiment, data_container=data_container, classifier=classifier,
+            filepath_features=filepath_features, dir_out=dir_for_upload
         )
 
         logger.debug('Remove detailed class rasters')
-        filenames_output = ('probs_coarse.tif', 'mle_coarse.tif', 'reef_heat.tif')
+        filenames_output = ('probs_coarse.tif', 'mle_coarse.tif', 'reef_heat.tif', 'reef_outline.tif')
         for filename_remove in os.listdir(dir_for_upload):
             if filename_remove in filenames_output:
                 continue
@@ -140,7 +156,7 @@ def _apply_model_to_quad(
             _crop_raster(os.path.join(dir_for_upload, filename_output), filepath_focal_quad)
 
         logger.debug('Check if quad contains reef')
-        includes_reef = _check_model_classifications_include_reef(os.path.join(dir_for_upload, 'mle_coarse.tif'))
+        includes_reef = _check_model_classifications_include_reef(os.path.join(dir_for_upload, 'reef_outline.tif'))
         if not includes_reef:
             logger.debug('Application stopped early, no reef area found')
             for qb in quad_blobs:
@@ -156,9 +172,9 @@ def _apply_model_to_quad(
 
         logger.info('Application success for quad {}'.format(quad_blob.quad_focal))
         # TODO
-        #logger.debug('Delete model results from other versions and any outdated notifications')
-        #data_bucket.delete_model_application_results_for_other_versions(
-        #    quad_blob, response_mapping, model_name, model_version)
+        # logger.debug('Delete model results from other versions and any outdated notifications')
+        # data_bucket.delete_model_application_results_for_other_versions(
+        #     quad_blob, response_mapping, model_name, model_version)
         for qb in quad_blobs:
             data_bucket.delete_model_corrupt_data_notification_if_exists(qb)
 
@@ -225,15 +241,11 @@ def _crop_raster(filepath_crop: str, filepath_focal_quad: str) -> None:
     os.rename(tmp_filepath, filepath_crop)
 
 
-def _check_model_classifications_include_reef(filepath_mle_coarse: str) -> bool:
-    # Get reef class index
-    all_classes = sorted(set(encodings_mp.MAPPINGS_OUTPUT.values()))
-    idx_reef = all_classes.index(encodings_mp.OUTPUT_CODE_REEF)
-    # Get model classes
-    raster_src = gdal.Open(filepath_mle_coarse)
+def _check_model_classifications_include_reef(filepath_outline: str) -> bool:
+    raster_src = gdal.Open(filepath_outline)
     band = raster_src.GetRasterBand(1)
-    classes = band.ReadAsArray()
-    return np.any(classes == idx_reef)
+    is_reef = band.ReadAsArray()
+    return np.any(is_reef)
 
 
 if __name__ == '__main__':
