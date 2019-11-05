@@ -15,6 +15,7 @@ DIR_DATA_BUILT = os.path.join(DIR_DATA, 'built_data')
 DIR_DATA_EVAL = os.path.join(DIR_DATA, 'evaluation_data')
 DIR_DATA_GLOBAL = os.path.join(DIR_DATA, 'global_data')
 DIR_DATA_TRAIN = os.path.join(DIR_DATA, 'training_data')
+DIR_DATA_VALIDATE = os.path.join(DIR_DATA, 'validation_data')
 
 DIR_DATA_GLOBAL_APPLY_TMP = os.path.join(DIR_DATA_GLOBAL, 'tmp_apply')
 DIR_DATA_GLOBAL_NOAPPLY = os.path.join(DIR_DATA_GLOBAL, 'no_apply')
@@ -38,11 +39,13 @@ DIR_DATA_TRAIN_SUPP_RAW = os.path.join(DIR_DATA_TRAIN_UQ, 'raw')
 
 SUBDIR_DATA_TRAIN_DOWNSAMPLE = 'resolution_{}'
 
-FILENAME_BUILD_COMPLETE = 'build.complete'
-FILENAME_CLASSIFY_LOCK = 'classify.lock'
-FILENAME_CLASSIFY_COMPLETE = 'classify.complete'
-FILENAME_APPLY_LOCK = 'application.lock'
 FILENAME_APPLY_COMPLETE = 'application.complete'
+FILENAME_APPLY_LOCK = 'application.lock'
+FILENAME_BUILD_COMPLETE = 'build.complete'
+FILENAME_CLASSIFY_COMPLETE = 'classify.complete'
+FILENAME_CLASSIFY_LOCK = 'classify.lock'
+FILENAME_VALIDATE_COMPLETE = 'validation.complete'
+FILENAME_VALIDATE_LOCK = 'validation.lock'
 
 FILENAME_CALVAL_STATS = 'asu_statistics.json'
 FILENAME_CALVAL_FIGS = 'asu_statistics.pdf'
@@ -80,6 +83,14 @@ def get_dir_training_data_experiment(label_experiment: str) -> str:
     return os.path.join(DIR_DATA_TRAIN, label_experiment)
 
 
+def get_dir_validate_data_experiment(label_experiment: str, response_mapping: str) -> str:
+    return os.path.join(DIR_DATA_VALIDATE, label_experiment, response_mapping)
+
+
+def get_dir_validate_data_experiment_config(config_name: str, label_experiment: str, response_mapping: str) -> str:
+    return os.path.join(get_dir_validate_data_experiment(label_experiment, response_mapping), config_name)
+
+
 def get_dir_model_experiment(label_experiment: str) -> str:
     return os.path.join(DIR_MODELS, label_experiment)
 
@@ -98,7 +109,7 @@ def get_filepath_build_complete(config_name: str, label_experiment: str, respons
 def get_filepath_calval_apply_complete(config_name: str, label_experiment: str, response_mapping: str) -> str:
     return os.path.join(
         get_dir_calval_data_experiment_config(config_name, label_experiment, response_mapping),
-        FILENAME_APPLY_CALVAL_COMPLETE
+        FILENAME_APPLY_COMPLETE
     )
 
 
@@ -113,6 +124,20 @@ def get_filepath_classify_lock(config_name: str, label_experiment: str, response
     return os.path.join(
         get_dir_model_experiment_config(config_name, label_experiment, response_mapping),
         FILENAME_CLASSIFY_LOCK
+    )
+
+
+def get_filepath_validation_complete(config_name: str, label_experiment: str, response_mapping: str) -> str:
+    return os.path.join(
+        get_dir_validate_data_experiment_config(config_name, label_experiment, response_mapping),
+        FILENAME_VALIDATE_COMPLETE
+    )
+
+
+def get_filepath_validation_lock(config_name: str, label_experiment: str, response_mapping: str) -> str:
+    return os.path.join(
+        get_dir_validate_data_experiment_config(config_name, label_experiment, response_mapping),
+        FILENAME_VALIDATE_LOCK
     )
 
 
