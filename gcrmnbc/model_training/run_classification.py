@@ -81,6 +81,13 @@ def run_classification(
         # Train model
         experiment.fit_model_with_data_container(data_container, resume_training=True)
 
+        # Build dataset for validation
+        data_container = data_core.DataContainer(config)
+        data_container.build_or_load_rawfile_data()
+        data_container.build_or_load_scalers()
+        augs = None
+        data_container.load_sequences(augs)
+
         # Apply model to validation data
         filepath_probs = paths.get_filepath_applied_validation_probs(
             config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
