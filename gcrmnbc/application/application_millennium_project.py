@@ -90,7 +90,7 @@ def _mask_and_compress_raster(filepath_src: str, filepath_features: str, scalar:
         band_nodata = 4
         value_nodata = 0
     command = 'gdal_calc.py -A {filepath_src} --allBands=A -B {filepath_features} --B_band={band_nodata} ' + \
-              '--outfile={filepath_probs} --NoDataValue=255 --type=Byte --co=COMPRESS=DEFLATE --co=TILED=YES ' + \
+              '--outfile={filepath_src} --NoDataValue=255 --type=Byte --co=COMPRESS=DEFLATE --co=TILED=YES ' + \
               '--overwrite --calc="{scalar} * A * (B != {value_nodata}) + 255 * (B == {value_nodata})"'
     command = command.format(
         filepath_src=filepath_src, filepath_features=filepath_features, band_nodata=band_nodata,
