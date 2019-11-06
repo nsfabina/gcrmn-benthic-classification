@@ -65,12 +65,12 @@ def apply_to_raster(
         _create_reef_only_outline(filepath_probs_detail, filepath_outline, classifier, _logger)
         # Mask and compress files
         # TODO:  mask and compress probs detail doesn't work! end up with 0s
-        _mask_and_compress_raster(filepath_probs_detail, filepath_features, _logger)
-        _mask_and_compress_raster(filepath_probs_coarse, filepath_features, _logger)
-        _mask_and_compress_raster(filepath_mle_detail, filepath_features, _logger)
-        _mask_and_compress_raster(filepath_mle_coarse, filepath_features, _logger)
-        _mask_and_compress_raster(filepath_heat, filepath_features, _logger)
-        _mask_and_compress_raster(filepath_outline, filepath_features, _logger)
+        _mask_and_compress_raster(filepath_probs_detail, filepath_features, 100, _logger)
+        _mask_and_compress_raster(filepath_probs_coarse, filepath_features, 1, _logger)
+        _mask_and_compress_raster(filepath_mle_detail, filepath_features, 1, _logger)
+        _mask_and_compress_raster(filepath_mle_coarse, filepath_features, 1, _logger)
+        _mask_and_compress_raster(filepath_heat, filepath_features, 1, _logger)
+        _mask_and_compress_raster(filepath_outline, filepath_features, 1, _logger)
         _logger.debug('Application success, removing lock file and placing complete file')
         open(filepath_complete, 'w')
     except Exception as error_:
@@ -81,7 +81,7 @@ def apply_to_raster(
         _logger.debug('Lock file removed')
 
 
-def _mask_and_compress_raster(filepath_src: str, filepath_features: str, _logger: Logger) -> None:
+def _mask_and_compress_raster(filepath_src: str, filepath_features: str, scalar: float, _logger: Logger) -> None:
     raster = gdal.Open(filepath_features)
     if raster.RasterCount == 3:
         band_nodata = 1
@@ -91,10 +91,10 @@ def _mask_and_compress_raster(filepath_src: str, filepath_features: str, _logger
         value_nodata = 0
     command = 'gdal_calc.py -A {filepath_src} --allBands=A -B {filepath_features} --B_band={band_nodata} ' + \
               '--outfile={filepath_probs} --NoDataValue=255 --type=Byte --co=COMPRESS=DEFLATE --co=TILED=YES ' + \
-              '--overwrite --calc="A * (B != {value_nodata}) + 255 * (B == {value_nodata})"'
+              '--overwrite --calc="{scalar} * A * (B != {value_nodata}) + 255 * (B == {value_nodata})"'
     command = command.format(
         filepath_src=filepath_src, filepath_features=filepath_features, band_nodata=band_nodata,
-        value_nodata=value_nodata
+        scalar=scalar, value_nodata=value_nodata
     )
     gdal_command_line.run_gdal_command(command, _logger)
 
