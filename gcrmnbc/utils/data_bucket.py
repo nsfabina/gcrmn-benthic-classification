@@ -66,24 +66,38 @@ def get_imagery_quad_blobs() -> List[QuadBlob]:
     raw_blobs = [blob for blob in GCS.bucket.list_blobs(prefix=_DATA_PATH_SOURCE)]
     _logger.debug('Found {} total blobs'.format(len(raw_blobs)))
     _logger.debug('Parse blobs')
-    quad_blobs = _parse_blobs(raw_blobs)
+    quad_blobs = _parse_blobs(raw_blobs, match_patterns=['.tif'])
     _logger.debug('Found {} relevant blobs'.format(len(quad_blobs)))
     _logger.debug('Update contextual blobs')
     quad_blobs = _update_contextual_blobs(quad_blobs)
     return quad_blobs
 
 
-def _parse_blobs(raw_blobs: List[storage.Blob]) -> List[QuadBlob]:
+def get_reef_heat_and_outline_quad_blobs(model_version: str) -> Tuple[List[QuadBlob], List[QuadBlob]]:
+    _logger.debug('Get quad blobs from bucket')
+    raw_blobs = [blob for blob in GCS.bucket.list_blobs(prefix=_DATA_PATH_DEST)]
+    _logger.debug('Found {} total blobs'.format(len(raw_blobs)))
+    _logger.debug('Parse blobs')
+    heat_blobs = _parse_blobs(raw_blobs, match_patterns=[model_version, 'reef_heat.tif'])
+    outline_blobs = _parse_blobs(raw_blobs, match_patterns=[model_version, 'reef_outline.tif'])
+    _logger.debug('Found {} and {} relevant blobs'.format(len(heat_blobs), len(outline_blobs)))
+    _logger.debug('Update contextual blobs')
+    heat_blobs = _update_contextual_blobs(heat_blobs)
+    outline_blobs = _update_contextual_blobs(outline_blobs)
+    return heat_blobs, outline_blobs
+
+
+def _parse_blobs(raw_blobs: List[storage.Blob], match_patterns: List[str]) -> List[QuadBlob]:
     quad_blobs = list()
     for raw_blob in raw_blobs:
-        # Remove blobs which are not quads
-        if not raw_blob.name.endswith('.tif'):
+        # remove blobs which are not matches
+        if not all([re.search(pattern, raw_blob.name) for pattern in match_patterns]):
             continue
-        # Parse quad information
+        # parse quad information
         region = _get_region_data_path_from_blob_name(raw_blob.name)
         quad = get_quad_name_from_blob_name(raw_blob.name)
         x, y = _get_x_and_y_from_blob_name(raw_blob.name)
-        # Remove blobs which are in the test bucket
+        # remove blobs which are in the test bucket
         if region == 'test':
             continue
         quad_blobs.append(QuadBlob(
@@ -218,21 +232,23 @@ def delete_model_application_results_for_other_versions(
 
 
 def _get_region_data_path_from_blob_name(blob_name: str) -> str:
-    name_region_quad = blob_name.split(_DATA_PATH_SOURCE)[1]
-    split_region_quad = name_region_quad.split('/')
-    return '/'.join(split_region_quad[:-1])
+    if _DATA_PATH_SOURCE in blob_name:
+        splitter = _DATA_PATH_SOURCE
+    elif _DATA_PATH_DEST in blob_name:
+        splitter = _DATA_PATH_DEST
+    after_bucket_prefix = re.split(splitter, blob_name)[1]
+    before_quad_name = re.split(r'/L15-\d{4}E-\d{4}N', after_bucket_prefix)[0]
+    return before_quad_name
 
 
 def get_quad_name_from_blob_name(blob_name: str) -> str:
-    name_region_quad = blob_name.split(_DATA_PATH_SOURCE)[1]
-    split_region_quad = name_region_quad.split('/')
-    return split_region_quad[-1].split('.tif')[0]
+    return re.search(r'L15-\d{4}E-\d{4}N', blob_name).group()
 
 
 def _get_x_and_y_from_blob_name(blob_name: str) -> Tuple[str, str]:
     quad = get_quad_name_from_blob_name(blob_name)
-    _, _, x, _, y, _ = re.split('-|[A-Z]', quad)
-    return x, y
+    _, x, y = re.split('-', quad)
+    return x[:-1], y[:-1]
 
 
 def _get_application_path_for_quad(quad_blob: QuadBlob) -> str:
