@@ -8,7 +8,7 @@ from gcrmnbc.utils import data_bucket, gdal_command_line
 
 GRID_SIZE = 100
 
-SAMPLE_LOCATIONS = [
+SAMPLE_LOCATIONS = {
     '0000E-0900N',  # American Samoa
     '0100E-1100N',  # Hawaii
     '0100E-0900N',  # French Polynesia
@@ -20,7 +20,7 @@ SAMPLE_LOCATIONS = [
     '1700E-1000N',  # Philippines/Indonesia
     '1800E-0800N',  # GBR
     '1900E-1000N',  # Marshall Islands
-]
+}
 
 MANIFEST_MOSAIC = {
     'name': 'projects/earthengine-legacy/assets/users/nfabina/planet_mosaic/',
@@ -51,31 +51,32 @@ def upload_reef_products_to_earth_engine(model_version: str) -> None:
     blobs_heat, blobs_outline = data_bucket.get_reef_heat_and_outline_quad_blobs(model_version)
     # Upload outlines
     _create_asset_folders(model_version)
-    asset_chunks = _create_asset_chunks(blobs_outline, only_samples=True)
+    asset_chunks = _create_asset_chunks(blobs_outline, include_global=True)
     manifests = _create_manifests(asset_chunks, MANIFEST_OUTLINE, model_version)
     _submit_uploads(manifests)
     # Upload heatmaps
-    asset_chunks = _create_asset_chunks(blobs_heat, only_samples=False)
+    asset_chunks = _create_asset_chunks(blobs_heat, include_global=True)
     manifests = _create_manifests(asset_chunks, MANIFEST_HEAT, model_version)
     _submit_uploads(manifests)
     # Upload planet
-    asset_chunks = _create_asset_chunks(blobs_mosaic, only_samples=False)
+    asset_chunks = _create_asset_chunks(blobs_mosaic, include_global=False)
     manifests = _create_manifests(asset_chunks, MANIFEST_MOSAIC)
     _submit_uploads(manifests)
 
 
 def _create_asset_chunks(
         raw_blobs:  List[data_bucket.QuadBlob],
-        only_samples: bool
+        include_global: bool
 ) -> Dict[str, Dict[str, data_bucket.QuadBlob]]:
     asset_chunks = dict()
     for blob in raw_blobs:
         x_id = blob.x - blob.x % GRID_SIZE
         y_id = blob.y - blob.y % GRID_SIZE
         asset_id = '{:04d}E-{:04d}N'.format(x_id, y_id)
-        if only_samples and asset_id not in SAMPLE_LOCATIONS:
-            continue
-        asset_chunks.setdefault(asset_id, dict())[blob.quad_focal] = blob
+        if asset_id in SAMPLE_LOCATIONS:
+            asset_chunks.setdefault(asset_id, dict())[blob.quad_focal] = blob
+        if include_global:
+            asset_chunks.setdefault('global', dict())[blob.quad_focal] = blob
     return asset_chunks
 
 
