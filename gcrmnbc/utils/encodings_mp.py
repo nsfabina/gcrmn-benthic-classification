@@ -50,13 +50,13 @@ MAPPINGS_CUSTOM = {
     2: CODE_WATER_TERRESTRIAL,  # 'brackish atoll lagoon',  ~1000
     1001: CODE_WATER_TERRESTRIAL,  # 'aquatic land features',  ~7000
 
-    4: CODE_WATER_SHALLOW,  # 'channel',
     21: CODE_WATER_SHALLOW,  # 'enclosed basin',  ~1000
     22: CODE_WATER_SHALLOW,  # 'enclosed lagoon',  ~1000
     23: CODE_WATER_SHALLOW,  # 'enclosed lagoon or basin',  ~1000
     27: CODE_WATER_SHALLOW,  # 'faro enclosed lagoon',  ~ 1000
     51: CODE_WATER_SHALLOW,  # 'shallow lagoon',
 
+    4: CODE_WATER_DEEP,  # 'channel',
     8: CODE_WATER_DEEP,  # 'deep lagoon',  ~1000
     13: CODE_WATER_DEEP,  # 'double barrier lagoon',
     17: CODE_WATER_DEEP,  # 'drowned lagoon',
