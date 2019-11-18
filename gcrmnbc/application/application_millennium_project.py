@@ -85,7 +85,7 @@ def _mask_and_compress_raster(filepath_src: str, filepath_features: str, scalar:
     raster = gdal.Open(filepath_features)
     if raster.RasterCount == 3:
         band_nodata = 1
-        value_nodata = -9999
+        value_nodata = 0
     elif raster.RasterCount == 4:
         band_nodata = 4
         value_nodata = 0
