@@ -34,7 +34,7 @@ model_training:
   dir_out:
   log_level: INFO
   assert_gpu: true
-  architecture_name: 'unet'
+  architecture_name: 'dense_unet'
   loss_metric: 'cc'
   max_epochs: 100
   optimizer: adam
