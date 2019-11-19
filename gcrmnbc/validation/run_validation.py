@@ -44,8 +44,10 @@ def run_validation(
         model_targets = np.load(filepath_targets, mmap_mode='r')
         dir_out = paths.get_dir_validate_data_experiment_config(
             config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
-        _fit_and_validate_fixed_samples_per_class_classifier(model_probs=model_probs, model_targets=model_targets, dir_out=dir_out)
-        _fit_and_validate_fixed_total_samples_classifier(model_probs=model_probs, model_targets=model_targets, dir_out=dir_out)
+        _fit_and_validate_fixed_samples_per_class_classifier(
+            model_probs=model_probs, model_targets=model_targets, dir_out=dir_out)
+        _fit_and_validate_fixed_total_samples_classifier(
+            model_probs=model_probs, model_targets=model_targets, dir_out=dir_out)
 
         # Create complete file to avoid rerunning in the future
         open(filepath_complete, 'w')

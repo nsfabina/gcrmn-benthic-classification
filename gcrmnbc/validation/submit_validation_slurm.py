@@ -32,7 +32,7 @@ def submit_validation_slurm(
                 shared_submit_slurm.validate_response_mapping(response_mapping)
 
                 config_name = os.path.splitext(filename_config)[0]
-                job_name = shared_submit_slurm.get_calval_apply_job_name(
+                job_name = shared_submit_slurm.get_validation_job_name(
                     config_name=config_name, label_experiment=label_experiment, response_mapping=response_mapping)
 
                 # Do not submit jobs that do not have trained models or are already complete

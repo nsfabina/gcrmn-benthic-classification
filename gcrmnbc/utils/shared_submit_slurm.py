@@ -38,6 +38,10 @@ def get_global_apply_job_name(config_name: str, label_experiment: str, response_
     return 'applyglobal_' + config_name + '_' + label_experiment + '_' + response_mapping
 
 
+def get_validation_job_name(config_name: str, label_experiment: str, response_mapping: str) -> str:
+    return 'validation_' + config_name + '_' + label_experiment + '_' + response_mapping
+
+
 def get_all_config_filenames():
     return [
         filename for filename in os.listdir(paths.DIR_CONFIGS) if
