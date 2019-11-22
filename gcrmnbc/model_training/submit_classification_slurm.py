@@ -73,7 +73,7 @@ def submit_classification_slurm(
 
                 # Set dynamic SLURM arguments
                 slurm_args_dynamic = ' '.join([
-                    '' if build_only else shared_submit_slurm.SLURM_GPUS_LARGE,
+                    '' if build_only else shared_submit_slurm.SLURM_GPUS,
                     '--job-name={}'.format(job_name),
                     '--output={}/slurm.classify.%j.%t.OUT'.format(dir_model),
                     '--error={}/slurm.classify.%j.%t.ERROR'.format(dir_model),
