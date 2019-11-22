@@ -4,7 +4,7 @@ import shutil
 from tqdm import tqdm
 
 from gcrmnbc.utils import EPSG_DEST
-from gcrmnbc.utils import gdal_command_line, paths
+from gcrmnbc.utils import command_line, paths
 
 
 def reproject_landsat() -> None:
@@ -28,13 +28,13 @@ def reproject_landsat() -> None:
             command = 'gdal_translate -of GTiff -a_srs EPSG:{srs_out} -co COMPRESS=DEFLATE -co TILED=YES ' + \
                       '-co BIGTIFF=YES {src} {dest}'
             command = command.format(srs_out=EPSG_DEST, src=filepath_landsat, dest=filepath_band)
-            gdal_command_line.run_gdal_command(command)
+            command_line.run_command_line(command)
             filepaths_bands.append(filepath_band)
         # Merge bands
         filepath_tmp = filepath_landsat + '.tmp'
         command = 'gdal_merge.py -o {dest} -separate -co COMPRESS=DEFLATE -co TILED=YES -co BIGTIFF=YES {srcs}'.format(
             dest=filepath_tmp, srcs=' '.join(filepaths_bands))
-        gdal_command_line.run_gdal_command(command)
+        command_line.run_command_line(command)
         # Cleanup
         shutil.move(filepath_tmp, filepath_landsat)
         for filepath in filepaths_bands:

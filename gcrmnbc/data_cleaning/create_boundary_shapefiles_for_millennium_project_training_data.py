@@ -3,7 +3,7 @@ import re
 
 from tqdm import tqdm
 
-from gcrmnbc.utils import encodings_mp, gdal_command_line, logs, paths
+from gcrmnbc.utils import encodings_mp, command_line, logs, paths
 
 
 _logger = logs.get_logger(__file__)
@@ -51,12 +51,12 @@ def create_sampling_boundary_shapefiles() -> None:
                       '--calc="1*(A!={code_land}) + -9999*(A=={code_land})"'
             command = command.format(
                 filepath_response=filepath_response, tmp_raster=tmp_filepath_raster, code_land=code_land)
-            gdal_command_line.run_gdal_command(command, _logger)
+            command_line.run_command_line(command, _logger)
 
             # Get shapefile for outline of areas we care about
             _logger.debug('Creating non-land outline shapefile')
             command = 'gdal_polygonize.py {} {}'.format(tmp_filepath_raster, tmp_filepath_outline)
-            gdal_command_line.run_gdal_command(command, _logger)
+            command_line.run_command_line(command, _logger)
 
             # Get shapefile of sampling boundaries by buffering reef outline
             _logger.debug('Creating buffered outline for boundary file')
@@ -65,7 +65,7 @@ def create_sampling_boundary_shapefiles() -> None:
             command = command.format(
                 filepath_boundary=filepath_boundary, tmp_outline=tmp_filepath_outline, basename_outline=basename_outline
             )
-            gdal_command_line.run_gdal_command(command, _logger)
+            command_line.run_command_line(command, _logger)
         except Exception as error_:
             raise error_
         finally:

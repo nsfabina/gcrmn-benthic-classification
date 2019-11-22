@@ -3,7 +3,7 @@ import shlex
 import subprocess
 
 
-def run_gdal_command(command: str, logger: logging.Logger = None) -> None:
+def run_command_line(command: str, logger: logging.Logger = None) -> None:
     completed = subprocess.run(shlex.split(command), capture_output=True)
     if completed.stderr:
         if logger:

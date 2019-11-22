@@ -7,7 +7,7 @@ import gdal
 import numpy as np
 import sklearn.ensemble
 
-from gcrmnbc.utils import encodings_mp, gdal_command_line, logs, paths
+from gcrmnbc.utils import encodings_mp, command_line, logs, paths
 
 
 _logger = logs.get_logger(__file__)
@@ -96,7 +96,7 @@ def _mask_and_compress_raster(filepath_src: str, filepath_features: str, scalar:
         filepath_src=filepath_src, filepath_features=filepath_features, band_nodata=band_nodata,
         scalar=scalar, value_nodata=value_nodata
     )
-    gdal_command_line.run_gdal_command(command, _logger)
+    command_line.run_command_line(command, _logger)
 
 
 def _create_probs_coarse(filepath_probs_detail: str, filepath_probs_coarse: str, _logger: Logger) -> None:

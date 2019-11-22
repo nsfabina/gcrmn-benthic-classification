@@ -6,7 +6,7 @@ import gdal
 import numpy as np
 from tqdm import tqdm
 
-from gcrmnbc.utils import gdal_command_line
+from gcrmnbc.utils import command_line
 
 
 def get_unique_codes_from_raster(filepath_raster: str):
@@ -184,21 +184,21 @@ fns = [fn for fn in os.listdir() if fn.endswith('_land.tif')]
 for fn in fns:
     dest = os.path.join('../clean', os.path.basename(fn))
     command = 'gdal_calc.py -A {fn} --outfile={dest} --calc="2000*(A==1)+-9999*(A!=1)" --NoDataValue=-9999 --co=TILED=YES --co=COMPRESS=DEFLATE'.format(fn=fn, dest=dest)
-    gdal_command_line.run_gdal_command(command)
+    command_line.run_command_line(command)
 
 # Convert water to 2001
 fns = [fn for fn in os.listdir() if fn.endswith('_water.tif')]
 for fn in fns:
     dest = os.path.join('../clean', os.path.basename(fn))
     command = 'gdal_calc.py -A {fn} --outfile={dest} --calc="2001*(A==2)+-9999*(A!=2)" --NoDataValue=-9999 --co=TILED=YES --co=COMPRESS=DEFLATE'.format(fn=fn, dest=dest)
-    gdal_command_line.run_gdal_command(command)
+    command_line.run_command_line(command)
 
 # Convert clouds to 2002
 fns = [fn for fn in os.listdir() if fn.endswith('_water_cloud.tif')]
 for fn in fns:
     dest = os.path.join('../clean', os.path.basename(fn))
     command = 'gdal_calc.py -A {fn} --outfile={dest} --calc="2001*(A==2)+2002*(A==23)+-9999*numpy.logical_and(A!=2, A!=23)" --NoDataValue=-9999 --co=TILED=YES --co=COMPRESS=DEFLATE'.format(fn=fn, dest=dest)
-    gdal_command_line.run_gdal_command(command)
+    command_line.run_command_line(command)
 
 
 all_codes = dict()

@@ -4,7 +4,7 @@ import re
 import gdal
 from tqdm import tqdm
 
-from gcrmnbc.utils import gdal_command_line, logs, paths
+from gcrmnbc.utils import command_line, logs, paths
 
 
 _logger = logs.get_logger(__file__)
@@ -32,7 +32,7 @@ def remove_feature_rasters_alpha_band() -> None:
                       '--outfile={filepath_tmp} --NoDataValue=-9999 --type=Int16 --co=COMPRESS=DEFLATE ' + \
                       '--co=TILED=YES --overwrite --calc="A * (B == 255) + -9999 * (B == 0)"'
             command = command.format(filepath_raw=filepath_raw, filepath_tmp=filepath_tmp)
-            gdal_command_line.run_gdal_command(command, _logger)
+            command_line.run_command_line(command, _logger)
             # Remove alpha band
             options_removed = gdal.TranslateOptions(
                 bandList=[1, 2, 3], outputType=gdal.GDT_Int16, creationOptions=['COMPRESS=DEFLATE', 'TILED=YES'])

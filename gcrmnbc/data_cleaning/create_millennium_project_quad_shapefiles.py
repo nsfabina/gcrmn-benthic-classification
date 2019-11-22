@@ -6,7 +6,7 @@ import fiona.crs
 from tqdm import tqdm
 
 from gcrmnbc.utils import EPSG_DEST
-from gcrmnbc.utils import encodings_mp, gdal_command_line, logs, mosaic_quads, paths
+from gcrmnbc.utils import encodings_mp, command_line, logs, mosaic_quads, paths
 
 
 _logger = logs.get_logger(__file__)
@@ -92,7 +92,7 @@ def _reproject_shapefiles() -> None:
             continue
         command = 'ogr2ogr -t_srs EPSG:{epsg} {reproj} {raw}'.format(
             epsg=EPSG_DEST, reproj=filepath_reproj, raw=filepath_raw)
-        gdal_command_line.run_gdal_command(command, _logger)
+        command_line.run_command_line(command, _logger)
 
 
 def _fix_feature_code_collisions(feature: dict) -> dict:

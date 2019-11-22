@@ -8,7 +8,7 @@ from osgeo import gdal
 from tqdm import tqdm
 
 from gcrmnbc.utils import EPSG_DEST
-from gcrmnbc.utils import encodings_mp, gdal_command_line, logs, paths
+from gcrmnbc.utils import encodings_mp, command_line, logs, paths
 
 
 _logger = logs.get_logger(__file__)
@@ -81,7 +81,7 @@ def create_millennium_project_quad_rasters_custom_classes() -> None:
                 llx=llx, lly=lly, urx=urx, ury=ury, xres=xres, yres=yres, filepath_custom=filepath_custom,
                 filepath_dest=filepath_dest
             )
-            gdal_command_line.run_gdal_command(command, _logger)
+            command_line.run_command_line(command, _logger)
         except Exception as error_:
             raise error_
         finally:

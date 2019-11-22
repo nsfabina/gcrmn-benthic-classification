@@ -3,7 +3,7 @@ import json
 import os
 from typing import Dict, List
 
-from gcrmnbc.utils import data_bucket, gdal_command_line
+from gcrmnbc.utils import data_bucket, command_line
 
 
 GRID_SIZE = 100
@@ -105,7 +105,7 @@ def _submit_uploads(manifests: List[dict]) -> None:
         with open(tmp_filename, 'w') as file_:
             json.dump(manifest, file_)
         command = 'earthengine upload image --manifest {}'.format(tmp_filename)
-        gdal_command_line.run_gdal_command(command)
+        command_line.run_command_line(command)
         os.remove(tmp_filename)
 
 

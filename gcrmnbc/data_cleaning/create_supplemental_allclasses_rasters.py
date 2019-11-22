@@ -6,7 +6,7 @@ import gdal
 import osr
 from tqdm import tqdm
 
-from gcrmnbc.utils import gdal_command_line, logs, paths
+from gcrmnbc.utils import command_line, logs, paths
 
 
 _logger = logs.get_logger(__file__)
