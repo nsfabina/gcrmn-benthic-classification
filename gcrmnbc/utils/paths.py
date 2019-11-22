@@ -8,6 +8,9 @@ DIR_BFGN = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DIR_CONFIGS = os.path.join(DIR_BFGN, 'configs')
 DIR_MODELS = os.path.join(DIR_BFGN, 'models')
 
+DIR_DATA_LANDSAT = '/scratch/nfabina/landsat8_global_mosaic/'
+DIR_DATA_LANDSAT_ORIG = os.path.join(DIR_DATA_LANDSAT, 'originals')
+
 DIR_DATA = '/scratch/nfabina/gcrmn-benthic-classification/'
 
 DIR_DATA_APPLY_CALVAL = os.path.join(DIR_DATA, 'applied_data')
