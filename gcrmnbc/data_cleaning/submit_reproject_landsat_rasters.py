@@ -11,7 +11,7 @@ def submit_reproject_landsat_rasters() -> None:
     dir_logs = 'reproject_landsat_rasters'
     if not os.path.exists(dir_logs):
         os.makedirs(dir_logs)
-    for idx_job in range(50):
+    for idx_job in range(20):
         job_name = 'reproject_landsat_rasters_{}'.format(idx_job)
         slurm_args_dynamic = ' '.join([
             '--job-name={}'.format(job_name),
