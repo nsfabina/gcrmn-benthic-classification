@@ -39,7 +39,7 @@ def downsample_global_rasters() -> None:
                         os.makedirs(dir_out)
                     except OSError:
                         pass
-                command = 'gdal_translate -outsize {pct}% {pct}% -r bilinear {path_in} {path_out}'.format(
+                command = 'gdal_translate -outsize {pct}% {pct}% -r average {path_in} {path_out}'.format(
                     pct=pct, path_in=filepath_in, path_out=filepath_out)
                 command_line.run_command_line(command, _logger)
             os.remove(filepath_in)
