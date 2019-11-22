@@ -33,8 +33,9 @@ def reproject_landsat() -> None:
             filepaths_bands.append(filepath_band)
         # Merge bands
         filepath_tmp = filepath_landsat + '.tmp'
-        command = 'gdal_merge.py -of GTiff -o {dest} -separate -co COMPRESS=DEFLATE -co TILED=YES -co BIGTIFF=YES {srcs}'.format(
-            dest=filepath_tmp, srcs=' '.join(filepaths_bands))
+        command = \
+            'gdal_merge.py -of GTiff -o {dest} -separate -co COMPRESS=DEFLATE -co TILED=YES -co BIGTIFF=YES {srcs}'
+        command = command.format(dest=filepath_tmp, srcs=' '.join(filepaths_bands))
         command_line.run_command_line(command)
         # Cleanup
         shutil.move(filepath_tmp, filepath_landsat)
