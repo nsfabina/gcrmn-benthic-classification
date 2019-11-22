@@ -11,7 +11,7 @@ from gcrmnbc.utils import command_line, paths
 def reproject_landsat() -> None:
     # Convert all landsat imagery to the desired projection to avoid recalculating this later, takes ~5 mins per file
     filepaths_landsat = [os.path.join(paths.DIR_DATA_LANDSAT_ORIG, f) for f in os.listdir(paths.DIR_DATA_LANDSAT_ORIG)
-                         if re.search('\d{10}-\d{10}.tif', f)]
+                         if re.search('\d{10}-\d{10}.tif$', f)]
     for filepath_landsat in tqdm(filepaths_landsat):
         # Prepare paths
         filepath_lock = filepath_landsat + '.lock'
