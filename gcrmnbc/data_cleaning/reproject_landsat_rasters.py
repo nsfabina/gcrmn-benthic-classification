@@ -11,9 +11,10 @@ SRS_OUTPUT = 3857
 
 def reproject_landsat() -> None:
     # Convert all landsat imagery to the desired projection to avoid recalculating this later, takes ~5 mins per file
-    filepaths_landsat = [os.path.join(paths.DIR_DATA_LANDSAT_ORIG, f) for f in os.listdir(paths.DIR_DATA_LANDSAT_ORIG)]
+    filepaths_landsat = [os.path.join(paths.DIR_DATA_LANDSAT_ORIG, f) for f in os.listdir(paths.DIR_DATA_LANDSAT_ORIG)
+                         if f.endswith('.tif')]
     for filepath_landsat in tqdm(filepaths_landsat):
-        filepath_tmp = filepath_landsat + '.tmp'
+        # Prepare paths
         filepath_lock = filepath_landsat + '.lock'
         filepath_complete = filepath_landsat + '.complete'
         if os.path.exists(filepath_complete):
@@ -22,12 +23,26 @@ def reproject_landsat() -> None:
             file_lock = open(filepath_lock, 'x')
         except:
             continue
-        command = 'gdal_translate -of GTiff -a_srs EPSG:{srs_out} -co COMPRESS=DEFLATE -co TILED=YES ' + \
-                  '-co BIGTIFF=YES {src} {dest}'
-        command = command.format(srs_out=SRS_OUTPUT, src=filepath_landsat, dest=filepath_tmp)
+        # Translate each band individually to avoid OOM errors
+        filepaths_bands = list()
+        for idx_band in range(1, 6):
+            filepath_band = os.path.splitext(filepath_landsat)[0] + '_{}.tif'.format(idx_band)
+            command = 'gdal_translate -of GTiff -a_srs EPSG:{srs_out} -co COMPRESS=DEFLATE -co TILED=YES ' + \
+                      '-co BIGTIFF=YES {src} {dest}'
+            command = command.format(srs_out=SRS_OUTPUT, src=filepath_landsat, dest=filepath_band)
+            gdal_command_line.run_gdal_command(command)
+            filepaths_bands.append(filepath_band)
+        # Merge bands
+        filepath_tmp = filepath_landsat + '.tmp'
+        command = 'gdal_merge.py -o {dest} -separate -co COMPRESS=DEFLATE -co TILED=YES -co BIGTIFF=YES {srcs}'.format(
+            dest=filepath_tmp, srcs=' '.join(filepaths_bands))
         gdal_command_line.run_gdal_command(command)
+        # Cleanup
         shutil.move(filepath_tmp, filepath_landsat)
-        os.remove(file_lock)
+        for filepath in filepaths_bands:
+            os.remove(filepath)
+        file_lock.close()
+        os.remove(filepath_lock)
         open(filepath_complete, 'w')
 
 
