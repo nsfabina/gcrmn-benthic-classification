@@ -4,7 +4,7 @@ import subprocess
 
 SLURM_COMMAND = \
     'sbatch --mail-user=nfabina@asu.edu --mail-type=FAIL --time=2:00:00 --nodes=1 --cpus-per-task=1 ' + \
-    '--ntasks=1 --wrap "python reproject_landsat_rasters.py" '
+    '--mem=40000 --ntasks=1 --wrap "python reproject_landsat_rasters.py" '
 
 
 def submit_reproject_landsat_rasters() -> None:
