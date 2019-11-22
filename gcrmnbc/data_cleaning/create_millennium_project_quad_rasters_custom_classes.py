@@ -7,6 +7,7 @@ import fiona.crs
 from osgeo import gdal
 from tqdm import tqdm
 
+from gcrmnbc.utils import EPSG_DEST
 from gcrmnbc.utils import encodings_mp, gdal_command_line, logs, paths
 
 
@@ -14,7 +15,6 @@ _logger = logs.get_logger(__file__)
 
 
 SHP_DRIVER = 'ESRI Shapefile'
-SHP_EPSG = 3857
 SHP_SCHEMA = {'properties': OrderedDict([('custom', 'int')]), 'geometry': 'Polygon'}
 
 
@@ -55,7 +55,7 @@ def create_millennium_project_quad_rasters_custom_classes() -> None:
                 missing_features.append(filename_features)
                 continue
             # Create shapefile with custom classes
-            crs = fiona.crs.from_epsg(SHP_EPSG)
+            crs = fiona.crs.from_epsg(EPSG_DEST)
             with fiona.open(filepath_custom, 'w', driver=SHP_DRIVER, crs=crs, schema=SHP_SCHEMA) as file_custom:
                 for original_feature in fiona.open(filepath_src):
                     original_code = original_feature['properties']['L4_CODE']

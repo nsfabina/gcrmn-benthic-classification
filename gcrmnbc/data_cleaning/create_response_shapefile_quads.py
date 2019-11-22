@@ -6,17 +6,17 @@ from typing import List
 
 import fiona.crs
 
+from gcrmnbc.utils import EPSG_DEST
 from gcrmnbc.utils import encodings, logs, mosaic_quads
 
 
 _logger = logs.get_logger(__file__)
 
 DIR_TRAINING_DATA = '/scratch/nfabina/gcrmn-benthic-classification/training_data/'
-FILEPATH_RESPONSE_SOURCE = os.path.join(DIR_TRAINING_DATA, 'raw/lwr_3857.geojson')
+FILEPATH_RESPONSE_SOURCE = os.path.join(DIR_TRAINING_DATA, 'raw/lwr_{epsg}.geojson'.format(epsg=EPSG_DEST))
 FILEPATH_RESPONSE_QUAD = os.path.join(DIR_TRAINING_DATA, 'tmp/{}_responses.shp')
 
 SHAPEFILE_DRIVER = 'ESRI Shapefile'
-SHAPEFILE_EPSG = 3857
 SHAPEFILE_SCHEMA = {
     'geometry': 'Polygon',
     'properties': OrderedDict([
@@ -136,7 +136,7 @@ def _write_features_to_quad_shapefile(features: List[dict], quad: str) -> None:
                 file_.write(feature)
     else:
         _logger.debug('Create new shapefile at {}'.format(filepath))
-        crs = fiona.crs.from_epsg(3857)
+        crs = fiona.crs.from_epsg(EPSG_DEST)
         with fiona.open(filepath, 'w', driver=SHAPEFILE_DRIVER, crs=crs, schema=SHAPEFILE_SCHEMA) as file_:
             for feature in features:
                 file_.write(feature)
