@@ -26,11 +26,13 @@ def reproject_landsat() -> None:
         filepaths_bands = list()
         for idx_band in range(1, 6):
             filepath_band = os.path.splitext(filepath_landsat)[0] + '_{}.tif'.format(idx_band)
+            filepaths_bands.append(filepath_band)
+            if os.path.exists(filepath_band):
+                continue
             command = 'gdal_translate -of GTiff -a_srs EPSG:{srs_out} -co COMPRESS=DEFLATE -co TILED=YES ' + \
                       '-co BIGTIFF=YES {src} {dest}'
             command = command.format(srs_out=EPSG_DEST, src=filepath_landsat, dest=filepath_band)
             command_line.run_command_line(command)
-            filepaths_bands.append(filepath_band)
         # Merge bands
         filepath_tmp = filepath_landsat + '.tmp'
         command = \
