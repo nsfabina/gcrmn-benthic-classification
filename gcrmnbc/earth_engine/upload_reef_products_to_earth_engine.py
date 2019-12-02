@@ -20,14 +20,14 @@ MANIFEST_MOSAIC = {
 }
 
 MANIFEST_HEAT = {
-    'name': 'projects/earthengine-legacy/assets/users/nfabina/reef_probs_v1/',
+    'name': 'projects/earthengine-legacy/assets/users/nfabina/reef_probs_v2/',
     'tilesets': [{'sources': []}],
     'bands': [{'id': 'reef_probs', 'pyramiding_policy': 'MEAN'}],
     'uri_prefix': 'gs://coral-atlas-data-share/gcrmn-global-map/',
 }
 
 MANIFEST_OUTLINE = {
-    'name': 'projects/earthengine-legacy/assets/users/nfabina/reef_preds_v1/',
+    'name': 'projects/earthengine-legacy/assets/users/nfabina/reef_preds_v2/',
     'tilesets': [{'sources': []}],
     'bands': [{'id': 'reef_preds', 'pyramiding_policy': 'MODE'}],
     'uri_prefix': 'gs://coral-atlas-data-share/gcrmn-global-map/',
