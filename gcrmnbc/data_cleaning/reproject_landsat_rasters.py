@@ -23,8 +23,8 @@ def reproject_landsat() -> None:
             file_lock = open(filepath_lock, 'x')
         except:
             continue
-        command = 'gdal_warp -s_srs EPSG:4326 -t_srs:{srs_out} -r average -co COMPRESS=DEFLATE -co TILED=YES ' + \
-                  '-co BIGTIFF=YES -of GTiff {src} {dest}'
+        command = 'gdalwarp -s_srs EPSG:4326 -t_srs EPSG:{srs_out} -r average -co COMPRESS=DEFLATE ' + \
+                  '-co TILED=YES -co BIGTIFF=YES -of GTiff {src} {dest}'
         command = command.format(srs_out=EPSG_DEST, src=filepath_landsat, dest=filepath_tmp)
         command_line.run_command_line(command)
         # Cleanup
