@@ -11,3 +11,4 @@ def run_command_line(command: str, logger: logging.Logger = None) -> None:
         if logger:
             logger.error(message)
     assert completed.returncode == 0, message
+    return completed
