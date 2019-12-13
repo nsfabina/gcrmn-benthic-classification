@@ -7,7 +7,7 @@ EarthEngine directly, while Python-styled code would need to be more heavily rew
 
 from collections import namedtuple
 import json
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Tuple
 
 import ee
 import os
@@ -35,15 +35,16 @@ FILEPATH_TASKS = 'tasks.json'
 ExportObject = namedtuple('export_object', ('quad_label', 'quad_polygon', 'landsat_subset'))
 
 
-def download_landsat_training_quads() -> List[ee.batch.Task]:
-    labels_from_files = _get_completed_quad_labels()
-    labels_from_local_list = _get_completed_labels_from_local_task_statuses()
+def download_landsat_training_quads() -> Tuple[List[ee.batch.Task], List[Dict[str, dict]]]:
+    labels_from_files = _get_completed_quad_labels_from_bucket()
+    labels_from_local_list = _get_completed_quad_labels_from_local_task_statuses()
     completed_labels = labels_from_files.union(labels_from_local_list)
     export_objects = _get_export_objects(completed_labels)
     tasks = list()
     for export_object in tqdm(export_objects):
         tasks.append(_export_image(export_object))
-    return tasks
+    statuses = _write_task_statuses_locally(tasks)
+    return tasks, statuses
 
 
 def read_updated_task_statuses_locally() -> Dict[str, dict]:
@@ -53,7 +54,7 @@ def read_updated_task_statuses_locally() -> Dict[str, dict]:
     return get_updated_task_statuses(task_ids)
 
 
-def _get_completed_quad_labels() -> Set[str]:
+def _get_completed_quad_labels_from_bucket() -> Set[str]:
     command = 'gsutil ls -r {bucket}'.format(bucket=GCS_DIR_LANDSAT)
     result = command_line.run_command_line(command).stdout.decode('utf-8').split('\n')
     quad_labels = list()
@@ -64,16 +65,20 @@ def _get_completed_quad_labels() -> Set[str]:
     return set(quad_labels)
 
 
-def _get_completed_labels_from_local_task_statuses() -> Set[str]:
+def _get_completed_quad_labels_from_local_task_statuses() -> Set[str]:
     completed_labels = set()
     statuses = read_updated_task_statuses_locally()
     for quad_label, status in statuses.items():
         if status['state'] == 'COMPLETED':
             completed_labels.add(quad_label)
         elif status['state'] == 'FAILED':
-            assert status['error_message'] == "Image.select: Pattern 'B1' did not match any bands.", \
-                'New error message found:  {}'.format(status['error_message'])
-            completed_labels.add(quad_label)
+            error = status['error_message']
+            if error == 'Internal error.':
+                continue
+            elif error == "Image.select: Pattern 'B1' did not match any bands.":
+                completed_labels.add(quad_label)
+            else:
+                raise AssertionError('New error message found:  {}'.format(status['error_message']))
         else:
             raise AssertionError('Unknown state found:  {}'.format(status))
     return completed_labels
@@ -171,4 +176,4 @@ def _export_image(export_object: ExportObject) -> ee.batch.Task:
 
 
 if __name__ == '__main__':
-    download_landsat_training_quads()
+    tasks, statuses = download_landsat_training_quads()
