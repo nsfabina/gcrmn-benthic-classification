@@ -112,8 +112,11 @@ ExportObject = namedtuple(
 
 
 def export_image(export_object: ExportObject) -> ee.batch.Task:
+    image = export_object.image_subset
+    if export_object.image_bands is not None:
+        image = image.select(export_object.image_bands)
     task = ee.batch.Export.image.toCloudStorage(
-        image=export_object.image_subset.select(export_object.image_bands),
+        image=image,
         description=export_object.gee_description + '_' + export_object.quad_label,
         bucket=GCS_BUCKET,
         fileNamePrefix=os.path.join(export_object.gcs_subdir, export_object.quad_label),
