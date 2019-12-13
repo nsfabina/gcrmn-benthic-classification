@@ -23,6 +23,8 @@ GCS_DIR_LANDSAT = 'gs://{bucket}/{subdir}'
 
 
 def read_updated_task_statuses_locally(filepath_statuses: str) -> Dict[str, dict]:
+    if not os.path.exists(filepath_statuses):
+        return dict()
     with open(filepath_statuses, 'r') as file_:
         statuses: Dict[str, dict] = json.load(file_)
     task_ids = [status['id'] for status in statuses.values()]
@@ -64,7 +66,7 @@ def get_updated_task_statuses(task_ids: List[str]) -> Dict[str, dict]:
 
 def get_completed_quad_labels_from_bucket(subdir_bucket: str) -> Set[str]:
     command = 'gsutil ls -r {bucket}'.format(bucket=GCS_DIR_LANDSAT.format(bucket=GCS_BUCKET, subdir=subdir_bucket))
-    result = command_line.run_command_line(command).stdout.decode('utf-8').split('\n')
+    result = command_line.run_command_line(command, assert_success=False).stdout.decode('utf-8').split('\n')
     quad_labels = list()
     for path in result:
         quad_label = re.search(r'L15-\d{4}E-\d{4}N', path)
@@ -105,18 +107,18 @@ def getQuadPolygon(quadExtent: Dict) -> ee.Geometry:
 
 ExportObject = namedtuple(
     'export_object',
-    ('quad_label', 'quad_polygon', 'image_subset', 'image_bands', 'gcs_subdir', 'gcs_description')
+    ('quad_label', 'quad_polygon', 'image_subset', 'image_bands', 'image_scale', 'gcs_subdir', 'gee_description')
 )
 
 
 def export_image(export_object: ExportObject) -> ee.batch.Task:
     task = ee.batch.Export.image.toCloudStorage(
         image=export_object.image_subset.select(export_object.image_bands),
-        description=export_object.gcs_description + '_' + export_object.quad_label,
+        description=export_object.gee_description + '_' + export_object.quad_label,
         bucket=GCS_BUCKET,
         fileNamePrefix=os.path.join(export_object.gcs_subdir, export_object.quad_label),
         region=export_object.quad_polygon.toGeoJSON()['coordinates'],
-        scale=30,
+        scale=export_object.image_scale,
         crs='EPSG:4326',
         maxPixels=1e13,
         fileFormat='GeoTiff',

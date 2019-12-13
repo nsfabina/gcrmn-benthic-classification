@@ -18,8 +18,9 @@ ee.Initialize()
 LANDSAT = ee.ImageCollection('LANDSAT/LC08/C01/T1_SR')
 QUADFEATURES = ee.FeatureCollection('users/nfabina/training_quad_extents')
 
-BANDS = ['B1', 'B2', 'B3', 'B4', 'B5']
 GCS_SUBDIR_LANDSAT = 'gcrmn-global-map/landsat8/'
+GEE_IMAGE_BANDS = ['B1', 'B2', 'B3', 'B4', 'B5']
+GEE_TASK_DESCRIPTION = 'landsat_training'
 
 FILEPATH_TASKS = 'tasks_landsat.json'
 
@@ -46,18 +47,17 @@ def _get_export_objects(completed_labels: Set[str]) -> List[shared.ExportObject]
         quadPolygon = shared.getQuadPolygon(quadExtent)
         landsatSubset = _getLandsatQuad(quadPolygon)
         export_objects.append(shared.ExportObject(
-            quad_label=quadLabel, quad_polygon=quadPolygon, image_subset=landsatSubset, image_bands=BANDS,
-            gcs_subdir=GCS_SUBDIR_LANDSAT, gcs_description='landsat_training'
+            quad_label=quadLabel, quad_polygon=quadPolygon, image_subset=landsatSubset, image_bands=GEE_IMAGE_BANDS,
+            image_scale=30, gcs_subdir=GCS_SUBDIR_LANDSAT, gee_description=GEE_TASK_DESCRIPTION
         ))
     return sorted(export_objects, key=lambda x: x.quad_label)
 
 
 def _getLandsatQuad(quadPolygon: ee.Geometry) -> ee.Image:
-    landsatSubset = LANDSAT.filterBounds(quadPolygon)
-    landsatSubset = landsatSubset.filterDate('2017-01-01', '2020-01-01')
-    landsatSubset = landsatSubset.map(_maskLandsatImage)
-    landsatSubset = landsatSubset.median()
-    return landsatSubset
+    subset = LANDSAT.filterBounds(quadPolygon)
+    subset = subset.filterDate('2017-01-01', '2020-01-01')
+    subset = subset.map(_maskLandsatImage).select(GEE_IMAGE_BANDS)
+    return subset.median()
 
 
 def _maskLandsatImage(image: ee.Image) -> ee.Image:
@@ -66,7 +66,7 @@ def _maskLandsatImage(image: ee.Image) -> ee.Image:
     bitMaskCloud = ee.Number(2).pow(5).int()
     bandQA = image.select('pixel_qa')
     mask = bandQA.bitwiseAnd(bitMaskCloudShadow).eq(0).And(bandQA.bitwiseAnd(bitMaskCloud).eq(0))
-    return image.updateMask(mask).select(BANDS)
+    return image.updateMask(mask)
 
 
 if __name__ == '__main__':
