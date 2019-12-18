@@ -40,7 +40,7 @@ def download_sentinel_training_quads(image_scale: int) -> Tuple[List[ee.batch.Ta
     tasks = list()
     for export_object in tqdm(export_objects):
         tasks.append(shared.export_image(export_object))
-    statuses = shared.write_task_statuses_locally(tasks, FILEPATH_TASKS)
+    statuses = shared.write_task_statuses_locally(tasks, filepath_tasks)
     return tasks, statuses
 
 
