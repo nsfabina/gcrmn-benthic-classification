@@ -4,7 +4,7 @@ import re
 
 from tqdm import tqdm
 
-from gcrmnbc.utils import command_line, logs, paths
+from gcrmnbc.utils import gdal_command_line, logs, paths
 
 
 _logger = logs.get_logger(__file__)
@@ -46,7 +46,7 @@ def _downsample_dir(dir_src: str) -> None:
                         pass
                 command = 'gdal_translate -outsize {pct}% {pct}% -r nearest {filepath_src} {filepath_dest}'.format(
                     pct=pct, filepath_src=filepath_src, filepath_dest=filepath_dest)
-                command_line.run_command_line(command, _logger)
+                gdal_command_line.run_gdal_command(command, _logger)
         except Exception as error_:
             raise error_
         finally:

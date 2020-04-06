@@ -18,8 +18,6 @@ VALID_LABELS_EXPERIMENTS = (
     # MP data
     'millennium_25_aug',
     'millennium_50_aug',
-    # MP with extended data,
-    'millennium_landsat_50_aug'
 )
 VALID_RESPONSE_MAPPINGS = ('lwr', 'lwrn', 'custom')
 

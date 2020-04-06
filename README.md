@@ -1,9 +1,5 @@
 # gcrmn-benthic-classification
 
-## Important note
-
-This repository is no longer maintained. We created a new repository for the next version of this map, given the significant changes to input data, network architectures, and other components. Importantly, this also allows us to recover the first version of the map and introspect the code at the point in time at which it was generated.
-
 ## Creating a global reef map
 
 The goal of this repository is to develop models that can generate a global reef map for applied uses. We use deep learning and creative data and modeling choices to mitigate non-representative training data, only three feature bands, lack of NIR and depth data, and single images per location, among other limitations. The code base has been built up iteratively, with new information and changing requirements, the need for efficiency in spinning up and applying models, accounting for varying levels of progress in jobs, etc. For example:  many models can be trained, validated, and summarized with a single command; jobs can be started and restarted without losing progress or interfering with concurrent jobs; global appications to terabytes of data can be done quickly by throwing more GPUs at the task.

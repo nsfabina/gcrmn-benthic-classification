@@ -7,11 +7,9 @@ import json
 import os
 import re
 
-from gcrmnbc.utils import EPSG_DEST
-
 
 DIR_EXPECTED = '/scratch/nfabina/gcrmn-benthic-classification/tmp_training_data/'
-FILENAMES_EXPECTED = ['lwr_{epsg}.geojson'.format(EPSG_DEST), 'lwr_4326.geojson', 'lwr.geojson']
+FILENAMES_EXPECTED = ['lwr_3857.geojson', 'lwr_4326.geojson', 'lwr.geojson']
 
 
 def parse_responses() -> None:

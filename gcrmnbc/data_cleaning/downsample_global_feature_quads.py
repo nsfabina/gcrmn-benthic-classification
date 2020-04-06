@@ -3,7 +3,7 @@ import re
 
 from tqdm import tqdm
 
-from gcrmnbc.utils import command_line, logs, paths
+from gcrmnbc.utils import gdal_command_line, logs, paths
 
 
 _logger = logs.get_logger(__file__)
@@ -39,9 +39,9 @@ def downsample_global_rasters() -> None:
                         os.makedirs(dir_out)
                     except OSError:
                         pass
-                command = 'gdal_translate -outsize {pct}% {pct}% -r average {path_in} {path_out}'.format(
+                command = 'gdal_translate -outsize {pct}% {pct}% -r bilinear {path_in} {path_out}'.format(
                     pct=pct, path_in=filepath_in, path_out=filepath_out)
-                command_line.run_command_line(command, _logger)
+                gdal_command_line.run_gdal_command(command, _logger)
             os.remove(filepath_in)
         except Exception as error_:
             raise error_

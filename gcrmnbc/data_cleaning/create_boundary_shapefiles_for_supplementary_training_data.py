@@ -1,7 +1,7 @@
 import os
 import re
 
-from gcrmnbc.utils import command_line, logs, paths
+from gcrmnbc.utils import gdal_command_line, logs, paths
 from tqdm import tqdm
 
 
@@ -30,11 +30,11 @@ def create_sampling_boundary_shapefiles() -> None:
         command = 'gdal_rasterize -burn 1 -tr 5 5 -a_nodata -9999 -init -9999 ' + \
                   '{filepath_shape} {tmp_filepath_raster}'
         command = command.format(filepath_shape=filepath_shape, tmp_filepath_raster=tmp_filepath_raster)
-        command_line.run_command_line(command, _logger)
+        gdal_command_line.run_gdal_command(command, _logger)
 
         _logger.debug('Creating valid sampling area outline')
         command = 'gdal_polygonize.py {} {}'.format(tmp_filepath_raster, tmp_filepath_polygon)
-        command_line.run_command_line(command, _logger)
+        gdal_command_line.run_gdal_command(command, _logger)
 
         _logger.debug('Creating buffered outline for boundary file')
         command = 'ogr2ogr -f "ESRI Shapefile" {filepath_boundary} {tmp_filepath_polygon} -dialect sqlite ' + \
@@ -43,7 +43,7 @@ def create_sampling_boundary_shapefiles() -> None:
             filepath_boundary=filepath_boundary, tmp_filepath_polygon=tmp_filepath_polygon,
             basename_polygon=basename_polygon
         )
-        command_line.run_command_line(command, _logger)
+        gdal_command_line.run_gdal_command(command, _logger)
 
         _logger.debug('Remove temporary files')
         os.remove(tmp_filepath_raster)

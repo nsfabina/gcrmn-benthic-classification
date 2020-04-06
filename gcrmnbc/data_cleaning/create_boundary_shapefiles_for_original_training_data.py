@@ -1,7 +1,7 @@
 import os
 import re
 
-from gcrmnbc.utils import encodings, command_line, logs, paths
+from gcrmnbc.utils import encodings, gdal_command_line, logs, paths
 
 
 _logger = logs.get_logger(__file__)
@@ -33,11 +33,11 @@ def create_sampling_boundary_shapefiles() -> None:
                   '--calc="1*(A>={min_value}) + -9999*(A<{min_value})"'
         command = command.format(
             filepath_responses=filepath_responses, filepath_reef=tmp_filepath_reef_raster, min_reef_value=min_reef_value)
-        command_line.run_command_line(command, _logger)
+        gdal_command_line.run_gdal_command(command, _logger)
         # Get shapefile of reef outline
         _logger.debug('Creating reef outline shapefile')
         command = 'gdal_polygonize.py {} {}'.format(tmp_filepath_reef_raster, tmp_filepath_reef_outline)
-        command_line.run_command_line(command, _logger)
+        gdal_command_line.run_gdal_command(command, _logger)
         # Get shapefile of sampling boundaries by buffering reef outline
         _logger.debug('Creating buffered outline for boundary file')
         command = 'ogr2ogr -f "ESRI Shapefile" {filepath_boundary} {filepath_outline} -dialect sqlite ' + \
@@ -46,7 +46,7 @@ def create_sampling_boundary_shapefiles() -> None:
             filepath_boundary=filepath_boundary, filepath_outline=tmp_filepath_reef_outline,
             basename_outline=basename_reef_outline
         )
-        command_line.run_command_line(command, _logger)
+        gdal_command_line.run_gdal_command(command, _logger)
         # Clean up
         _logger.debug('Remove temporary files')
         os.remove(tmp_filepath_reef_raster)
